@@ -2,53 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable;
 
-    /**
-     * Os atributos que podem ser atribuídos em massa.
-     *
-     * @var array
-     */
+    // Colunas que podem ser preenchidas
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * Os atributos que devem ser ocultados na serialização.
-     *
-     * @var array
-     */
+    // Colunas a serem ocultadas (segurança)
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Atributos que devem ser convertidos para tipos nativos.
-     *
-     * @var array
-     */
+    // Campos que devem ser convertidos automaticamente para tipos específicos
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
-
-    /**
-     * Mutator para garantir que a senha seja sempre armazenada de forma segura.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
-    }
 }
