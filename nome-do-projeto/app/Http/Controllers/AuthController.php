@@ -6,106 +6,59 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    /**
-     * Mostrar formulário de login
-     */
     public function showLoginForm()
     {
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-        
-        return view('auth.login');
+        return view('login');
     }
 
-    /**
-     * Processar tentativa de login
-     */
+    public function showRegisterForm()
+    {
+        return view('register');
+    }
+
     public function login(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|min:6',
         ]);
 
-        $credentials = $request->only('email', 'password');
-        $remember = $request->has('remember');
-
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
-            
-            return redirect()->intended(route('dashboard'))
-                ->with('success', 'Login efetuado com sucesso!');
+        if (Auth::attempt($validated)) {
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
-            'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
-        ])->onlyInput('email');
+            'email' => 'Credenciais incorretas.',
+        ]);
     }
 
-    /**
-     * Mostrar formulário de registro
-     */
-    public function showRegisterForm()
-    {
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-        
-        return view('auth.register');
-    }
-
-    /**
-     * Processar registro de novo usuário
-     */
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
         ]);
 
-        // Inserir usuário diretamente sem usar Eloquent para criar mesmo sem migration
-        DB::table('users')->insert([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
-        // Alternativa usando Eloquent
-        // $user = User::create([
-        //     'name' => $request->name,
-        //     'email' => $request->email,
-        //     'password' => Hash::make($request->password),
-        // ]);
+        Auth::login($user);
 
-        // Loga o usuário após registro
-        Auth::attempt($request->only('email', 'password'));
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard')
-            ->with('success', 'Conta criada com sucesso!');
+        return redirect()->route('dashboard');
     }
 
-    /**
-     * Logout do usuário
-     */
-    public function logout(Request $request)
+    public function logout()
     {
         Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login')
-            ->with('success', 'Logout efetuado com sucesso!');
+        return redirect()->route('login');
     }
 }
