@@ -2,49 +2,47 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\RegistersUsers;
 
 class RegisterController extends Controller
 {
-    // Mostrar o formulário de registro
+    use RegistersUsers;
+
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
     public function showRegistrationForm()
     {
         return view('auth.register');
     }
 
-    // Processar o registro do usuário
     public function register(Request $request)
     {
-        try {
-            // Validar os dados recebidos
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
-            ]);
+        // Validação dos dados
+        $validatedData = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
 
-            // Criar o usuário
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
+        // Criação do usuário
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+        ]);
 
-            // Logar o usuário imediatamente após o registro
-            auth()->login($user);
+        // Login automático após o registro
+        auth()->login($user);
 
-            // Redirecionar para o dashboard
-            return redirect()->route('dashboard')->with('success', 'Usuário registrado com sucesso!');
-        } catch (\Exception $e) {
-            // Log do erro
-            Log::error('Erro ao registrar usuário: ' . $e->getMessage());
-
-            // Retornar erro
-            return back()->withErrors(['error' => 'Erro ao registrar usuário: ' . $e->getMessage()]);
-        }
+        // Redireciona para o dashboard após o login
+        return redirect()->route('dashboard');
     }
 }

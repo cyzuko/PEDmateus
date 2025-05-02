@@ -5,66 +5,39 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use App\Models\User;
 
 class LoginController extends Controller
 {
-    // Mostrar o formulário de login
+    // Exibe o formulário de login
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    // Processar login
+    // Processa o login
     public function login(Request $request)
     {
-        try {
-            // Validação dos dados do formulário
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required|min:6',
-            ]);
+        // Validação dos dados
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-            // Verificar as credenciais
-            $credentials = $request->only('email', 'password');
-
-            if (Auth::attempt($credentials, $request->filled('remember'))) {
-                // Autenticado com sucesso
-                return redirect()->intended('/dashboard');
-            }
-
-            // Se falhar a autenticação
-            return back()
-                ->withInput($request->only('email', 'remember'))
-                ->withErrors(['email' => 'As credenciais fornecidas não são válidas.']);
-
-        } catch (\Exception $e) {
-            // Log do erro
-            Log::error('Erro no login: ' . $e->getMessage());
-
-            // Retornar mensagem de erro para o usuário
-            return back()
-                ->withInput($request->only('email', 'remember'))
-                ->withErrors(['error' => 'Ocorreu um erro ao processar o login: ' . $e->getMessage()]);
+        // Tenta autenticar
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            return redirect()->route('dashboard'); // Redireciona para o dashboard
         }
+
+        return back()->withErrors(['email' => 'Credenciais inválidas.']);
     }
 
-    // Logout do usuário
-    public function logout()
+    // Processa o logout
+    public function logout(Request $request)
     {
-        try {
-            Auth::logout();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-            // Limpar a sessão
-            session()->invalidate();
-            session()->regenerateToken();
-
-            return redirect()->route('login')->with('success', 'Logout realizado com sucesso!');
-
-        } catch (\Exception $e) {
-            Log::error('Erro no logout: ' . $e->getMessage());
-            return redirect()->route('login');
-        }
+        return redirect()->route('home'); // Redireciona para a página inicial
     }
 }

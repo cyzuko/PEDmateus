@@ -9,13 +9,27 @@ class Fatura extends Model
 {
     use HasFactory;
 
-    // Nome da tabela
+    /**
+     * Nome da tabela
+     */
     protected $table = 'faturas';
 
-    // Desativar timestamps automáticos, caso não queira usar as colunas created_at/updated_at
-    public $timestamps = false;
+    /**
+     * Colunas para datas
+     */
+    protected $dates = [
+        'data',
+    ];
 
-    // Colunas que podem ser preenchidas
+    /**
+     * Nome das colunas de timestamp
+     */
+    const CREATED_AT = 'criado_em';
+    const UPDATED_AT = 'atualizado_em';
+
+    /**
+     * Atributos que podem ser preenchidos em massa
+     */
     protected $fillable = [
         'user_id',
         'fornecedor',
@@ -24,7 +38,9 @@ class Fatura extends Model
         'imagem',
     ];
 
-    // Relacionamento com o usuário (usuário que criou a fatura)
+    /**
+     * Relacionamento com usuário
+     */
     public function user()
     {
         return $this->belongsTo(User::class);

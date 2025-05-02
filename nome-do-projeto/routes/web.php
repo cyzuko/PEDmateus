@@ -1,35 +1,24 @@
 <?php
 
+require __DIR__.'/auth.php';
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FaturaController;
 
-// Página inicial
+// Página inicial redireciona para login
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
 
-// Rotas de Login
-Route::get('login', [LoginController::class, 'showLoginForm'])->name('login'); // Exibe o formulário de login
-Route::post('login', [LoginController::class, 'login']); // Processa o login
-
-// Rotas de Registro
-Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register'); // Exibe o formulário de registro
-Route::post('register', [RegisterController::class, 'register']); // Processa o registro
-
-// Logout
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
-// Rotas protegidas que necessitam de autenticação
+// Rotas protegidas por autenticação
 Route::middleware(['auth'])->group(function () {
-    // Rota de Dashboard ou página protegida
-    Route::get('/dashboard', function () {
-        return view('dashboard'); // Cria a view "dashboard.blade.php"
-    })->name('dashboard');  // Defina o nome da rota "dashboard"
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Outras rotas protegidas
-    Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
-    Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');
-    Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
+    // CRUD de Faturas
+    Route::resource('faturas', FaturaController::class);
 });
+
+// Autenticação (Laravel Breeze, Jetstream, Fortify, etc.)
+require __DIR__.'/auth.php';

@@ -1,129 +1,112 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sistema de Faturas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 16px;
-            text-decoration: none;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-danger {
-            background-color: #f44336;
-        }
-        .alert {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-        .alert-success {
-            background-color: #dff0d8;
-            border: 1px solid #d6e9c6;
-            color: #3c763d;
-        }
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: #fff;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-        .stat-card {
-            flex: 1;
-            min-width: 200px;
-            margin: 10px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .stat-card h3 {
-            margin-top: 0;
-            color: #555;
-        }
-        .stat-card .number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Dashboard</h1>
-            <div>
-                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-danger">Sair</button>
-                </form>
+{{-- resources/views/dashboard.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- Resumo -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Resumo</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-600">Total de Faturas</p>
+                            <p class="text-2xl font-bold">{{ $totalFaturas }}</p>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-600">Valor Total</p>
+                            <p class="text-2xl font-bold">{{ number_format($valorTotal, 2, ',', '.') }} €</p>
+                        </div>
+                        
+                        <div class="bg-amber-50 p-4 rounded-lg">
+                            <p class="text-sm text-amber-600">Média por Fatura</p>
+                            <p class="text-2xl font-bold">{{ $totalFaturas > 0 ? number_format($valorTotal / $totalFaturas, 2, ',', '.') : '0,00' }} €</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações rápidas -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <a href="{{ route('faturas.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            Nova Fatura
+                        </a>
+                        
+                        <a href="{{ route('faturas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            Ver Todas as Faturas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Faturas recentes -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Faturas Recentes</h3>
+                        <a href="{{ route('faturas.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Ver todas</a>
+                    </div>
+                    
+                    @if(count($faturas) > 0)
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fornecedor</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($faturas as $fatura)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">{{ $fatura->fornecedor }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($fatura->data)->format('d/m/Y') }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">{{ number_format($fatura->valor, 2, ',', '.') }} €</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="{{ route('faturas.show', $fatura->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">Ver</a>
+                                                <a href="{{ route('faturas.edit', $fatura->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
+                                                <form action="{{ route('faturas.destroy', $fatura->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Tem certeza que deseja excluir esta fatura?')">Excluir</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="bg-gray-50 p-4 rounded-md text-center">
+                            <p class="text-gray-600">Nenhuma fatura encontrada. Comece a <a href="{{ route('faturas.create') }}" class="text-blue-600 hover:text-blue-800">adicionar faturas</a>.</p>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
-        
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-        
-        <div class="card">
-            <h2>Bem-vindo, {{ Auth::user()->name }}!</h2>
-            <p>Este é o seu painel de controle para gerenciamento de faturas.</p>
-        </div>
-        
-        <div class="stats">
-    <div class="stat-card">
-        <h3>Total de Faturas</h3>
-        <div class="number">0</div>
     </div>
-    
-    <div class="stat-card">
-        <h3>Valor Total</h3>
-        <div class="number">R$ 0,00</div>
-    </div>
-</div>
-        
-        <div style="margin-top: 20px;">
-            <a href="{{ route('faturas.index') }}" class="btn">Ver Minhas Faturas</a>
-            <a href="{{ route('faturas.create') }}" class="btn">Adicionar Nova Fatura</a>
-        </div>
-    </div>
-</body>
-</html>
+</x-app-layout>

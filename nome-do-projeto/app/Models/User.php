@@ -2,27 +2,51 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    // Nome da tabela no banco de dados
-    protected $table = 'users'; 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
-    // As colunas que podem ser preenchidas via atribuição em massa
-    protected $fillable = ['name', 'email', 'password'];
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    // As colunas que devem ser escondidas quando a instância do modelo for convertida para array ou JSON
-    protected $hidden = ['password', 'remember_token'];
-
-    // Para o Laravel saber os timestamps, mesmo sem as migrations
-    public $timestamps = true;
-
-    // Cast de tipos para os campos
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
+
+    /**
+     * Relacionamento com faturas
+     */
+    public function faturas()
+    {
+        return $this->hasMany(Fatura::class);
+    }
 }
