@@ -15,7 +15,7 @@ class LoginController extends Controller
     {
         return view('auth.login');
     }
-    
+
     // Processar login
     public function login(Request $request)
     {
@@ -25,43 +25,43 @@ class LoginController extends Controller
                 'email' => 'required|email',
                 'password' => 'required|min:6',
             ]);
-            
+
             // Verificar as credenciais
             $credentials = $request->only('email', 'password');
-            
+
             if (Auth::attempt($credentials, $request->filled('remember'))) {
                 // Autenticado com sucesso
                 return redirect()->intended('/dashboard');
             }
-            
+
             // Se falhar a autenticação
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors(['email' => 'As credenciais fornecidas não são válidas.']);
-                
+
         } catch (\Exception $e) {
             // Log do erro
             Log::error('Erro no login: ' . $e->getMessage());
-            
+
             // Retornar mensagem de erro para o usuário
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors(['error' => 'Ocorreu um erro ao processar o login: ' . $e->getMessage()]);
         }
     }
-    
+
     // Logout do usuário
     public function logout()
     {
         try {
             Auth::logout();
-            
+
             // Limpar a sessão
             session()->invalidate();
             session()->regenerateToken();
-            
+
             return redirect()->route('login')->with('success', 'Logout realizado com sucesso!');
-            
+
         } catch (\Exception $e) {
             Log::error('Erro no logout: ' . $e->getMessage());
             return redirect()->route('login');

@@ -12,7 +12,7 @@ class Fatura extends Model
     // Nome da tabela
     protected $table = 'faturas';
 
-    // Desativar timestamps do Laravel se você estiver usando campos personalizados
+    // Desativar timestamps automáticos, caso não queira usar as colunas created_at/updated_at
     public $timestamps = false;
 
     // Colunas que podem ser preenchidas
@@ -24,11 +24,7 @@ class Fatura extends Model
         'imagem',
     ];
 
-    // Definir os nomes personalizados dos timestamps se você os estiver usando
-    const CREATED_AT = 'criado_em';
-    const UPDATED_AT = 'atualizado_em';
-
-    // Relação com o usuário
+    // Relacionamento com o usuário (usuário que criou a fatura)
     public function user()
     {
         return $this->belongsTo(User::class);

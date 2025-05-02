@@ -2,29 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use Notifiable;
 
-    // Colunas que podem ser preenchidas
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    // Nome da tabela no banco de dados
+    protected $table = 'users'; 
 
-    // Colunas a serem ocultadas (segurança)
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // As colunas que podem ser preenchidas via atribuição em massa
+    protected $fillable = ['name', 'email', 'password'];
 
-    // Campos que devem ser convertidos automaticamente para tipos específicos
+    // As colunas que devem ser escondidas quando a instância do modelo for convertida para array ou JSON
+    protected $hidden = ['password', 'remember_token'];
+
+    // Para o Laravel saber os timestamps, mesmo sem as migrations
+    public $timestamps = true;
+
+    // Cast de tipos para os campos
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
