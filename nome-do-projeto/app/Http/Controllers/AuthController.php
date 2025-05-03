@@ -10,65 +10,74 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    // Mostrar formulário de login
     public function showLoginForm()
     {
-        return view('login');
+        if (Auth::check()) {
+            return redirect()->route('home');
+        }
+        return view('auth.login');
     }
 
-    public function showRegisterForm()
-    {
-        return view('register');
-    }
-
+    // Processar login
     public function login(Request $request)
     {
-        // Validação dos dados de login
-        $validated = $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:6',
+            'password' => 'required',
         ]);
 
-        // Tenta autenticar o usuário com as credenciais fornecidas
-        if (Auth::attempt([
-            'email' => $validated['email'],
-            'password' => $validated['password']
-        ])) {
-            // Autenticação bem-sucedida
-            return redirect()->route('dashboard');
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended('home');
         }
 
-        // Se falhar, retorna com erro
         return back()->withErrors([
-            'email' => 'Credenciais incorretas.',
+            'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
         ]);
     }
 
+    // Mostrar formulário de registro
+    public function showRegisterForm()
+    {
+        if (Auth::check()) {
+            return redirect()->route('home');
+        }
+        return view('auth.register');
+    }
+
+    // Processar registro
     public function register(Request $request)
     {
-        // Validação dos dados de registro
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
-        // Cria um novo usuário
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        // Faz login do usuário recém-criado
         Auth::login($user);
 
-        // Redireciona para o dashboard
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 
-    public function logout()
+    // Logout
+    public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 }

@@ -1,13 +1,27 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\FaturaController;
 
-Route::get('/', function(){
-    return view ('welcome');
+// Rotas públicas
+Route::get('/', function () {
+    return redirect()->route('login');
 });
 
-Route::get('login', function(){
-    return view ('login');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 
-Route::post('login', LogginController::class)->name('login.attempt');
+// Rotas protegidas
+Route::middleware(['auth'])->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // Rotas para faturas
+    Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
+    Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');
+    Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
+});

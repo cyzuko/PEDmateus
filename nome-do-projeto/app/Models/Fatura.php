@@ -9,37 +9,31 @@ class Fatura extends Model
 {
     use HasFactory;
 
-    /**
-     * Nome da tabela
-     */
+    // Define nome da tabela explicitamente
     protected $table = 'faturas';
 
-    /**
-     * Colunas para datas
-     */
-    protected $dates = [
-        'data',
-    ];
-
-    /**
-     * Nome das colunas de timestamp
-     */
-    const CREATED_AT = 'criado_em';
-    const UPDATED_AT = 'atualizado_em';
-
-    /**
-     * Atributos que podem ser preenchidos em massa
-     */
+    // Define colunas que podem ser atribuídas em massa
     protected $fillable = [
         'user_id',
         'fornecedor',
         'data',
         'valor',
-        'imagem',
+        'imagem'
     ];
 
+    // Define as colunas de data para trabalhar com Carbon
+    protected $dates = [
+        'data',
+        'criado_em',
+        'atualizado_em'
+    ];
+
+    // Mapeamento para os nomes reais das colunas na tabela
+    const CREATED_AT = 'criado_em';
+    const UPDATED_AT = 'atualizado_em';
+
     /**
-     * Relacionamento com usuário
+     * Get the user that owns the fatura.
      */
     public function user()
     {
