@@ -119,7 +119,7 @@
                 </form>
             @else
                 <a href="{{ route('login') }}" class="btn">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-outline">Registrar</a>
+                <a href="{{ route('register') }}" class="btn btn-outline">Registar</a>
             @endif
         </div>
     </div>

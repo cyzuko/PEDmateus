@@ -46,7 +46,7 @@
                                 </button>
 
                                 <a class="btn btn-link" href="{{ route('register') }}">
-                                    Ainda não tem uma conta? Registre-se
+                                    Ainda não tem uma conta? Registe-se
                                 </a>
                             </div>
                         </div>
