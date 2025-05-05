@@ -26,7 +26,7 @@
                                     @foreach($faturas as $fatura)
                                         <tr>
                                             <td>{{ $fatura->fornecedor }}</td>
-                                            <td>{{ $fatura->data->format('d/m/Y') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($fatura->data)->format('d/m/Y') }}</td>
                                             <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
                                             <td>
                                                 @if($fatura->imagem)
