@@ -42,12 +42,15 @@
                                             <td>{{ \Carbon\Carbon::parse($fatura->data)->format('d/m/Y') }}</td>
                                             <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
                                             <td>
-                                                @if($fatura->imagem)
-                                                    <a href="{{ asset('storage/' . $fatura->imagem) }}" target="_blank">Ver imagem</a>
-                                                @else
-                                                    <span class="text-muted">Sem imagem</span>
-                                                @endif
-                                            </td>
+                                                        @if($fatura->imagem)
+                                                            <a href="{{ asset('storage/' . $fatura->imagem) }}" target="_blank">
+                                                                <img src="{{ asset('storage/' . $fatura->imagem) }}" alt="Imagem da Fatura" width="80" class="img-thumbnail">
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">Sem imagem</span>
+                                                        @endif
+                                                    </td>
+
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="{{ route('faturas.show', $fatura->id) }}" 

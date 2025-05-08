@@ -8,15 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log; // Adicionado para logging
 
 class FaturaController extends Controller
 {
-    // Remova o construtor com middleware, isso é feito nas rotas
-    // public function __construct()
-    // {
-    //     $this->middleware('auth');
-    // }
-
     public function index()
     {
         try {
@@ -24,10 +19,8 @@ class FaturaController extends Controller
                     ->orderBy('data', 'desc')
                     ->paginate(10);
         } catch (\Exception $e) {
-            // Se ocorrer um erro, retornar uma coleção vazia
-            $faturas = collect([]);
+            $faturas = collect([]); // Se ocorrer erro, retorna uma coleção vazia
             
-            // Adicionar uma mensagem de erro
             return view('faturas.index', compact('faturas'))
                 ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
         }
@@ -46,49 +39,36 @@ class FaturaController extends Controller
             'fornecedor' => 'required|string|max:255',
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|image|max:2048', // max 2MB
+            'imagem' => 'nullable|image|max:2048',
         ]);
-
+    
         try {
-            // Verificar se a tabela tem a coluna user_id
-            if (!Schema::hasColumn('faturas', 'user_id')) {
-                // Se não tem, tentar adicionar
-                DB::statement('ALTER TABLE faturas ADD COLUMN user_id BIGINT UNSIGNED NOT NULL AFTER id');
-                DB::statement('ALTER TABLE faturas ADD CONSTRAINT faturas_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE');
-            }
-            
-            // Inserir diretamente usando DB Query Builder para maior controle
-            $data = [
-                'user_id' => Auth::id(),
-                'fornecedor' => $validated['fornecedor'],
-                'data' => $validated['data'],
-                'valor' => $validated['valor'],
-            ];
-            
+            $fatura = new Fatura();
+            $fatura->user_id = Auth::id();
+            $fatura->fornecedor = $validated['fornecedor'];
+            $fatura->data = $validated['data'];
+            $fatura->valor = $validated['valor'];
+    
             if ($request->hasFile('imagem')) {
-                $path = $request->file('imagem')->store('faturas', 'public');
-                $data['imagem'] = $path;
+                $file = $request->file('imagem');
+                $path = $file->store('faturas', 'public');
+                $fatura->imagem = $path;
             }
-            
-            // Adicionar timestamps manualmente
-            $now = now();
-            $data['criado_em'] = $now;
-            $data['atualizado_em'] = $now;
-            
-            // Inserir usando Query Builder ao invés do Eloquent
-            DB::table('faturas')->insert($data);
-            
-            return redirect()->route('faturas.index')
-                ->with('success', 'Fatura registrada com sucesso!');
-            
+    
+            $fatura->save();
+    
+            return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
         } catch (\Exception $e) {
-            // Capturar e lidar com exceções
-            return back()->withInput()
-                ->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage() .
-                 ' Por favor, verifique a estrutura da tabela no banco de dados.');
+            Log::error('Erro ao salvar fatura', [
+                'mensagem' => $e->getMessage(),
+                'arquivo' => $e->getFile(),
+                'linha' => $e->getLine()
+            ]);
+    
+            return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
         }
     }
-
+    
     public function show($id)
     {
         try {
@@ -133,8 +113,12 @@ class FaturaController extends Controller
                     Storage::disk('public')->delete($fatura->imagem);
                 }
                 
-                $path = $request->file('imagem')->store('faturas', 'public');
-                $fatura->imagem = $path;
+                $file = $request->file('imagem');
+                
+                if ($file->isValid()) {
+                    $path = $file->store('faturas', 'public');
+                    $fatura->imagem = $path;
+                }
             }
 
             $fatura->save();
