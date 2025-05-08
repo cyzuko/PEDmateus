@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Schema;
 
 class FaturaController extends Controller
 {
+    // Remova o construtor com middleware, isso é feito nas rotas
+    // public function __construct()
+    // {
+    //     $this->middleware('auth');
+    // }
+
     public function index()
     {
         try {
@@ -25,7 +31,7 @@ class FaturaController extends Controller
             return view('faturas.index', compact('faturas'))
                 ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
         }
-                  
+        
         return view('faturas.index', compact('faturas'));
     }
 
@@ -74,12 +80,90 @@ class FaturaController extends Controller
             
             return redirect()->route('faturas.index')
                 ->with('success', 'Fatura registrada com sucesso!');
-                
+            
         } catch (\Exception $e) {
             // Capturar e lidar com exceções
             return back()->withInput()
-                ->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage() . 
-                    ' Por favor, verifique a estrutura da tabela no banco de dados.');
+                ->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage() .
+                 ' Por favor, verifique a estrutura da tabela no banco de dados.');
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
+            return view('faturas.show', compact('fatura'));
+        } catch (\Exception $e) {
+            return redirect()->route('faturas.index')
+                ->with('error', 'Fatura não encontrada ou você não tem permissão para visualizá-la.');
+        }
+    }
+
+    public function edit($id)
+    {
+        try {
+            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
+            return view('faturas.edit', compact('fatura'));
+        } catch (\Exception $e) {
+            return redirect()->route('faturas.index')
+                ->with('error', 'Fatura não encontrada ou você não tem permissão para editá-la.');
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'fornecedor' => 'required|string|max:255',
+            'data' => 'required|date',
+            'valor' => 'required|numeric|min:0',
+            'imagem' => 'nullable|image|max:2048', // max 2MB
+        ]);
+
+        try {
+            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
+
+            $fatura->fornecedor = $validated['fornecedor'];
+            $fatura->data = $validated['data'];
+            $fatura->valor = $validated['valor'];
+
+            if ($request->hasFile('imagem')) {
+                // Remover imagem antiga se existir
+                if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
+                    Storage::disk('public')->delete($fatura->imagem);
+                }
+                
+                $path = $request->file('imagem')->store('faturas', 'public');
+                $fatura->imagem = $path;
+            }
+
+            $fatura->save();
+
+            return redirect()->route('faturas.index')
+                ->with('success', 'Fatura atualizada com sucesso!');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erro ao atualizar a fatura: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
+            
+            // Remover arquivo de imagem se existir
+            if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
+                Storage::disk('public')->delete($fatura->imagem);
+            }
+            
+            $fatura->delete();
+            
+            return redirect()->route('faturas.index')
+                ->with('success', 'Fatura removida com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->route('faturas.index')
+                ->with('error', 'Erro ao remover a fatura: ' . $e->getMessage());
         }
     }
 }

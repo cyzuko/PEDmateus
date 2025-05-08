@@ -11,6 +11,18 @@
                 </div>
 
                 <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    
                     @if($faturas->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-striped">
@@ -20,6 +32,7 @@
                                         <th>Data</th>
                                         <th>Valor</th>
                                         <th>Imagem</th>
+                                        <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -35,18 +48,35 @@
                                                     <span class="text-muted">Sem imagem</span>
                                                 @endif
                                             </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ route('faturas.show', $fatura->id) }}" 
+                                                       class="btn btn-sm btn-info">Ver</a>
+                                                    <a href="{{ route('faturas.edit', $fatura->id) }}" 
+                                                       class="btn btn-sm btn-primary">Editar</a>
+                                                    <form action="{{ route('faturas.destroy', $fatura->id) }}" 
+                                                          method="POST" class="d-inline"
+                                                          onsubmit="return confirm('Tem certeza que deseja remover esta fatura?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-                        
-                        <div class="d-flex justify-content-center">
+
+                        <div class="d-flex justify-content-center mt-3">
                             {{ $faturas->links() }}
                         </div>
                     @else
-                        <p>Você ainda não tem faturas registradas.</p>
-                        <a href="{{ route('faturas.create') }}" class="btn btn-success">Adicionar sua primeira fatura</a>
+                        <div class="alert alert-info">
+                            <p>Você ainda não tem faturas registradas.</p>
+                            <a href="{{ route('faturas.create') }}" class="btn btn-success">Adicionar sua primeira fatura</a>
+                        </div>
                     @endif
                 </div>
             </div>

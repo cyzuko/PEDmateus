@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Fatura extends Model
 {
     use HasFactory;
 
-    // Define nome da tabela explicitamente
     protected $table = 'faturas';
-
-    // Define colunas que podem ser atribuídas em massa
+    
     protected $fillable = [
         'user_id',
         'fornecedor',
@@ -21,22 +20,36 @@ class Fatura extends Model
         'imagem'
     ];
 
-    // Define as colunas de data para trabalhar com Carbon
+    // Define nomes personalizados para os timestamps
+    const CREATED_AT = 'criado_em';
+    const UPDATED_AT = 'atualizado_em';
+
     protected $dates = [
         'data',
         'criado_em',
         'atualizado_em'
     ];
 
-    // Mapeamento para os nomes reais das colunas na tabela
-    const CREATED_AT = 'criado_em';
-    const UPDATED_AT = 'atualizado_em';
+    protected $casts = [
+        'data' => 'date',
+        'valor' => 'decimal:2'
+    ];
 
-    /**
-     * Get the user that owns the fatura.
-     */
+    // Relacionamento com o usuário
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    
+    // Formatar data para exibição
+    public function getFormattedDataAttribute()
+    {
+        return Carbon::parse($this->data)->format('d/m/Y');
+    }
+
+    // Formatar valor para exibição
+    public function getFormattedValorAttribute()
+    {
+        return number_format($this->valor, 2, ',', '.');
     }
 }
