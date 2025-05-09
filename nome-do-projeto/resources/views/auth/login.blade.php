@@ -1,59 +1,26 @@
-@extends('layouts.app')
+@extends('adminlte::auth.auth-page')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Login</div>
+@section('auth_type', 'login')
+@section('title', 'Login')
+@section('auth_header', 'Bem-vindo! Faça login')
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+@section('auth_body')
+<form method="POST" action="{{ route('login') }}">
+    @csrf
 
-                        <div class="form-group row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">Email</label>
+    <x-adminlte-input name="email" label="Email" type="email"
+                      placeholder="Digite seu email" value="{{ old('email') }}"
+                      error-key="email" required autofocus />
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+    <x-adminlte-input name="password" label="Senha" type="password"
+                      placeholder="Digite sua senha" error-key="password" required />
 
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+    <x-adminlte-button label="Entrar" theme="primary" class="btn-block mt-3" type="submit"/>
+</form>
+@endsection
 
-                        <div class="form-group row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">Senha</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    Entrar
-                                </button>
-
-                                <a class="btn btn-link" href="{{ route('register') }}">
-                                    Ainda não tem uma conta? Registe-se
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@section('auth_footer')
+    <p class="my-0">
+        <a href="{{ route('register') }}">Ainda não tem conta? Registe-se</a>
+    </p>
 @endsection

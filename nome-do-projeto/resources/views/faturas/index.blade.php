@@ -25,7 +25,7 @@
                     
                     @if($faturas->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th>Fornecedor</th>
@@ -42,14 +42,14 @@
                                             <td>{{ \Carbon\Carbon::parse($fatura->data)->format('d/m/Y') }}</td>
                                             <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
                                             <td>
-                                                        @if($fatura->imagem)
-                                                            <a href="{{ asset('storage/' . $fatura->imagem) }}" target="_blank">
-                                                                <img src="{{ asset('storage/' . $fatura->imagem) }}" alt="Imagem da Fatura" width="80" class="img-thumbnail">
-                                                            </a>
-                                                        @else
-                                                            <span class="text-muted">Sem imagem</span>
-                                                        @endif
-                                                    </td>
+                                                @if($fatura->imagem)
+                                                    <a href="{{ asset('storage/' . $fatura->imagem) }}" target="_blank">
+                                                        <img src="{{ asset('storage/' . $fatura->imagem) }}" alt="Imagem da Fatura" width="80" class="img-thumbnail">
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">Sem imagem</span>
+                                                @endif
+                                            </td>
 
                                             <td>
                                                 <div class="btn-group">
@@ -72,8 +72,9 @@
                             </table>
                         </div>
 
+                        <!-- Paginação do AdminLTE -->
                         <div class="d-flex justify-content-center mt-3">
-                            {{ $faturas->links() }}
+                            {{ $faturas->links('vendor.pagination.adminlte') }}
                         </div>
                     @else
                         <div class="alert alert-info">

@@ -1,82 +1,33 @@
+@extends('adminlte::auth.auth-page')
 
-@extends('layouts.app')
+@section('auth_type', 'register')
+@section('title', 'Registo')
+@section('auth_header', 'Crie a sua conta')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Registo</div>
+@section('auth_body')
+<form method="POST" action="{{ route('register') }}">
+    @csrf
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('register') }}">
-                        @csrf
+    <x-adminlte-input name="name" label="Nome" type="text"
+                      placeholder="Seu nome completo" value="{{ old('name') }}"
+                      error-key="name" required autofocus />
 
-                        <div class="form-group row mb-3">
-                            <label for="name" class="col-md-4 col-form-label text-md-right">Nome</label>
+    <x-adminlte-input name="email" label="Email" type="email"
+                      placeholder="Digite seu email" value="{{ old('email') }}"
+                      error-key="email" required />
 
-                            <div class="col-md-6">
-                                <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
+    <x-adminlte-input name="password" label="Senha" type="password"
+                      placeholder="Crie uma senha" error-key="password" required />
 
-                                @error('name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+    <x-adminlte-input name="password_confirmation" label="Confirmar Senha"
+                      type="password" placeholder="Confirme a senha" required />
 
-                        <div class="form-group row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">Email</label>
+    <x-adminlte-button label="Registrar" theme="primary" class="btn-block mt-3" type="submit"/>
+</form>
+@endsection
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">Senha</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-right">Confirmar Senha</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    Registrar
-                                </button>
-                                
-                                <a class="btn btn-link" href="{{ route('login') }}">
-                                    Já tem uma conta? Faça login
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@section('auth_footer')
+    <p class="my-0">
+        <a href="{{ route('login') }}">Já tem conta? Faça login</a>
+    </p>
 @endsection
