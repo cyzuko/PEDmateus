@@ -68,17 +68,36 @@ class FaturaController extends Controller
             return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
         }
     }
-    
-    public function show($id)
+   public function show($id)
     {
-        try {
-            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
-            return view('faturas.show', compact('fatura'));
-        } catch (\Exception $e) {
+        // Verificar se o ID é válido
+        if (!is_numeric($id) || $id <= 0) {
             return redirect()->route('faturas.index')
-                ->with('error', 'Fatura não encontrada ou você não tem permissão para visualizá-la.');
+                ->with('error', 'ID de fatura inválido.');
         }
+        
+        // Verificar primeiro se a fatura existe
+        $fatura = Fatura::find($id);
+        
+        if (!$fatura) {
+            return redirect()->route('faturas.index')
+                ->with('error', 'Fatura não encontrada.');
+        }
+        
+        // Verificar se o usuário tem permissão (é o dono da fatura)
+        if ($fatura->user_id != Auth::id()) {
+            // Opcional: Registrar tentativa de acesso não autorizado
+            \Log::warning('Tentativa de acesso não autorizado à fatura #' . $id . ' pelo usuário #' . Auth::id());
+            
+            return redirect()->route('faturas.index')
+                ->with('error', 'Você não tem permissão para visualizar esta fatura.');
+        }
+        
+        // Se chegou até aqui, tudo está ok - mostrar a fatura
+        return view('faturas.show', compact('fatura'));
     }
+
+
 
     public function edit($id)
     {
