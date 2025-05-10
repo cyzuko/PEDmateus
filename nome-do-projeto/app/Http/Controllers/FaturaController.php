@@ -6,9 +6,7 @@ use App\Models\Fatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log; // Adicionado para logging
+use Illuminate\Support\Facades\Log;
 
 class FaturaController extends Controller
 {
@@ -20,7 +18,6 @@ class FaturaController extends Controller
                     ->paginate(10);
         } catch (\Exception $e) {
             $faturas = collect([]); // Se ocorrer erro, retorna uma coleção vazia
-            
             return view('faturas.index', compact('faturas'))
                 ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
         }
@@ -35,11 +32,12 @@ class FaturaController extends Controller
 
     public function store(Request $request)
     {
+        // Validação para os dados do formulário
         $validated = $request->validate([
             'fornecedor' => 'required|string|max:255',
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|image|max:2048',
+            'imagem' => 'nullable|string', // Aceita base64 para imagem
         ]);
     
         try {
@@ -49,12 +47,24 @@ class FaturaController extends Controller
             $fatura->data = $validated['data'];
             $fatura->valor = $validated['valor'];
     
-            if ($request->hasFile('imagem')) {
-                $file = $request->file('imagem');
-                $path = $file->store('faturas', 'public');
-                $fatura->imagem = $path;
+            // Verificar se foi enviada uma imagem no formato base64
+            if ($request->has('imagem') && !empty($validated['imagem'])) {
+                $imageData = $validated['imagem'];
+
+                // Remove o prefixo "data:image/png;base64,"
+                $imageData = str_replace('data:image/png;base64,', '', $imageData);
+                $imageData = base64_decode($imageData);
+
+                // Gerar um nome único para a imagem
+                $imageName = 'fatura_' . time() . '.png';
+
+                // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
+                Storage::disk('public')->put('faturas/' . $imageName, $imageData);
+
+                // Armazenar o caminho da imagem no banco de dados
+                $fatura->imagem = 'faturas/' . $imageName;
             }
-    
+
             $fatura->save();
     
             return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
@@ -68,36 +78,30 @@ class FaturaController extends Controller
             return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
         }
     }
-   public function show($id)
+
+    public function show($id)
     {
-        // Verificar se o ID é válido
         if (!is_numeric($id) || $id <= 0) {
             return redirect()->route('faturas.index')
                 ->with('error', 'ID de fatura inválido.');
         }
-        
-        // Verificar primeiro se a fatura existe
+
         $fatura = Fatura::find($id);
-        
+
         if (!$fatura) {
             return redirect()->route('faturas.index')
                 ->with('error', 'Fatura não encontrada.');
         }
-        
-        // Verificar se o usuário tem permissão (é o dono da fatura)
+
         if ($fatura->user_id != Auth::id()) {
-            // Opcional: Registrar tentativa de acesso não autorizado
             \Log::warning('Tentativa de acesso não autorizado à fatura #' . $id . ' pelo usuário #' . Auth::id());
             
             return redirect()->route('faturas.index')
                 ->with('error', 'Você não tem permissão para visualizar esta fatura.');
         }
-        
-        // Se chegou até aqui, tudo está ok - mostrar a fatura
+
         return view('faturas.show', compact('fatura'));
     }
-
-
 
     public function edit($id)
     {
@@ -112,11 +116,12 @@ class FaturaController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Validação para os dados do formulário
         $validated = $request->validate([
             'fornecedor' => 'required|string|max:255',
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|image|max:2048', // max 2MB
+            'imagem' => 'nullable|string', // Aceita base64 para imagem
         ]);
 
         try {
@@ -126,18 +131,27 @@ class FaturaController extends Controller
             $fatura->data = $validated['data'];
             $fatura->valor = $validated['valor'];
 
-            if ($request->hasFile('imagem')) {
-                // Remover imagem antiga se existir
+            // Verificar se a imagem foi enviada em base64
+            if ($request->has('imagem') && !empty($validated['imagem'])) {
+                // Remover imagem antiga, se houver
                 if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
                     Storage::disk('public')->delete($fatura->imagem);
                 }
-                
-                $file = $request->file('imagem');
-                
-                if ($file->isValid()) {
-                    $path = $file->store('faturas', 'public');
-                    $fatura->imagem = $path;
-                }
+
+                $imageData = $validated['imagem'];
+
+                // Remove o prefixo "data:image/png;base64,"
+                $imageData = str_replace('data:image/png;base64,', '', $imageData);
+                $imageData = base64_decode($imageData);
+
+                // Gerar um nome único para a nova imagem
+                $imageName = 'fatura_' . time() . '.png';
+
+                // Salvar a nova imagem no diretório 'faturas' dentro de 'storage/app/public'
+                Storage::disk('public')->put('faturas/' . $imageName, $imageData);
+
+                // Atualizar o caminho da imagem no banco de dados
+                $fatura->imagem = 'faturas/' . $imageName;
             }
 
             $fatura->save();
@@ -155,11 +169,11 @@ class FaturaController extends Controller
         try {
             $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
             
-            // Remover arquivo de imagem se existir
+            // Remover imagem se existir
             if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
                 Storage::disk('public')->delete($fatura->imagem);
             }
-            
+
             $fatura->delete();
             
             return redirect()->route('faturas.index')

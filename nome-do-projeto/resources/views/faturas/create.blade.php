@@ -57,7 +57,15 @@
                             <label for="imagem" class="col-md-4 col-form-label text-md-right">Imagem da Fatura</label>
 
                             <div class="col-md-6">
-                                <input id="imagem" type="file" class="form-control @error('imagem') is-invalid @enderror" name="imagem">
+                                <!-- Botão para capturar a imagem -->
+                                <button type="button" id="captureButton" class="btn btn-primary">Capturar Imagem</button>
+                                
+                                <!-- O elemento de vídeo será usado para mostrar a câmera -->
+                                <video id="video" width="100%" height="auto" autoplay></video>
+                                <canvas id="canvas" style="display: none;"></canvas>
+                                <img id="capturedImage" src="#" alt="Imagem Capturada" style="display: none; max-width: 100%; margin-top: 15px;">
+                                
+                                <input id="imagem" type="hidden" name="imagem">
 
                                 @error('imagem')
                                     <span class="invalid-feedback" role="alert">
@@ -83,4 +91,47 @@
         </div>
     </div>
 </div>
+
+<script>
+// Função para capturar imagem da câmera
+const video = document.getElementById('video');
+const captureButton = document.getElementById('captureButton');
+const canvas = document.getElementById('canvas');
+const capturedImage = document.getElementById('capturedImage');
+const imagemInput = document.getElementById('imagem');
+
+let stream;
+
+// Inicializar a câmera
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
+        video.srcObject = stream;
+    } catch (err) {
+        console.log("Erro ao acessar a câmera: ", err);
+    }
+}
+
+// Captura a imagem quando o botão for pressionado
+captureButton.addEventListener('click', function() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Exibir a imagem capturada
+    const dataUrl = canvas.toDataURL('image/png');
+    capturedImage.src = dataUrl;
+    capturedImage.style.display = 'block';
+
+    // Enviar a imagem como base64 para o servidor
+    imagemInput.value = dataUrl;  // A imagem em base64 será enviada
+});
+
+// Iniciar a câmera assim que a página for carregada
+window.onload = startCamera;
+</script>
+
 @endsection
