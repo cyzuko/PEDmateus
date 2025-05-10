@@ -29,55 +29,63 @@ class FaturaController extends Controller
     {
         return view('faturas.create');
     }
+public function store(Request $request)
+{
+    // Validação para os dados do formulário
+    $validated = $request->validate([
+        'fornecedor' => 'required|string|max:255',
+        'data' => 'required|date',
+        'valor' => 'required|numeric|min:0',
+        'imagem' => 'nullable|string', // Aceita base64 para imagem
+        'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // Aceita arquivos de imagem
+    ]);
 
-    public function store(Request $request)
-    {
-        // Validação para os dados do formulário
-        $validated = $request->validate([
-            'fornecedor' => 'required|string|max:255',
-            'data' => 'required|date',
-            'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|string', // Aceita base64 para imagem
-        ]);
-    
-        try {
-            $fatura = new Fatura();
-            $fatura->user_id = Auth::id();
-            $fatura->fornecedor = $validated['fornecedor'];
-            $fatura->data = $validated['data'];
-            $fatura->valor = $validated['valor'];
-    
-            // Verificar se foi enviada uma imagem no formato base64
-            if ($request->has('imagem') && !empty($validated['imagem'])) {
-                $imageData = $validated['imagem'];
+    try {
+        $fatura = new Fatura();
+        $fatura->user_id = Auth::id();
+        $fatura->fornecedor = $validated['fornecedor'];
+        $fatura->data = $validated['data'];
+        $fatura->valor = $validated['valor'];
 
-                // Remove o prefixo "data:image/png;base64,"
-                $imageData = str_replace('data:image/png;base64,', '', $imageData);
-                $imageData = base64_decode($imageData);
+        // Verificar se foi enviada uma imagem em base64
+        if ($request->has('imagem') && !empty($validated['imagem'])) {
+            $imageData = $validated['imagem'];
 
-                // Gerar um nome único para a imagem
-                $imageName = 'fatura_' . time() . '.png';
+            // Remove o prefixo "data:image/png;base64,"
+            $imageData = str_replace('data:image/png;base64,', '', $imageData);
+            $imageData = base64_decode($imageData);
 
-                // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
-                Storage::disk('public')->put('faturas/' . $imageName, $imageData);
+            // Gerar um nome único para a imagem
+            $imageName = 'fatura_' . time() . '.png';
 
-                // Armazenar o caminho da imagem no banco de dados
-                $fatura->imagem = 'faturas/' . $imageName;
-            }
+            // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
+            Storage::disk('public')->put('faturas/' . $imageName, $imageData);
 
-            $fatura->save();
-    
-            return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
-        } catch (\Exception $e) {
-            Log::error('Erro ao salvar fatura', [
-                'mensagem' => $e->getMessage(),
-                'arquivo' => $e->getFile(),
-                'linha' => $e->getLine()
-            ]);
-    
-            return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
+            // Armazenar o caminho da imagem no banco de dados
+            $fatura->imagem = 'faturas/' . $imageName;
         }
+
+        // Verificar se foi enviado um arquivo de imagem
+        if ($request->hasFile('imagem_upload')) {
+            $file = $request->file('imagem_upload');
+            $path = $file->store('faturas', 'public');
+            $fatura->imagem = $path;
+        }
+
+        $fatura->save();
+
+        return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
+    } catch (\Exception $e) {
+        Log::error('Erro ao salvar fatura', [
+            'mensagem' => $e->getMessage(),
+            'arquivo' => $e->getFile(),
+            'linha' => $e->getLine()
+        ]);
+
+        return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
     }
+}
+
 
     public function show($id)
     {

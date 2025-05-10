@@ -53,6 +53,7 @@
                             </div>
                         </div>
 
+                        <!-- Campo para capturar a imagem -->
                         <div class="form-group row mb-3">
                             <label for="imagem" class="col-md-4 col-form-label text-md-right">Imagem da Fatura</label>
 
@@ -67,6 +68,10 @@
                                 
                                 <input id="imagem" type="hidden" name="imagem">
 
+                                <!-- Adicionando campo de upload de arquivo -->
+                                <label for="fileImage" class="mt-3">Ou selecione uma imagem do seu dispositivo:</label>
+                                <input type="file" id="fileImage" class="form-control" name="imagem_upload" accept="image/*">
+                                
                                 @error('imagem')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
