@@ -269,12 +269,30 @@ function extractDate(text) {
 }
 
 
-// Melhorada a extração de valores para considerar diferentes formatos
 function extractValue(text) {
-    const regex = /(\bR?\$\s?\d{1,3}(\.\d{3})*(,\d{2})?|\d{1,3}(\.\d{3})*(,\d{2})?)\b/g;
-    const match = text.match(regex);
-    return match ? match[0].trim() : null;
+    // Normaliza o texto (remove quebras de linha duplicadas, espaços desnecessários)
+    const cleanedText = text.replace(/\s+/g, ' ').toLowerCase();
+
+    // Regex que busca valor após "total", "valor total", etc.
+    const totalRegex = /(?:total\s*(?:da\s*nota|geral|a\s*pagar|valor)?\s*[:\-]?\s*)(r?\$\s?\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{2}))/i;
+    const match = cleanedText.match(totalRegex);
+
+    if (match && match[1]) {
+        return match[1].replace(/\s/g, '').replace(',', '.'); // retorna número no formato float-friendly
+    }
+
+    // fallback: pega o MAIOR valor da fatura se "total" não for encontrado
+    const fallbackRegex = /(r?\$\s?\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{2}))/gi;
+    const values = [...cleanedText.matchAll(fallbackRegex)].map(m => parseFloat(m[0].replace(/[^\d,]/g, '').replace(',', '.')));
+
+    if (values.length) {
+        const max = Math.max(...values);
+        return `R$ ${max.toFixed(2).replace('.', ',')}`;
+    }
+
+    return null;
 }
+
 
 
 startCamera();
