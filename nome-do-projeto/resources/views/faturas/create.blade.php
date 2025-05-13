@@ -229,23 +229,40 @@ document.getElementById('applyOcrButton').addEventListener('click', function() {
     }
 });
 
+// Melhorada a extração de fornecedor com mais variações de expressões
 function extractFornecedor(text) {
-    const regex = /\b(fornecedor|empresa):?\s*([\w\s]+)/i;
+    const regex = /(?:fornecedor|empresa|emitente|nome)\s*[:\-\s]?\s*([\w\s\.\-]+(?:\s+[a-zA-Z]+)*\w+)/i;
     const match = text.match(regex);
-    return match ? match[2].trim() : null;
+    return match ? match[1].trim() : null;
 }
 
+/// Melhorada a extração de data para vários formatos
 function extractDate(text) {
-    const regex = /\b(\d{2}\/\d{2}\/\d{4})\b/;
+    // Regex para capturar data no formato dd/mm/aaaa, dd-mm-aaaa, aaaa/mm/dd e aaaa-mm-dd
+    const regex = /(\d{2}[\/\-]?\d{2}[\/\-]?\d{4})|(\d{4}[\/\-]?\d{2}[\/\-]?\d{2})/g;
     const match = text.match(regex);
-    return match ? match[0] : null;
+    if (match) {
+        // Se encontrou a data, vamos padronizar no formato yyyy-mm-dd
+        const date = match[0].replace(/[\/\-]/g, "-");
+        // Garantir que a data esteja no formato adequado para o input "date"
+        const parts = date.split("-");
+        if (parts.length === 3) {
+            const year = parts[2];
+            const month = parts[1];
+            const day = parts[0];
+            return `${year}-${month}-${day}`;
+        }
+    }
+    return null;
 }
 
+// Melhorada a extração de valores para considerar diferentes formatos
 function extractValue(text) {
-    const regex = /\b(\d+\.\d{2})\b/;
+    const regex = /(\bR?\$\s?\d{1,3}(\.\d{3})*(,\d{2})?|\d{1,3}(\.\d{3})*(,\d{2})?)\b/g;
     const match = text.match(regex);
-    return match ? match[0] : null;
+    return match ? match[0].trim() : null;
 }
+
 
 startCamera();
 </script>
