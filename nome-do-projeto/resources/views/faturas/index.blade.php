@@ -8,7 +8,7 @@
 
                 <!-- 🔲 Cabeçalho -->
                 <div class="card-header d-flex justify-content-center">
-                    <h5 class="mb-0">Minhas Faturas</h5>
+                    <h5 class="mb-0">As suas Faturas</h5>
                 </div>
 
                 <div class="card-body">
