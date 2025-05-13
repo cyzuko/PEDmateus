@@ -9,21 +9,40 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class FaturaController extends Controller
+{public function index(Request $request)
 {
-    public function index()
-    {
-        try {
-            $faturas = Fatura::where('user_id', Auth::id())
-                    ->orderBy('data', 'desc')
-                    ->paginate(10);
-        } catch (\Exception $e) {
-            $faturas = collect([]); // Se ocorrer erro, retorna uma coleção vazia
-            return view('faturas.index', compact('faturas'))
-                ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
+    try {
+        $query = Fatura::where('user_id', Auth::id());
+
+        // Aplica ordenação com base no parâmetro da query string
+        switch ($request->input('sort')) {
+            case 'fornecedor_asc':
+                $query->orderBy('fornecedor', 'asc');
+                break;
+            case 'fornecedor_desc':
+                $query->orderBy('fornecedor', 'desc');
+                break;
+            case 'data_asc':
+                $query->orderBy('data', 'asc');
+                break;
+            case 'data_desc':
+                $query->orderBy('data', 'desc');
+                break;
+            default:
+                $query->orderBy('data', 'desc'); // Ordenação padrão
         }
-        
-        return view('faturas.index', compact('faturas'));
+
+        $faturas = $query->paginate(10)->withQueryString(); // Mantém filtros ao paginar
+
+    } catch (\Exception $e) {
+        $faturas = collect([]);
+        return view('faturas.index', compact('faturas'))
+            ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
     }
+
+    return view('faturas.index', compact('faturas'));
+}
+
 
     public function create()
     {
