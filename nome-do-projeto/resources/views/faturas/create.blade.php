@@ -238,23 +238,36 @@ function extractFornecedor(text) {
 
 /// Melhorada a extração de data para vários formatos
 function extractDate(text) {
-    // Regex para capturar data no formato dd/mm/aaaa, dd-mm-aaaa, aaaa/mm/dd e aaaa-mm-dd
-    const regex = /(\d{2}[\/\-]?\d{2}[\/\-]?\d{4})|(\d{4}[\/\-]?\d{2}[\/\-]?\d{2})/g;
-    const match = text.match(regex);
-    if (match) {
-        // Se encontrou a data, vamos padronizar no formato yyyy-mm-dd
-        const date = match[0].replace(/[\/\-]/g, "-");
-        // Garantir que a data esteja no formato adequado para o input "date"
-        const parts = date.split("-");
-        if (parts.length === 3) {
-            const year = parts[2];
-            const month = parts[1];
-            const day = parts[0];
-            return `${year}-${month}-${day}`;
+    // Expressões que reconhecem os formatos: DD/MM/YYYY, YYYY/MM/DD, DD-MM-YYYY, YYYY-MM-DD
+    const regex = /(\d{2}[\/\-]\d{2}[\/\-]\d{4})|(\d{4}[\/\-]\d{2}[\/\-]\d{2})/g;
+    const matches = text.match(regex);
+
+    if (matches && matches.length > 0) {
+        for (let date of matches) {
+            const clean = date.replace(/[\.\s]/g, '').replace(/[\/\-]/g, '-');
+            const parts = clean.split('-');
+
+            // Se for formato DD-MM-YYYY
+            if (parts[0].length === 2 && parts[2].length === 4) {
+                const [day, month, year] = parts;
+                if (parseInt(day) <= 31 && parseInt(month) <= 12) {
+                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                }
+            }
+
+            // Se for formato YYYY-MM-DD
+            if (parts[0].length === 4 && parts[2].length === 2) {
+                const [year, month, day] = parts;
+                if (parseInt(day) <= 31 && parseInt(month) <= 12) {
+                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                }
+            }
         }
     }
+
     return null;
 }
+
 
 // Melhorada a extração de valores para considerar diferentes formatos
 function extractValue(text) {
