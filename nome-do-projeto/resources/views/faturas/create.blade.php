@@ -55,22 +55,26 @@
                             <label for="imagem" class="col-md-4 col-form-label text-md-right">Imagem da Fatura</label>
                             <div class="col-md-6">
                                 <!-- Botão para Capturar Imagem -->
-                                <button type="button" id="captureButton" class="btn btn-primary">Capturar Imagem</button>
+                                <button type="button" id="captureButton" class="btn btn-primary mb-2">Capturar Imagem</button>
 
                                 <!-- Elemento de Vídeo -->
-                                <video id="video" width="100%" height="auto" autoplay></video>
+                                <video id="video" width="100%" height="auto" autoplay playsinline style="max-height: 300px;"></video>
                                 <canvas id="canvas" style="display: none;"></canvas>
-                                <img id="capturedImage" src="#" alt="Imagem Capturada" style="display: none; max-width: 100%; margin-top: 15px;">
-                                
+
+                                <!-- Mostrar imagem capturada -->
+                                <div class="mt-3 text-center">
+                                    <img id="capturedImage" src="#" alt="Imagem Capturada" style="display: none; max-width: 100%; margin-bottom: 15px;">
+                                </div>
+
                                 <input id="imagem" type="hidden" name="imagem">
-                                <input type="file" id="fileImage" class="form-control mt-3" name="imagem_upload" accept="image/*">
+                                <input type="file" id="fileImage" class="form-control mt-2" name="imagem_upload" accept="image/*">
 
                                 <!-- Botão para OCR -->
                                 <button type="button" id="ocrButton" class="btn btn-info mt-3" style="display: none;">
                                     <span class="spinner-border spinner-border-sm d-none" id="ocrSpinner" role="status" aria-hidden="true"></span>
                                     Reconhecer Dados (OCR)
                                 </button>
-                                
+
                                 <!-- Progresso do OCR -->
                                 <div id="ocrProgress" class="progress mt-2" style="display: none;">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
@@ -86,7 +90,7 @@
                                         <button type="button" id="applyOcrButton" class="btn btn-sm btn-success">Aplicar Dados</button>
                                     </div>
                                 </div>
-                                
+
                                 @error('imagem')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -113,7 +117,7 @@
     </div>
 </div>
 
-<!-- Tesseract.js para OCR -->
+<!-- OCR via Tesseract.js -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 
 <script>
@@ -136,11 +140,12 @@ let imageSource = null;
 async function startCamera() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({
-            video: true
+            video: { facingMode: 'environment' },
+            audio: false
         });
         video.srcObject = stream;
     } catch (err) {
-        console.log("Erro ao acessar a câmera: ", err);
+        console.error("Erro ao acessar a câmera: ", err);
     }
 }
 
@@ -149,27 +154,27 @@ captureButton.addEventListener('click', function() {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
     const dataUrl = canvas.toDataURL('image/png');
     capturedImage.src = dataUrl;
     capturedImage.style.display = 'block';
+    imagemInput.value = dataUrl;
     imageSource = 'camera';
 
-    imagemInput.value = dataUrl;
     ocrButton.style.display = 'inline-block';
 });
 
 fileImage.addEventListener('change', function(e) {
     if (e.target.files && e.target.files[0]) {
         const reader = new FileReader();
-        
+
         reader.onload = function(event) {
             capturedImage.src = event.target.result;
             capturedImage.style.display = 'block';
             imageSource = 'file';
             ocrButton.style.display = 'inline-block';
         }
-        
+
         reader.readAsDataURL(e.target.files[0]);
     }
 });
@@ -178,30 +183,32 @@ ocrButton.addEventListener('click', async function() {
     ocrSpinner.classList.remove('d-none');
     ocrProgress.style.display = 'block';
     progressBar.style.width = '0%';
-    
+
     try {
         const worker = await Tesseract.createWorker({
-            logger: (m) => console.log(m),
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    progressBar.style.width = `${Math.round(m.progress * 100)}%`;
+                }
+            },
         });
-        
+
         await worker.load();
         await worker.loadLanguage('por');
         await worker.initialize('por');
-        
-        const imageUrl = capturedImage.src;
-        const result = await worker.recognize(imageUrl);
-        
+
+        const result = await worker.recognize(capturedImage.src);
         await worker.terminate();
-        
+
         const { text } = result.data;
         const fornecedor = extractFornecedor(text);
         const data = extractDate(text);
         const valor = extractValue(text);
-        
+
         document.querySelector('#ocrFornecedor span').textContent = fornecedor || 'Não identificado';
         document.querySelector('#ocrData span').textContent = data || 'Não identificado';
         document.querySelector('#ocrValor span').textContent = valor || 'Não identificado';
-        
+
         ocrResults.style.display = 'block';
     } catch (err) {
         alert('Erro ao processar a imagem. Tente novamente.');
@@ -215,85 +222,57 @@ document.getElementById('applyOcrButton').addEventListener('click', function() {
     const fornecedor = document.querySelector('#ocrFornecedor span').textContent;
     const data = document.querySelector('#ocrData span').textContent;
     const valor = document.querySelector('#ocrValor span').textContent;
-    
+
     if (fornecedor !== 'Não identificado') {
         document.getElementById('fornecedor').value = fornecedor;
     }
-    
     if (data !== 'Não identificado') {
         document.getElementById('data').value = data;
     }
-    
     if (valor !== 'Não identificado') {
-        document.getElementById('valor').value = valor;
+        document.getElementById('valor').value = valor.replace('R$', '').trim().replace(',', '.');
     }
 });
 
-// Melhorada a extração de fornecedor com mais variações de expressões
+// Extrações
 function extractFornecedor(text) {
     const regex = /(?:fornecedor|empresa|emitente|nome)\s*[:\-\s]?\s*([\w\s\.\-]+(?:\s+[a-zA-Z]+)*\w+)/i;
     const match = text.match(regex);
     return match ? match[1].trim() : null;
 }
 
-/// Melhorada a extração de data para vários formatos
 function extractDate(text) {
-    // Expressões que reconhecem os formatos: DD/MM/YYYY, YYYY/MM/DD, DD-MM-YYYY, YYYY-MM-DD
     const regex = /(\d{2}[\/\-]\d{2}[\/\-]\d{4})|(\d{4}[\/\-]\d{2}[\/\-]\d{2})/g;
     const matches = text.match(regex);
-
-    if (matches && matches.length > 0) {
+    if (matches) {
         for (let date of matches) {
-            const clean = date.replace(/[\.\s]/g, '').replace(/[\/\-]/g, '-');
+            const clean = date.replace(/[\/\-]/g, '-');
             const parts = clean.split('-');
-
-            // Se for formato DD-MM-YYYY
-            if (parts[0].length === 2 && parts[2].length === 4) {
-                const [day, month, year] = parts;
-                if (parseInt(day) <= 31 && parseInt(month) <= 12) {
-                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                }
-            }
-
-            // Se for formato YYYY-MM-DD
-            if (parts[0].length === 4 && parts[2].length === 2) {
-                const [year, month, day] = parts;
-                if (parseInt(day) <= 31 && parseInt(month) <= 12) {
-                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                }
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            } else {
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
             }
         }
     }
-
     return null;
 }
 
-
 function extractValue(text) {
-    // Normaliza o texto (remove quebras de linha duplicadas, espaços desnecessários)
     const cleanedText = text.replace(/\s+/g, ' ').toLowerCase();
-
-    // Regex que busca valor após "total", "valor total", etc.
     const totalRegex = /(?:total\s*(?:da\s*nota|geral|a\s*pagar|valor)?\s*[:\-]?\s*)(r?\$\s?\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{2}))/i;
     const match = cleanedText.match(totalRegex);
-
     if (match && match[1]) {
-        return match[1].replace(/\s/g, '').replace(',', '.'); // retorna número no formato float-friendly
+        return match[1].replace(/\s/g, '').replace(',', '.');
     }
-
-    // fallback: pega o MAIOR valor da fatura se "total" não for encontrado
     const fallbackRegex = /(r?\$\s?\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{2}))/gi;
     const values = [...cleanedText.matchAll(fallbackRegex)].map(m => parseFloat(m[0].replace(/[^\d,]/g, '').replace(',', '.')));
-
     if (values.length) {
         const max = Math.max(...values);
         return `R$ ${max.toFixed(2).replace('.', ',')}`;
     }
-
     return null;
 }
-
-
 
 startCamera();
 </script>
