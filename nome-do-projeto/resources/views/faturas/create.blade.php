@@ -137,31 +137,42 @@ let stream;
 let imageSource = null;
 
 // Inicializa a câmera
+// Inicializa a câmera com verificação para mobile
 async function startCamera() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' },
+            video: {
+                facingMode: { ideal: 'environment' }, // traseira em telemóvel
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
             audio: false
         });
         video.srcObject = stream;
     } catch (err) {
+        alert("Erro ao acessar a câmera. Verifique as permissões do navegador.");
         console.error("Erro ao acessar a câmera: ", err);
     }
 }
 
+// Espera o vídeo carregar antes de capturar
 captureButton.addEventListener('click', function() {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    if (video.readyState >= 2) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const dataUrl = canvas.toDataURL('image/png');
-    capturedImage.src = dataUrl;
-    capturedImage.style.display = 'block';
-    imagemInput.value = dataUrl;
-    imageSource = 'camera';
+        const dataUrl = canvas.toDataURL('image/png');
+        capturedImage.src = dataUrl;
+        capturedImage.style.display = 'block';
+        imagemInput.value = dataUrl;
+        imageSource = 'camera';
 
-    ocrButton.style.display = 'inline-block';
+        ocrButton.style.display = 'inline-block';
+    } else {
+        alert("A câmera ainda está carregando. Aguarde um momento e tente novamente.");
+    }
 });
 
 fileImage.addEventListener('change', function(e) {
