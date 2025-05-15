@@ -28,6 +28,8 @@
                                     <option value="fornecedor_desc" {{ request('sort') == 'fornecedor_desc' ? 'selected' : '' }}>Fornecedor Z-A</option>
                                     <option value="data_asc" {{ request('sort') == 'data_asc' ? 'selected' : '' }}>Data ↑</option>
                                     <option value="data_desc" {{ request('sort') == 'data_desc' ? 'selected' : '' }}>Data ↓</option>
+                                    <option value="valor_asc" {{ request('sort') == 'valor_asc' ? 'selected' : '' }}>Valor ↑</option>
+                                    <option value="valor_desc" {{ request('sort') == 'valor_desc' ? 'selected' : '' }}>Valor ↓</option>
                                 </select>
                             </div>
                         </form>
@@ -52,9 +54,45 @@
                             <table class="table table-bordered table-striped text-center">
                                 <thead>
                                     <tr>
-                                        <th>Fornecedor</th>
-                                        <th>Data</th>
-                                        <th>Valor</th>
+                                        <th>
+                                            Fornecedor
+                                            <div class="mt-1">
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'fornecedor_asc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'fornecedor_asc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   A-Z
+                                                </a>
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'fornecedor_desc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'fornecedor_desc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   Z-A
+                                                </a>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            Data
+                                            <div class="mt-1">
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'data_asc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'data_asc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   ↑
+                                                </a>
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'data_desc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'data_desc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   ↓
+                                                </a>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            Valor
+                                            <div class="mt-1">
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'valor_asc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'valor_asc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   ↑
+                                                </a>
+                                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'valor_desc']) }}" 
+                                                   class="btn btn-sm {{ request('sort') == 'valor_desc' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                                   ↓
+                                                </a>
+                                            </div>
+                                        </th>
                                         <th>Imagem</th>
                                         <th>Ações</th>
                                     </tr>
@@ -93,7 +131,7 @@
 
                         <!-- 📄 Paginação -->
                         <div class="d-flex justify-content-center mt-3">
-                            {{ $faturas->links('vendor.pagination.adminlte') }}
+                            {{ $faturas->appends(request()->except('page'))->links('vendor.pagination.adminlte') }}
                         </div>
                     @else
                         <div class="alert alert-info text-center">
