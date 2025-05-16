@@ -9,102 +9,110 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class FaturaController extends Controller
-{public function index(Request $request)
 {
-    try {
-        $query = Fatura::where('user_id', Auth::id());
+    public function index(Request $request)
+    {
+        try {
+            $query = Fatura::where('user_id', Auth::id());
 
-        // Aplica ordenação com base no parâmetro da query string
-        switch ($request->input('sort')) {
-            case 'fornecedor_asc':
-                $query->orderBy('fornecedor', 'asc');
-                break;
-            case 'fornecedor_desc':
-                $query->orderBy('fornecedor', 'desc');
-                break;
-            case 'data_asc':
-                $query->orderBy('data', 'asc');
-                break;
-            case 'data_desc':
-                $query->orderBy('data', 'desc');
-                break;
-            default:
-                $query->orderBy('data', 'desc'); // Ordenação padrão
+            // Aplica ordenação com base no parâmetro da query string
+            switch ($request->input('sort')) {
+                case 'fornecedor_asc':
+                    $query->orderBy('fornecedor', 'asc');
+                    break;
+                case 'fornecedor_desc':
+                    $query->orderBy('fornecedor', 'desc');
+                    break;
+                case 'data_asc':
+                    $query->orderBy('data', 'asc');
+                    break;
+                case 'data_desc':
+                    $query->orderBy('data', 'desc');
+                    break;
+                case 'valor_asc':
+                    $query->orderBy('valor', 'asc');
+                    break;
+                case 'valor_desc':
+                    $query->orderBy('valor', 'desc');
+                    break;
+                default:
+                    $query->orderBy('data', 'desc'); // Ordenação padrão
+            }
+
+            $faturas = $query->paginate(10)->withQueryString(); // Mantém filtros ao paginar
+
+        } catch (\Exception $e) {
+            $faturas = collect([]);
+            return view('faturas.index', compact('faturas'))
+                ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
         }
 
-        $faturas = $query->paginate(10)->withQueryString(); // Mantém filtros ao paginar
-
-    } catch (\Exception $e) {
-        $faturas = collect([]);
-        return view('faturas.index', compact('faturas'))
-            ->with('error', 'Erro ao carregar faturas: Estrutura da tabela pode precisar de atualização.');
+        return view('faturas.index', compact('faturas'));
     }
-
-    return view('faturas.index', compact('faturas'));
-}
-
 
     public function create()
     {
         return view('faturas.create');
     }
-public function store(Request $request)
-{
-    // Validação para os dados do formulário
-    $validated = $request->validate([
-        'fornecedor' => 'required|string|max:255',
-        'data' => 'required|date',
-        'valor' => 'required|numeric|min:0',
-        'imagem' => 'nullable|string', // Aceita base64 para imagem
-        'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // Aceita arquivos de imagem
-    ]);
 
-    try {
-        $fatura = new Fatura();
-        $fatura->user_id = Auth::id();
-        $fatura->fornecedor = $validated['fornecedor'];
-        $fatura->data = $validated['data'];
-        $fatura->valor = $validated['valor'];
-
-        // Verificar se foi enviada uma imagem em base64
-        if ($request->has('imagem') && !empty($validated['imagem'])) {
-            $imageData = $validated['imagem'];
-
-            // Remove o prefixo "data:image/png;base64,"
-            $imageData = str_replace('data:image/png;base64,', '', $imageData);
-            $imageData = base64_decode($imageData);
-
-            // Gerar um nome único para a imagem
-            $imageName = 'fatura_' . time() . '.png';
-
-            // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
-            Storage::disk('public')->put('faturas/' . $imageName, $imageData);
-
-            // Armazenar o caminho da imagem no banco de dados
-            $fatura->imagem = 'faturas/' . $imageName;
-        }
-
-        // Verificar se foi enviado um arquivo de imagem
-        if ($request->hasFile('imagem_upload')) {
-            $file = $request->file('imagem_upload');
-            $path = $file->store('faturas', 'public');
-            $fatura->imagem = $path;
-        }
-
-        $fatura->save();
-
-        return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
-    } catch (\Exception $e) {
-        Log::error('Erro ao salvar fatura', [
-            'mensagem' => $e->getMessage(),
-            'arquivo' => $e->getFile(),
-            'linha' => $e->getLine()
+    public function store(Request $request)
+    {
+        // Validação para os dados do formulário
+        $validated = $request->validate([
+            'fornecedor' => 'required|string|max:255',
+            'nif' => 'nullable|string|max:20', // Adicionada validação para NIF
+            'data' => 'required|date',
+            'valor' => 'required|numeric|min:0',
+            'imagem' => 'nullable|string', // Aceita base64 para imagem
+            'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // Aceita arquivos de imagem
         ]);
 
-        return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
-    }
-}
+        try {
+            $fatura = new Fatura();
+            $fatura->user_id = Auth::id();
+            $fatura->fornecedor = $validated['fornecedor'];
+            $fatura->nif = $validated['nif'] ?? null; // Adicionar NIF
+            $fatura->data = $validated['data'];
+            $fatura->valor = $validated['valor'];
 
+            // Verificar se foi enviada uma imagem em base64
+            if ($request->has('imagem') && !empty($validated['imagem'])) {
+                $imageData = $validated['imagem'];
+
+                // Remove o prefixo "data:image/png;base64,"
+                $imageData = str_replace('data:image/png;base64,', '', $imageData);
+                $imageData = base64_decode($imageData);
+
+                // Gerar um nome único para a imagem
+                $imageName = 'fatura_' . time() . '.png';
+
+                // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
+                Storage::disk('public')->put('faturas/' . $imageName, $imageData);
+
+                // Armazenar o caminho da imagem no banco de dados
+                $fatura->imagem = 'faturas/' . $imageName;
+            }
+
+            // Verificar se foi enviado um arquivo de imagem
+            if ($request->hasFile('imagem_upload')) {
+                $file = $request->file('imagem_upload');
+                $path = $file->store('faturas', 'public');
+                $fatura->imagem = $path;
+            }
+
+            $fatura->save();
+
+            return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
+        } catch (\Exception $e) {
+            Log::error('Erro ao salvar fatura', [
+                'mensagem' => $e->getMessage(),
+                'arquivo' => $e->getFile(),
+                'linha' => $e->getLine()
+            ]);
+
+            return back()->withInput()->with('error', 'Erro ao salvar a fatura: ' . $e->getMessage());
+        }
+    }
 
     public function show($id)
     {
@@ -146,6 +154,7 @@ public function store(Request $request)
         // Validação para os dados do formulário
         $validated = $request->validate([
             'fornecedor' => 'required|string|max:255',
+            'nif' => 'nullable|string|max:20', // Adicionada validação para NIF
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
             'imagem' => 'nullable|string', // Aceita base64 para imagem
@@ -155,6 +164,7 @@ public function store(Request $request)
             $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
 
             $fatura->fornecedor = $validated['fornecedor'];
+            $fatura->nif = $validated['nif'] ?? $fatura->nif; // Atualiza NIF
             $fatura->data = $validated['data'];
             $fatura->valor = $validated['valor'];
 

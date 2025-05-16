@@ -24,6 +24,19 @@
                             </div>
                         </div>
 
+                        <!-- NIF -->
+                        <div class="form-group row mb-3">
+                            <label for="nif" class="col-md-4 col-form-label text-md-right">NIF</label>
+                            <div class="col-md-6">
+                                <input id="nif" type="text" class="form-control @error('nif') is-invalid @enderror" name="nif" value="{{ old('nif') }}" placeholder="ex: 123456789">
+                                @error('nif')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
                         <!-- Data -->
                         <div class="form-group row mb-3">
                             <label for="data" class="col-md-4 col-form-label text-md-right">Data</label>
@@ -85,6 +98,7 @@
                                     <h5>Dados Reconhecidos:</h5>
                                     <div class="alert alert-info">
                                         <p id="ocrFornecedor"><strong>Fornecedor:</strong> <span></span></p>
+                                        <p id="ocrNif"><strong>NIF:</strong> <span></span></p>
                                         <p id="ocrData"><strong>Data:</strong> <span></span></p>
                                         <p id="ocrValor"><strong>Valor:</strong> <span></span></p>
                                         <button type="button" id="applyOcrButton" class="btn btn-sm btn-success">Aplicar Dados</button>
@@ -213,10 +227,12 @@ ocrButton.addEventListener('click', async function() {
 
         const { text } = result.data;
         const fornecedor = extractFornecedor(text);
+        const nif = extractNIF(text);
         const data = extractDate(text);
         const valor = extractValue(text);
 
         document.querySelector('#ocrFornecedor span').textContent = fornecedor || 'Não identificado';
+        document.querySelector('#ocrNif span').textContent = nif || 'Não identificado';
         document.querySelector('#ocrData span').textContent = data || 'Não identificado';
         document.querySelector('#ocrValor span').textContent = valor || 'Não identificado';
 
@@ -231,11 +247,15 @@ ocrButton.addEventListener('click', async function() {
 
 document.getElementById('applyOcrButton').addEventListener('click', function() {
     const fornecedor = document.querySelector('#ocrFornecedor span').textContent;
+    const nif = document.querySelector('#ocrNif span').textContent;
     const data = document.querySelector('#ocrData span').textContent;
     const valor = document.querySelector('#ocrValor span').textContent;
 
     if (fornecedor !== 'Não identificado') {
         document.getElementById('fornecedor').value = fornecedor;
+    }
+    if (nif !== 'Não identificado') {
+        document.getElementById('nif').value = nif.replace(/\s/g, '');
     }
     if (data !== 'Não identificado') {
         document.getElementById('data').value = data;
@@ -248,6 +268,15 @@ document.getElementById('applyOcrButton').addEventListener('click', function() {
 // Extrações
 function extractFornecedor(text) {
     const regex = /(?:fornecedor|empresa|emitente|nome)\s*[:\-\s]?\s*([\w\s\.\-]+(?:\s+[a-zA-Z]+)*\w+)/i;
+    const match = text.match(regex);
+    return match ? match[1].trim() : null;
+}
+
+// Extração de NIF (adicionada)
+function extractNIF(text) {
+    // Procura por padrões de NIF
+    // Portugal: 9 dígitos
+    const regex = /(?:NIF|NIPC|Contribuinte|Nr\.?\s*Contribuinte|Número\s*(?:de\s*)?Contribuinte|NPC|Tax\s*ID)[\s\:\.\-]*(\d{9})/i;
     const match = text.match(regex);
     return match ? match[1].trim() : null;
 }

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -67,6 +68,7 @@
                                                 </a>
                                             </div>
                                         </th>
+                                        <th>NIF</th>
                                         <th>
                                             Data
                                             <div class="mt-1">
@@ -101,6 +103,7 @@
                                     @foreach($faturas as $fatura)
                                         <tr>
                                             <td>{{ $fatura->fornecedor }}</td>
+                                            <td>{{ $fatura->nif ?? 'Não informado' }}</td>
                                             <td>{{ \Carbon\Carbon::parse($fatura->data)->format('d/m/Y') }}</td>
                                             <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
                                             <td>

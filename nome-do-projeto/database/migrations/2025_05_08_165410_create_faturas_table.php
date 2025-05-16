@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('fornecedor');
+            $table->string('nif')->nullable(); // Adicionado campo NIF
             $table->date('data');
             $table->decimal('valor', 10, 2);
             $table->string('imagem')->nullable();

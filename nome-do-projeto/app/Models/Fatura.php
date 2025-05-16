@@ -15,6 +15,7 @@ class Fatura extends Model
     protected $fillable = [
         'user_id',
         'fornecedor',
+        'nif', // Adicionado NIF
         'data',
         'valor',
         'imagem'
@@ -51,5 +52,17 @@ class Fatura extends Model
     public function getFormattedValorAttribute()
     {
         return number_format($this->valor, 2, ',', '.');
+    }
+    
+    // Formatar NIF para exibição (opcional)
+    public function getFormattedNifAttribute()
+    {
+        if (empty($this->nif)) {
+            return 'Não informado';
+        }
+        
+        // Para Portugal, formata o NIF com espaços a cada 3 dígitos
+        // Ex: 123 456 789
+        return trim(chunk_split($this->nif, 3, ' '));
     }
 }
