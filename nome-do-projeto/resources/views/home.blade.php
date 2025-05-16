@@ -1,52 +1,52 @@
-@extends('adminlte::page')
+    @extends('layouts.app')
 
-@section('title', 'Dashboard')
+    @section('content')
 
-@section('content_header')
-    <h1>Dashboard</h1>
-@stop
+    @section('content_header')
+        <h1>Dashboard</h1>
+    @stop
 
-@section('content')
-<div class="container-fluid">
-    <h2>Bem-vindo, {{ Auth::user()->name }}!</h2>
+    @section('content')
+    <div class="container-fluid">
+        <h2>Bem-vindo, {{ Auth::user()->name }}!</h2>
 
-    <div class="my-4">
-        <h4>Suas últimas faturas</h4>
-        
-        @if($faturas->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Fornecedor</th>
-                            <th>Data</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($faturas as $fatura)
-                            <tr>
-                                <td>{{ $fatura->fornecedor }}</td>
-                                <td>{{ $fatura->data->format('d/m/Y') }}</td>
-                                <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+        <div class="my-4">
+            <h4>Suas últimas faturas</h4>
             
-            <div class="d-flex justify-content-center">
-                <a href="{{ route('faturas.index') }}" class="btn btn-primary">Ver todas as faturas</a>
-            </div>
-        @else
-            <p>Você ainda não tem faturas registradas.</p>
-            <div class="d-flex justify-content-center">
-                <a href="{{ route('faturas.create') }}" class="btn btn-success">Adicionar sua primeira fatura</a>
-            </div>
-        @endif
+            @if($faturas->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fornecedor</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($faturas as $fatura)
+                                <tr>
+                                    <td>{{ $fatura->fornecedor }}</td>
+                                    <td>{{ $fatura->data->format('d/m/Y') }}</td>
+                                    <td>€{{ number_format($fatura->valor, 2, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-flex justify-content-center">
+                    <a href="{{ route('faturas.index') }}" class="btn btn-primary">Ver todas as faturas</a>
+                </div>
+            @else
+                <p>Você ainda não tem faturas registradas.</p>
+                <div class="d-flex justify-content-center">
+                    <a href="{{ route('faturas.create') }}" class="btn btn-success">Adicionar sua primeira fatura</a>
+                </div>
+            @endif
+        </div>
     </div>
-</div>
-@stop
+    @stop
 
 @section('body')
 <div class="wrapper">
