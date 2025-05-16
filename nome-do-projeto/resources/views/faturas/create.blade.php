@@ -1,139 +1,183 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">Nova Fatura</div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('faturas.store') }}" enctype="multipart/form-data">
+                    @csrf
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('faturas.store') }}" enctype="multipart/form-data">
-                        @csrf
-
-                        <!-- Fornecedor -->
-                        <div class="form-group row mb-3">
-                            <label for="fornecedor" class="col-md-4 col-form-label text-md-right">Fornecedor</label>
-                            <div class="col-md-6">
-                                <input id="fornecedor" type="text" class="form-control @error('fornecedor') is-invalid @enderror" name="fornecedor" value="{{ old('fornecedor') }}" required>
-                                @error('fornecedor')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    <!-- Fornecedor -->
+                    <div class="form-group row mb-3">
+                        <label for="fornecedor" class="col-md-4 col-form-label text-md-right">Fornecedor</label>
+                        <div class="col-md-6">
+                            <input id="fornecedor" type="text" class="form-control @error('fornecedor') is-invalid @enderror" name="fornecedor" value="{{ old('fornecedor') }}" required>
+                            @error('fornecedor')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
+                    </div>
 
-                        <!-- NIF -->
-                        <div class="form-group row mb-3">
-                            <label for="nif" class="col-md-4 col-form-label text-md-right">NIF</label>
-                            <div class="col-md-6">
-                                <input id="nif" type="text" class="form-control @error('nif') is-invalid @enderror" name="nif" value="{{ old('nif') }}" placeholder="ex: 123456789">
-                                @error('nif')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    <!-- NIF -->
+                    <div class="form-group row mb-3">
+                        <label for="nif" class="col-md-4 col-form-label text-md-right">NIF</label>
+                        <div class="col-md-6">
+                            <input id="nif" type="text" class="form-control @error('nif') is-invalid @enderror" name="nif" value="{{ old('nif') }}" placeholder="ex: 123456789">
+                            @error('nif')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
+                    </div>
 
-                        <!-- Data -->
-                        <div class="form-group row mb-3">
-                            <label for="data" class="col-md-4 col-form-label text-md-right">Data</label>
-                            <div class="col-md-6">
-                                <input id="data" type="date" class="form-control @error('data') is-invalid @enderror" name="data" value="{{ old('data') }}" required>
-                                @error('data')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    <!-- Data -->
+                    <div class="form-group row mb-3">
+                        <label for="data" class="col-md-4 col-form-label text-md-right">Data</label>
+                        <div class="col-md-6">
+                            <input id="data" type="date" class="form-control @error('data') is-invalid @enderror" name="data" value="{{ old('data') }}" required>
+                            @error('data')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
+                    </div>
 
-                        <!-- Valor -->
-                        <div class="form-group row mb-3">
-                            <label for="valor" class="col-md-4 col-form-label text-md-right">Valor</label>
-                            <div class="col-md-6">
-                                <input id="valor" type="number" step="0.01" class="form-control @error('valor') is-invalid @enderror" name="valor" value="{{ old('valor') }}" required>
-                                @error('valor')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    <!-- Valor -->
+                    <div class="form-group row mb-3">
+                        <label for="valor" class="col-md-4 col-form-label text-md-right">Valor</label>
+                        <div class="col-md-6">
+                            <input id="valor" type="number" step="0.01" class="form-control @error('valor') is-invalid @enderror" name="valor" value="{{ old('valor') }}" required>
+                            @error('valor')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
-
-                        <!-- Captura de Imagem -->
-                        <div class="form-group row mb-3">
-                            <label for="imagem" class="col-md-4 col-form-label text-md-right">Imagem da Fatura</label>
-                            <div class="col-md-6">
-                                <!-- Botão para Capturar Imagem -->
-                                <button type="button" id="captureButton" class="btn btn-primary mb-2">Capturar Imagem</button>
-
-                                <!-- Elemento de Vídeo -->
-                                <video id="video" width="100%" height="auto" autoplay playsinline style="max-height: 300px;"></video>
-                                <canvas id="canvas" style="display: none;"></canvas>
-
-                                <!-- Mostrar imagem capturada -->
-                                <div class="mt-3 text-center">
-                                    <img id="capturedImage" src="#" alt="Imagem Capturada" style="display: none; max-width: 100%; margin-bottom: 15px;">
+                    </div>
+                    
+                    <!-- Notificações -->
+                    <div class="form-group row mb-3">
+                        <label class="col-md-4 col-form-label text-md-right">Notificações</label>
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="enviar_email" 
+                                    id="enviar_email" value="1" {{ old('enviar_email') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="enviar_email">
+                                    Enviar notificação por Email
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="enviar_sms" 
+                                    id="enviar_sms" value="1" {{ old('enviar_sms') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="enviar_sms">
+                                    Enviar notificação por SMS
+                                </label>
+                            </div>
+                            
+                            <div id="email_config" class="mt-3" style="display: none;">
+                                <div class="form-group mb-2">
+                                    <label for="email_para">Email para:</label>
+                                    <input type="email" class="form-control @error('email_para') is-invalid @enderror" 
+                                        name="email_para" id="email_para" value="{{ old('email_para') }}">
+                                    @error('email_para')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
-
-                                <input id="imagem" type="hidden" name="imagem">
-                                <input type="file" id="fileImage" class="form-control mt-2" name="imagem_upload" accept="image/*">
-
-                                <!-- Botão para OCR -->
-                                <button type="button" id="ocrButton" class="btn btn-info mt-3" style="display: none;">
-                                    <span class="spinner-border spinner-border-sm d-none" id="ocrSpinner" role="status" aria-hidden="true"></span>
-                                    Reconhecer Dados (OCR)
-                                </button>
-
-                                <!-- Progresso do OCR -->
-                                <div id="ocrProgress" class="progress mt-2" style="display: none;">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div id="sms_config" class="mt-3" style="display: none;">
+                                <div class="form-group">
+                                    <label for="telefone">Número de telefone:</label>
+                                    <input type="text" class="form-control @error('telefone') is-invalid @enderror" 
+                                        name="telefone" id="telefone" value="{{ old('telefone') }}" 
+                                        placeholder="ex: +351 910000000">
+                                    @error('telefone')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
-
-                                <!-- Resultados OCR -->
-                                <div id="ocrResults" class="mt-3" style="display: none;">
-                                    <h5>Dados Reconhecidos:</h5>
-                                    <div class="alert alert-info">
-                                        <p id="ocrFornecedor"><strong>Fornecedor:</strong> <span></span></p>
-                                        <p id="ocrNif"><strong>NIF:</strong> <span></span></p>
-                                        <p id="ocrData"><strong>Data:</strong> <span></span></p>
-                                        <p id="ocrValor"><strong>Valor:</strong> <span></span></p>
-                                        <button type="button" id="applyOcrButton" class="btn btn-sm btn-success">Aplicar Dados</button>
-                                    </div>
-                                </div>
-
-                                @error('imagem')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Botões -->
-                        <div class="form-group row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    Salvar Fatura
-                                </button>
-                                <a href="{{ route('faturas.index') }}" class="btn btn-secondary">
-                                    Cancelar
-                                </a>
+                    <!-- Captura de Imagem -->
+                    <div class="form-group row mb-3">
+                        <label for="imagem" class="col-md-4 col-form-label text-md-right">Imagem da Fatura</label>
+                        <div class="col-md-6">
+                            <!-- Botão para Capturar Imagem -->
+                            <button type="button" id="captureButton" class="btn btn-primary mb-2">Capturar Imagem</button>
+
+                            <!-- Elemento de Vídeo -->
+                            <video id="video" width="100%" height="auto" autoplay playsinline style="max-height: 300px;"></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+
+                            <!-- Mostrar imagem capturada -->
+                            <div class="mt-3 text-center">
+                                <img id="capturedImage" src="#" alt="Imagem Capturada" style="display: none; max-width: 100%; margin-bottom: 15px;">
                             </div>
+
+                            <input id="imagem" type="hidden" name="imagem">
+                            <input type="file" id="fileImage" class="form-control mt-2" name="imagem_upload" accept="image/*">
+
+                            <!-- Botão para OCR -->
+                            <button type="button" id="ocrButton" class="btn btn-info mt-3" style="display: none;">
+                                <span class="spinner-border spinner-border-sm d-none" id="ocrSpinner" role="status" aria-hidden="true"></span>
+                                Reconhecer Dados (OCR)
+                            </button>
+
+                            <!-- Progresso do OCR -->
+                            <div id="ocrProgress" class="progress mt-2" style="display: none;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+
+                            <!-- Resultados OCR -->
+                            <div id="ocrResults" class="mt-3" style="display: none;">
+                                <h5>Dados Reconhecidos:</h5>
+                                <div class="alert alert-info">
+                                    <p id="ocrFornecedor"><strong>Fornecedor:</strong> <span></span></p>
+                                    <p id="ocrNif"><strong>NIF:</strong> <span></span></p>
+                                    <p id="ocrData"><strong>Data:</strong> <span></span></p>
+                                    <p id="ocrValor"><strong>Valor:</strong> <span></span></p>
+                                    <button type="button" id="applyOcrButton" class="btn btn-sm btn-success">Aplicar Dados</button>
+                                </div>
+                            </div>
+
+                            @error('imagem')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="form-group row mb-0">
+                        <div class="col-md-6 offset-md-4">
+                            <button type="submit" class="btn btn-primary">
+                                Salvar Fatura
+                            </button>
+                            <a href="{{ route('faturas.index') }}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
-
+</div>
 <!-- OCR via Tesseract.js -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-
 <script>
 const video = document.getElementById('video');
 const captureButton = document.getElementById('captureButton');
@@ -262,6 +306,26 @@ document.getElementById('applyOcrButton').addEventListener('click', function() {
     }
     if (valor !== 'Não identificado') {
         document.getElementById('valor').value = valor.replace('R$', '').trim().replace(',', '.');
+    }
+});
+
+// Mostrar/esconder campos de configuração de notificações
+document.getElementById('enviar_email').addEventListener('change', function() {
+    document.getElementById('email_config').style.display = this.checked ? 'block' : 'none';
+});
+
+document.getElementById('enviar_sms').addEventListener('change', function() {
+    document.getElementById('sms_config').style.display = this.checked ? 'block' : 'none';
+});
+
+// Verificar estado inicial das checkboxes
+window.addEventListener('DOMContentLoaded', (event) => {
+    if (document.getElementById('enviar_email').checked) {
+        document.getElementById('email_config').style.display = 'block';
+    }
+    
+    if (document.getElementById('enviar_sms').checked) {
+        document.getElementById('sms_config').style.display = 'block';
     }
 });
 

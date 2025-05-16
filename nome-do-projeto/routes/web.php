@@ -26,6 +26,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
     Route::get('/faturas/{id}', [FaturaController::class, 'show'])->name('faturas.show');
     Route::get('/faturas/{id}/edit', [FaturaController::class, 'edit'])->name('faturas.edit');
+    Route::get('/estatisticas', [App\Http\Controllers\EstatisticasController::class, 'index'])
+    ->name('estatisticas')
+    ->middleware('auth'); // se quiser proteger a página
+
     Route::put('/faturas/{id}', [FaturaController::class, 'update'])->name('faturas.update');
     Route::delete('/faturas/{id}', [FaturaController::class, 'destroy'])->name('faturas.destroy');
 });

@@ -97,6 +97,11 @@
                                 <p>Faturas</p>
                             </a>
                         </li>
+                               <li class="nav-item">
+                    <a href="{{ route('estatisticas') }}" class="nav-link">
+                        <i class="nav-icon fas fa-chart-bar"></i>
+                        <p>Estatísticas</p>
+                    </a>
                     </ul>
                 </nav>
             </div>
