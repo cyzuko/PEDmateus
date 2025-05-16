@@ -15,7 +15,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
-// Rotas protegidas
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -24,12 +23,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
     Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');
     Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
+
+    // Coloque a rota estática primeiro para evitar conflito
+    Route::get('/faturas/export-pdf', [FaturaController::class, 'exportPdf'])->name('faturas.exportPdf');
+
+    // Rotas que usam parâmetro id ficam depois
     Route::get('/faturas/{id}', [FaturaController::class, 'show'])->name('faturas.show');
     Route::get('/faturas/{id}/edit', [FaturaController::class, 'edit'])->name('faturas.edit');
-    Route::get('/estatisticas', [App\Http\Controllers\EstatisticasController::class, 'index'])
-    ->name('estatisticas')
-    ->middleware('auth'); // se quiser proteger a página
-
     Route::put('/faturas/{id}', [FaturaController::class, 'update'])->name('faturas.update');
     Route::delete('/faturas/{id}', [FaturaController::class, 'destroy'])->name('faturas.destroy');
+
+    // Outras rotas protegidas
+    Route::get('/estatisticas', [App\Http\Controllers\EstatisticasController::class, 'index'])
+        ->name('estatisticas')
+        ->middleware('auth');
 });

@@ -18,6 +18,10 @@
                     <div class="d-flex justify-content-end mb-3 flex-wrap gap-2">
                         <!-- Botão Nova Fatura -->
                         <a href="{{ route('faturas.create') }}" class="btn btn-success">Nova Fatura</a>
+                            <!-- Botão Gerar PDF -->
+                            <a href="{{ route('faturas.exportPdf') }}" target="_blank" class="btn btn-danger">
+                                Exportar PDF
+                            </a>
 
                         <!-- Filtro -->
                         <form method="GET" class="d-flex">
@@ -123,6 +127,7 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+                                                        
                                                     </form>
                                                 </div>
                                             </td>

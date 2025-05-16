@@ -23,5 +23,6 @@
             © {{ date('Y') }} Sistema de Faturas
         </footer>
     </div>
+    
 </body>
 </html>

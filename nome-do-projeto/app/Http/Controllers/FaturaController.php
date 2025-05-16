@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;  // no topo do arquivo, junto com os outros use
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class FaturaController extends Controller
@@ -202,6 +202,14 @@ class FaturaController extends Controller
                 ->with('error', 'Erro ao atualizar a fatura: ' . $e->getMessage());
         }
     }
+public function exportPdf()
+{
+    $faturas = Fatura::where('user_id', Auth::id())->get();
+
+    $pdf = Pdf::loadView('faturas.pdf', compact('faturas'));
+
+    return $pdf->download('faturas.pdf');
+}
 
     public function destroy($id)
     {
