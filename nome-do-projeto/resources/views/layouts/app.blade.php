@@ -80,17 +80,29 @@
             <a href="{{ url('/') }}" class="brand-link">
                 <span class="brand-text font-weight-light">{{ config('app.name', 'Sistema de Faturas') }}</span>
             </a>
-
-       <!-- Sidebar -->
+<!-- Sidebar -->
 <div class="sidebar">
-    
-    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="info">
-            <a href="#" class="d-block">
-                <i class="fas fa-user nav-icon" style="margin-left: 14px; margin-right: 6px;"></i>
 
-                {{ Auth::user()->name }}
+    <!-- Painel do Utilizador com dropdown -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="info w-100">
+
+            <!-- Botão que mostra/esconde ações -->
+            <a href="#" class="d-flex align-items-center text-white ps-2 pe-2" id="user-toggle" style="text-decoration: none;">
+                <i class="fas fa-user nav-icon" style="margin-left: 14px; margin-right: 9px;"></i>
+                <span class="flex-grow-1">{{ Auth::user()->name }}</span>
+                <i class="fas fa-chevron-down ms-auto" id="chevron-icon"></i>
             </a>
+
+            <!-- Dropdown com links -->
+            <div id="user-actions" class="ps-4 pt-2" style="display: none;">
+                <a href="{{ route('password.change') }}" class="d-block text-white mb-1">
+                    <i class="fas fa-key me-2"></i> Alterar Senha
+                </a>
+                <a href="{{ route('logout') }}" class="d-block text-white">
+                    <i class="fas fa-sign-out-alt me-2"></i> Terminar Sessão
+                </a>
+            </div>
         </div>
     </div>
 
@@ -166,6 +178,22 @@
     </div>
 
     <!-- Scripts -->
+     <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggle = document.getElementById("user-toggle");
+        const actions = document.getElementById("user-actions");
+        const chevron = document.getElementById("chevron-icon");
+
+        toggle.addEventListener("click", function (e) {
+            e.preventDefault(); // Impede o salto de link
+            const isVisible = actions.style.display === "block";
+            actions.style.display = isVisible ? "none" : "block";
+            chevron.classList.toggle("fa-chevron-down", isVisible);
+            chevron.classList.toggle("fa-chevron-up", !isVisible);
+        });
+    });
+</script>
+
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
