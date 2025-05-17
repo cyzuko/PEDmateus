@@ -81,38 +81,44 @@
                 <span class="brand-text font-weight-light">{{ config('app.name', 'Sistema de Faturas') }}</span>
             </a>
 
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    <div class="info">
-                        <a href="#" class="d-block">{{ Auth::user()->name }}</a>
-                    </div>
-                </div>
+       <!-- Sidebar -->
+<div class="sidebar">
+    
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="info">
+            <a href="#" class="d-block">
+                <i class="fas fa-user nav-icon" style="margin-left: 14px; margin-right: 6px;"></i>
 
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="{{ route('home') }}" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Home</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('faturas.index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-file-invoice"></i>
-                                <p>Faturas</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('estatisticas') }}" class="nav-link">
-                                <i class="nav-icon fas fa-chart-bar"></i>
-                                <p>Estatísticas</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                {{ Auth::user()->name }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <li class="nav-item">
+                <a href="{{ route('home') }}" class="nav-link">
+                    <i class="nav-icon fas fa-home"></i>
+                    <p>Home</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('faturas.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-file-invoice"></i>
+                    <p>Faturas</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('estatisticas') }}" class="nav-link">
+                    <i class="nav-icon fas fa-chart-bar"></i>
+                    <p>Estatísticas</p>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
         </aside>
 
         <!-- Content Wrapper. Contains page content -->
