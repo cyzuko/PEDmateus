@@ -18,7 +18,8 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-    
+     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('password.update');
     // Rotas para faturas (CRUD completo)
     Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
     Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');

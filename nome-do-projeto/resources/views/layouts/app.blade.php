@@ -58,12 +58,16 @@
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     {{ Auth::user()->name }}
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}">
-                                        Logout
-                                    </a>
-                                </div>
-                            </li>
+                               <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{ route('password.change') }}">
+                            Alterar Senha
+                        </a>
+                        <a class="dropdown-item" href="{{ route('logout') }}">
+                            Logout
+                        </a>
+                    </div>
+
+                                                </li>
                         @endguest
 
                     </ul>

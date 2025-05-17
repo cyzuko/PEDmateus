@@ -80,4 +80,30 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+
+    // Mostrar formulário de alteração de senha
+    public function showChangePasswordForm()
+    {
+        return view('auth.change-password');
+    }
+
+    // Processar alteração de senha
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Senha atual incorreta']);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return redirect()->route('home')->with('success', 'Senha alterada com sucesso!');
+    }
 }
