@@ -13,7 +13,9 @@
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/plugins/fontawesome-free/css/all.min.css">
+
+    <!-- FontAwesome CDN oficial para garantir ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -32,7 +34,7 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
-                        <!-- You can add additional left navbar items here if needed -->
+                        <!-- Add left navbar items here if needed -->
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -59,17 +61,15 @@
                                     {{ Auth::user()->name }}
                                 </a>
                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{ route('password.change') }}">
-                            Alterar Senha
-                        </a>
-                        <a class="dropdown-item" href="{{ route('logout') }}">
-                           Terminar Sessão
-                        </a>
-                    </div>
-
-                                                </li>
+                                  <a class="dropdown-item" href="{{ route('password.change') }}">
+                                      Alterar Senha
+                                  </a>
+                                  <a class="dropdown-item" href="{{ route('logout') }}">
+                                     Terminar Sessão
+                                  </a>
+                               </div>
+                            </li>
                         @endguest
-
                     </ul>
                 </div>
             </div>
@@ -84,7 +84,6 @@
             <!-- Sidebar -->
             <div class="sidebar">
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    
                     <div class="info">
                         <a href="#" class="d-block">{{ Auth::user()->name }}</a>
                     </div>
@@ -105,11 +104,12 @@
                                 <p>Faturas</p>
                             </a>
                         </li>
-                               <li class="nav-item">
-                    <a href="{{ route('estatisticas') }}" class="nav-link">
-                        <i class="nav-icon fas fa-chart-bar"></i>
-                        <p>Estatísticas</p>
-                    </a>
+                        <li class="nav-item">
+                            <a href="{{ route('estatisticas') }}" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Estatísticas</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -123,15 +123,15 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">{{ $title ?? 'Dashboard' }}</h1>
-                        </div><!-- /.col -->
+                        </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
                                 <li class="breadcrumb-item active">{{ $title ?? 'Dashboard' }}</li>
                             </ol>
-                        </div><!-- /.col -->
-                    </div><!-- /.row -->
-                </div><!-- /.container-fluid -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Main content -->
@@ -143,9 +143,9 @@
                         </div>
                     @endif
                     @yield('content')
-                </div><!-- /.container-fluid -->
+                </div>
             </section>
-        </div><!-- /.content-wrapper -->
+        </div>
 
         <!-- Footer -->
         <footer class="main-footer">
@@ -154,18 +154,18 @@
                     <b>Version</b> 3.2.0
                 </div>
                 <strong>&copy; {{ date('Y') }} <a href="#">Sistema de Faturas</a>.</strong> Todos os direitos reservados.
-            </div><!-- /.container-fluid -->
+            </div>
         </footer>
 
-    </div><!-- ./wrapper -->
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-@yield('scripts')
+    @yield('scripts')
 
 </body>
 </html>
