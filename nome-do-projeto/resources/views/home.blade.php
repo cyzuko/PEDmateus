@@ -11,7 +11,7 @@
         <h2>Bem-vindo, {{ Auth::user()->name }}!</h2>
 
         <div class="my-4">
-            <h4>Suas últimas faturas</h4>
+            <h4>As suas últimas faturas</h4>
             
             @if($faturas->count() > 0)
                 <div class="table-responsive">
