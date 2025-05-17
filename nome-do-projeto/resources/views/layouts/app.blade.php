@@ -63,7 +63,7 @@
                             Alterar Senha
                         </a>
                         <a class="dropdown-item" href="{{ route('logout') }}">
-                            Logout
+                           Terminar Sessão
                         </a>
                     </div>
 
