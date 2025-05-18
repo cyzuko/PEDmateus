@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // Adicionado para controle de acesso (admin/user)
     ];
 
     /**
@@ -47,5 +48,15 @@ class User extends Authenticatable
     public function faturas()
     {
         return $this->hasMany(Fatura::class);
+    }
+
+    /**
+     * Verifica se o usuário é administrador.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 }
