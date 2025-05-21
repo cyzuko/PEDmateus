@@ -14,7 +14,7 @@ class FaturasExport implements FromCollection, WithHeadings
      */
     public function collection()
     {
-        // Busca todas as faturas do usuário autenticado
+        // Busca todas as faturas do usuário autenticado3
         return Fatura::where('user_id', Auth::id())
             ->select('fornecedor', 'nif', 'data', 'valor')
             ->get();
