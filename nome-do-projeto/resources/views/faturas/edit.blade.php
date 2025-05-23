@@ -34,6 +34,21 @@
                         </div>
 
                         <div class="form-group row mb-3">
+                            <label for="nif" class="col-md-4 col-form-label text-md-right">NIF</label>
+
+                            <div class="col-md-6">
+                                <input id="nif" type="text" class="form-control @error('nif') is-invalid @enderror" 
+                                       name="nif" value="{{ old('nif', $fatura->nif) }}" maxlength="9" pattern="[0-9]{9}">
+
+                                @error('nif')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
                             <label for="data" class="col-md-4 col-form-label text-md-right">Data</label>
 
                             <div class="col-md-6">

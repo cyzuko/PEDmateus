@@ -105,22 +105,22 @@ class FaturaController extends Controller
             }
 
             $fatura->save();
-if (!empty($validated['enviar_email']) && $validated['enviar_email'] == true && !empty($validated['email_para'])) {
-    // Verifica se o email é válido, usando filter_var
-    if (filter_var($validated['email_para'], FILTER_VALIDATE_EMAIL)) {
-        Log::info('Tentando enviar e-mail para: ' . $validated['email_para']);
-        try {
-            Mail::to($validated['email_para'])->send(new FaturaCriadaMail($fatura));
-            Log::info('Email enviado com sucesso para: ' . $validated['email_para']);
-        } catch (\Exception $e) {
-            Log::error('Erro ao enviar email: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Erro ao enviar o email: ' . $e->getMessage());
-        }
-    } else {
-        Log::error('Email inválido informado: ' . $validated['email_para']);
-        return back()->withInput()->with('error', 'O email informado é inválido.');
-    }
-}
+                if (!empty($validated['enviar_email']) && $validated['enviar_email'] == true && !empty($validated['email_para'])) {
+                    // Verifica se o email é válido, usando filter_var
+                    if (filter_var($validated['email_para'], FILTER_VALIDATE_EMAIL)) {
+                        Log::info('Tentando enviar e-mail para: ' . $validated['email_para']);
+                        try {
+                            Mail::to($validated['email_para'])->send(new FaturaCriadaMail($fatura));
+                            Log::info('Email enviado com sucesso para: ' . $validated['email_para']);
+                        } catch (\Exception $e) {
+                            Log::error('Erro ao enviar email: ' . $e->getMessage());
+                            return back()->withInput()->with('error', 'Erro ao enviar o email: ' . $e->getMessage());
+                        }
+                    } else {
+                        Log::error('Email inválido informado: ' . $validated['email_para']);
+                        return back()->withInput()->with('error', 'O email informado é inválido.');
+                    }
+                }
 
 
             return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
