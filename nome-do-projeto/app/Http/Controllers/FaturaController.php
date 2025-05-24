@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Mail;  // <-- Importa o Mail
-use App\Mail\FaturaCriadaMail;         // <-- Importa o Mailable
+use Illuminate\Support\Facades\Mail;
+use App\Mail\FaturaCriadaMail;
+use App\Notifications\NovaFaturaNotification;
+use Illuminate\Support\Facades\Notification;
 
 class FaturaController extends Controller
 {
@@ -39,10 +41,10 @@ class FaturaController extends Controller
                     $query->orderBy('valor', 'desc');
                     break;
                 default:
-                    $query->orderBy('data', 'desc'); // Ordenação padrão
+                    $query->orderBy('data', 'desc');
             }
 
-            $faturas = $query->paginate(10)->withQueryString(); // Mantém filtros ao paginar
+            $faturas = $query->paginate(10)->withQueryString();
 
         } catch (\Exception $e) {
             $faturas = collect([]);
@@ -57,47 +59,42 @@ class FaturaController extends Controller
     {
         return view('faturas.create');
     }
- public function store(Request $request)
+
+    public function store(Request $request)
     {
         // Validação para os dados do formulário
         $validated = $request->validate([
             'fornecedor' => 'required|string|max:255',
-            'nif' => 'nullable|string|max:20', // Adicionada validação para NIF
+            'nif' => 'nullable|string|max:20',
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|string', // Aceita base64 para imagem
-            'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // Aceita arquivos de imagem
-            'email_para' => 'nullable|email', // Email para enviar (se aplicável)
-            'enviar_email' => 'nullable|boolean', // Checkbox para enviar email
+            'imagem' => 'nullable|string',
+            'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'email_para' => 'nullable|email',
+            'telefone_para' => 'nullable|string',
+            'telefone' => 'nullable|string', // Campo adicional do formulário
+            'enviar_email' => 'nullable|boolean',
+            'enviar_sms' => 'nullable|boolean',
         ]);
 
         try {
             $fatura = new Fatura();
             $fatura->user_id = Auth::id();
             $fatura->fornecedor = $validated['fornecedor'];
-            $fatura->nif = $validated['nif'] ?? null; // Adicionar NIF
+            $fatura->nif = $validated['nif'] ?? null;
             $fatura->data = $validated['data'];
             $fatura->valor = $validated['valor'];
 
-            // Verificar se foi enviada uma imagem em base64
+            // Imagem base64
             if ($request->has('imagem') && !empty($validated['imagem'])) {
-                $imageData = $validated['imagem'];
-
-                // Remove o prefixo "data:image/png;base64,"
-                $imageData = str_replace('data:image/png;base64,', '', $imageData);
+                $imageData = str_replace('data:image/png;base64,', '', $validated['imagem']);
                 $imageData = base64_decode($imageData);
-
-                // Gerar um nome único para a imagem
                 $imageName = 'fatura_' . time() . '.png';
-
-                // Salvar a imagem no diretório 'faturas' dentro de 'storage/app/public'
                 Storage::disk('public')->put('faturas/' . $imageName, $imageData);
-
-                // Armazenar o caminho da imagem no banco de dados
                 $fatura->imagem = 'faturas/' . $imageName;
             }
 
-            // Verificar se foi enviado um arquivo de imagem
+            // Upload de imagem
             if ($request->hasFile('imagem_upload')) {
                 $file = $request->file('imagem_upload');
                 $path = $file->store('faturas', 'public');
@@ -105,25 +102,47 @@ class FaturaController extends Controller
             }
 
             $fatura->save();
-                if (!empty($validated['enviar_email']) && $validated['enviar_email'] == true && !empty($validated['email_para'])) {
-                    // Verifica se o email é válido, usando filter_var
-                    if (filter_var($validated['email_para'], FILTER_VALIDATE_EMAIL)) {
-                        Log::info('Tentando enviar e-mail para: ' . $validated['email_para']);
-                        try {
-                            Mail::to($validated['email_para'])->send(new FaturaCriadaMail($fatura));
-                            Log::info('Email enviado com sucesso para: ' . $validated['email_para']);
-                        } catch (\Exception $e) {
-                            Log::error('Erro ao enviar email: ' . $e->getMessage());
-                            return back()->withInput()->with('error', 'Erro ao enviar o email: ' . $e->getMessage());
-                        }
-                    } else {
-                        Log::error('Email inválido informado: ' . $validated['email_para']);
-                        return back()->withInput()->with('error', 'O email informado é inválido.');
+
+            $messages = ['Fatura registrada com sucesso!'];
+
+            // ENVIO DE E-MAIL (opcional)
+            if (!empty($validated['enviar_email']) && $validated['enviar_email'] == true && !empty($validated['email_para'])) {
+                if (filter_var($validated['email_para'], FILTER_VALIDATE_EMAIL)) {
+                    Log::info('Tentando enviar e-mail para: ' . $validated['email_para']);
+                    try {
+                        Mail::to($validated['email_para'])->send(new FaturaCriadaMail($fatura));
+                        Log::info('Email enviado com sucesso para: ' . $validated['email_para']);
+                        $messages[] = 'E-mail enviado com sucesso!';
+                    } catch (\Exception $e) {
+                        Log::error('Erro ao enviar email: ' . $e->getMessage());
+                        $messages[] = 'Fatura salva, mas erro ao enviar e-mail: ' . $e->getMessage();
                     }
+                } else {
+                    Log::error('Email inválido informado: ' . $validated['email_para']);
+                    $messages[] = 'Fatura salva, mas o e-mail informado é inválido.';
                 }
+            }
 
+            // ENVIO DE SMS (opcional)
+            $telefoneParaSms = $validated['telefone_para'] ?? $validated['telefone'] ?? null;
+            
+            if (!empty($validated['enviar_sms']) && $validated['enviar_sms'] == true && !empty($telefoneParaSms)) {
+                Log::info('Tentando enviar SMS para: ' . $telefoneParaSms);
+                try {
+                    // Usar o sistema de notificações do Laravel
+                    $user = Auth::user();
+                    $user->notify(new NovaFaturaNotification($fatura, null, $telefoneParaSms, 'criada'));
+                    
+                    Log::info('SMS enviado com sucesso para: ' . $telefoneParaSms);
+                    $messages[] = 'SMS enviado com sucesso!';
+                } catch (\Exception $e) {
+                    Log::error('Erro ao enviar SMS: ' . $e->getMessage());
+                    $messages[] = 'Fatura salva, mas erro ao enviar SMS: ' . $e->getMessage();
+                }
+            }
 
-            return redirect()->route('faturas.index')->with('success', 'Fatura registrada com sucesso!');
+            return redirect()->route('faturas.index')->with('success', implode(' ', $messages));
+
         } catch (\Exception $e) {
             Log::error('Erro ao salvar fatura', [
                 'mensagem' => $e->getMessage(),
@@ -172,43 +191,32 @@ class FaturaController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validação para os dados do formulário
         $validated = $request->validate([
             'fornecedor' => 'required|string|max:255',
-            'nif' => 'nullable|string|max:20', // Adicionada validação para NIF
+            'nif' => 'nullable|string|max:20',
             'data' => 'required|date',
             'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|string', // Aceita base64 para imagem
+            'imagem' => 'nullable|string',
         ]);
 
         try {
             $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
 
             $fatura->fornecedor = $validated['fornecedor'];
-            $fatura->nif = $validated['nif'] ?? $fatura->nif; // Atualiza NIF
+            $fatura->nif = $validated['nif'] ?? $fatura->nif;
             $fatura->data = $validated['data'];
             $fatura->valor = $validated['valor'];
 
-            // Verificar se a imagem foi enviada em base64
             if ($request->has('imagem') && !empty($validated['imagem'])) {
-                // Remover imagem antiga, se houver
                 if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
                     Storage::disk('public')->delete($fatura->imagem);
                 }
 
                 $imageData = $validated['imagem'];
-
-                // Remove o prefixo "data:image/png;base64,"
                 $imageData = str_replace('data:image/png;base64,', '', $imageData);
                 $imageData = base64_decode($imageData);
-
-                // Gerar um nome único para a nova imagem
                 $imageName = 'fatura_' . time() . '.png';
-
-                // Salvar a nova imagem no diretório 'faturas' dentro de 'storage/app/public'
                 Storage::disk('public')->put('faturas/' . $imageName, $imageData);
-
-                // Atualizar o caminho da imagem no banco de dados
                 $fatura->imagem = 'faturas/' . $imageName;
             }
 
@@ -221,21 +229,19 @@ class FaturaController extends Controller
                 ->with('error', 'Erro ao atualizar a fatura: ' . $e->getMessage());
         }
     }
-public function exportPdf()
-{
-    $faturas = Fatura::where('user_id', Auth::id())->get();
 
-    $pdf = Pdf::loadView('faturas.pdf', compact('faturas'));
-
-    return $pdf->download('faturas.pdf');
-}
+    public function exportPdf()
+    {
+        $faturas = Fatura::where('user_id', Auth::id())->get();
+        $pdf = Pdf::loadView('faturas.pdf', compact('faturas'));
+        return $pdf->download('faturas.pdf');
+    }
 
     public function destroy($id)
     {
         try {
             $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
             
-            // Remover imagem se existir
             if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
                 Storage::disk('public')->delete($fatura->imagem);
             }

@@ -98,7 +98,10 @@
                                     <label for="telefone">Número de telefone:</label>
                                     <input type="text" class="form-control @error('telefone') is-invalid @enderror" 
                                         name="telefone" id="telefone" value="{{ old('telefone') }}" 
-                                        placeholder="ex: +351 910000000">
+                                        placeholder="ex: +351910000000 ou 910000000">
+                                    <small class="form-text text-muted">
+                                        Formatos aceites: +351910000000, 00351910000000, 910000000
+                                    </small>
                                     @error('telefone')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
