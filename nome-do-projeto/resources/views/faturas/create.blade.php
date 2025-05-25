@@ -333,19 +333,64 @@ window.addEventListener('DOMContentLoaded', (event) => {
 });
 
 // Extrações
-function extractFornecedor(text) {
-    const regex = /(?:fornecedor|empresa|emitente|nome)\s*[:\-\s]?\s*([\w\s\.\-]+(?:\s+[a-zA-Z]+)*\w+)/i;
-    const match = text.match(regex);
-    return match ? match[1].trim() : null;
-}
 
+function extractFornecedor(text) {
+    const patterns = [
+        // Padrões mais específicos primeiro
+        /(?:razão\s*social|denominação\s*social)[\s\:\-]*([^\n\r]{5,50})/i,
+        /(?:empresa|nome\s*da\s*empresa)[\s\:\-]*([^\n\r]{5,50})/i,
+        /(?:fornecedor|prestador)[\s\:\-]*([^\n\r]{5,50})/i,
+        /(?:emitente|vendedor)[\s\:\-]*([^\n\r]{5,50})/i,
+        // Padrão genérico para primeira linha com nome de empresa
+        /^([A-ZÁÀÂÃÇÉÊÍÓÔÕÚ][a-záàâãçéêíóôõú\s\.\-&]{4,}(?:LDA|LTDA|S\.?A\.?|UNIPESSOAL)?)/im
+    ];
+    
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+            let name = match[1].trim()
+                .replace(/^\W+|\W+$/g, '') // Remove caracteres especiais no início/fim
+                .replace(/\s+/g, ' '); // Normaliza espaços
+            
+            // Verifica se não é um número ou valor
+            if (name.length > 3 && !/^\d+[\.\,\d]*$/.test(name)) {
+                return name;
+            }
+        }
+    }
+    
+    return null;
+}
 // Extração de NIF (adicionada)
 function extractNIF(text) {
-    // Procura por padrões de NIF
-    // Portugal: 9 dígitos
-    const regex = /(?:NIF|NIPC|Contribuinte|Nr\.?\s*Contribuinte|Número\s*(?:de\s*)?Contribuinte|NPC|Tax\s*ID)[\s\:\.\-]*(\d{9})/i;
-    const match = text.match(regex);
-    return match ? match[1].trim() : null;
+    const patterns = [
+        // Portugal: 9 dígitos
+        /(?:NIF|NIPC|N\.?\s*I\.?\s*F\.?|Contribuinte|Nr\.?\s*Contribuinte|Número\s*(?:de\s*)?Contribuinte|NPC|Tax\s*ID)[\s\:\.\-]*(\d{9})/i,
+        // Brasil: CPF (11 dígitos) ou CNPJ (14 dígitos)
+        /(?:CPF|CNPJ|C\.?P\.?F\.?|C\.?N\.?P\.?J\.?)[\s\:\.\-]*(\d{3}\.?\d{3}\.?\d{3}[-\.]?\d{2}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}[-\.]?\d{2})/i,
+        // Padrão genérico para sequências de 9-14 dígitos após palavras-chave
+        /(?:contribuinte|fiscal|tributário)[\s\:\.\-]*(\d{9,14})/i
+    ];
+    
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+            return match[1].replace(/[\.\-\/\s]/g, '');
+        }
+    }
+    
+    // Busca por sequências de 9 dígitos isoladas (possível NIF)
+    const nifPattern = /\b(\d{9})\b/g;
+    const matches = [...text.matchAll(nifPattern)];
+    for (const match of matches) {
+        const nif = match[1];
+        // Validação básica: primeiro dígito deve ser 1-9 para NIF português
+        if (nif[0] !== '0') {
+            return nif;
+        }
+    }
+    
+    return null;
 }
 
 function extractDate(text) {
