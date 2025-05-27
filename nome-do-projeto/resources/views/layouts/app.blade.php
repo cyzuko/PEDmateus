@@ -48,7 +48,7 @@
                             </li>
                        @else
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('home') }}">Home</a>
+                                <a class="nav-link" href="{{ route('home') }}">Página principal</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('faturas.index') }}">Faturas</a>
@@ -112,7 +112,7 @@
             <li class="nav-item">
                 <a href="{{ route('home') }}" class="nav-link">
                     <i class="nav-icon fas fa-home"></i>
-                    <p>Home</p>
+                    <p>Página principal </p>
                 </a>
             </li>
             <li class="nav-item">
