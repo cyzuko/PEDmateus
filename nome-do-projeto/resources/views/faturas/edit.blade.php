@@ -149,7 +149,7 @@
                                     </div>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Use ponto (.) como separador decimal
+                                        Use ponto (.) ou vírgula (,) como separador decimal
                                     </div>
                                 </div>
                             </div>

@@ -138,11 +138,11 @@
                                 <a href="{{ asset('storage/' . $fatura->imagem) }}" 
                                    target="_blank" 
                                    class="btn btn-outline-primary btn-spaced">
-                                    <i class="fas fa-external-link-alt me-3"></i>Abrir em nova aba
+                                    <i class="fas fa-external-link-alt me-3"></i>Abrir numa nova janela
                                 </a>
                                 <button class="btn btn-outline-info btn-spaced" 
                                         onclick="downloadImage('{{ asset('storage/' . $fatura->imagem) }}', 'fatura_{{ $fatura->id }}.jpg')">
-                                    <i class="fas fa-download me-3"></i>Baixar
+                                    <i class="fas fa-download me-3"></i>Descarregar
                                 </button>
                             </div>
                         </div>

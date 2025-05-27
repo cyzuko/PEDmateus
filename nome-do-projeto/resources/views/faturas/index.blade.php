@@ -289,5 +289,35 @@ thead th a {
 thead th a i {
     transition: opacity 0.3s ease;
 }
+/* Estilos para os cards de informação */
+.bg-light.rounded-3 {
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.bg-light.rounded-3:hover {
+    border-color: rgba(13, 110, 253, 0.2);
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
+}
+
+/* Estilo especial para o valor */
+.text-success {
+    color: #28a745 !important;
+}
+
+/* Espaçamento adicional para hover nos botões */
+.btn:hover {
+    margin: 0.25rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Garantir espaçamento consistente em todos os containers de botões */
+.d-flex:has(.btn) {
+    gap: 1rem;
+}
+
+.d-flex:has(.btn) > * {
+    margin: 0.25rem;
+}
 </style>
 @endsection
