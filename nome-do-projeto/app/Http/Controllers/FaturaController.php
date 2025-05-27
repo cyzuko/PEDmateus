@@ -189,46 +189,36 @@ class FaturaController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'fornecedor' => 'required|string|max:255',
-            'nif' => 'nullable|string|max:20',
-            'data' => 'required|date',
-            'valor' => 'required|numeric|min:0',
-            'imagem' => 'nullable|string',
-        ]);
+   public function update(Request $request, $id)
+{
+    $fatura = Fatura::findOrFail($id);
 
-        try {
-            $fatura = Fatura::where('user_id', Auth::id())->findOrFail($id);
+    $validated = $request->validate([
+        'fornecedor' => 'required|string|max:255',
+        'nif' => 'nullable|digits:9',
+        'data' => 'required|date',
+        'valor' => 'required|numeric|min:0.01',
+        'imagem' => 'nullable|image|max:2048', // imagem válida e até 2MB
+    ]);
 
-            $fatura->fornecedor = $validated['fornecedor'];
-            $fatura->nif = $validated['nif'] ?? $fatura->nif;
-            $fatura->data = $validated['data'];
-            $fatura->valor = $validated['valor'];
-
-            if ($request->has('imagem') && !empty($validated['imagem'])) {
-                if ($fatura->imagem && Storage::disk('public')->exists($fatura->imagem)) {
-                    Storage::disk('public')->delete($fatura->imagem);
-                }
-
-                $imageData = $validated['imagem'];
-                $imageData = str_replace('data:image/png;base64,', '', $imageData);
-                $imageData = base64_decode($imageData);
-                $imageName = 'fatura_' . time() . '.png';
-                Storage::disk('public')->put('faturas/' . $imageName, $imageData);
-                $fatura->imagem = 'faturas/' . $imageName;
-            }
-
-            $fatura->save();
-
-            return redirect()->route('faturas.index')
-                ->with('success', 'Fatura atualizada com sucesso!');
-        } catch (\Exception $e) {
-            return back()->withInput()
-                ->with('error', 'Erro ao atualizar a fatura: ' . $e->getMessage());
+    // Upload da nova imagem
+    if ($request->hasFile('imagem')) {
+        // Remove imagem anterior se existir
+        if ($fatura->imagem && Storage::exists('public/' . $fatura->imagem)) {
+            Storage::delete('public/' . $fatura->imagem);
         }
+
+        // Guarda nova imagem
+        $path = $request->file('imagem')->store('faturas', 'public');
+        $validated['imagem'] = $path;
     }
+
+    // Atualiza os dados
+    $fatura->update($validated);
+
+     return redirect()->route('faturas.index')->with('success', 'Atualizado com sucesso!');
+}
+
 
     public function exportPdf()
     {
