@@ -764,5 +764,64 @@ startCamera();
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transform: translateY(-1px);
 }
+/* MELHORIAS DE ESPAÇAMENTO ENTRE ÍCONES E TEXTO */
+
+/* Espaçamento consistente entre ícones e texto */
+.fas, .far, .fab {
+    margin-right: 0.5rem !important;
+}
+
+/* Espaçamento específico para diferentes contextos */
+.btn i {
+    margin-right: 0.5rem !important;
+}
+
+.card-header i {
+    margin-right: 0.75rem !important;
+}
+
+.modal-title i {
+    margin-right: 0.75rem !important;
+}
+
+.alert i {
+    margin-right: 0.75rem !important;
+}
+
+/* Espaçamento para ícones em textos pequenos */
+small i {
+    margin-right: 0.4rem !important;
+}
+
+/* Espaçamento para ícones grandes */
+.text-primary[style*="font-size: 3rem"] {
+    margin-right: 1rem !important;
+}
+
+/* MELHORIAS DE ESPAÇAMENTO ENTRE BOTÕES */
+
+/* Classe personalizada para botões com espaçamento */
+.btn-spaced {
+    margin: 0.25rem;
+    min-width: 120px;
+}
+
+/* Espaçamento para grupos de botões */
+.d-flex.gap-4 {
+    gap: 1rem !important;
+}
+
+.d-flex.gap-4 .btn {
+    margin: 0.25rem;
+}
+
+/* Espaçamento específico para botões em linha */
+.d-flex:has(.btn) {
+    gap: 1rem;
+}
+
+.d-flex:has(.btn) > * {
+    margin: 0.25rem;
+}
 </style>
 @endsection
