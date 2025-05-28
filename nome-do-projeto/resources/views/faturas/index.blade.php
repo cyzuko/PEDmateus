@@ -33,27 +33,7 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <!-- Filtro de Ordenação -->
-                            <form method="GET" class="d-flex justify-content-end">
-                                <div class="input-group" style="max-width: 250px;">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-sort"></i>
-                                    </span>
-                                    <select name="sort" id="sort" class="form-select" onchange="this.form.submit()">
-                                        <option value="">Ordenar por...</option>
-                                        <option value="fornecedor_asc" {{ request('sort') == 'fornecedor_asc' ? 'selected' : '' }}>Fornecedor A-Z</option>
-                                        <option value="fornecedor_desc" {{ request('sort') == 'fornecedor_desc' ? 'selected' : '' }}>Fornecedor Z-A</option>
-                                        <option value="data_asc" {{ request('sort') == 'data_asc' ? 'selected' : '' }}>Data Crescente</option>
-                                        <option value="data_desc" {{ request('sort') == 'data_desc' ? 'selected' : '' }}>Data Decrescente</option>
-                                        <option value="valor_asc" {{ request('sort') == 'valor_asc' ? 'selected' : '' }}>Valor Crescente</option>
-                                        <option value="valor_desc" {{ request('sort') == 'valor_desc' ? 'selected' : '' }}>Valor Decrescente</option>
-                                    </select>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
+                       
                     <!-- ✅ Mensagens -->
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -320,4 +300,4 @@ thead th a i {
     margin: 0.25rem;
 }
 </style>
-@endsection
+@endsection 
