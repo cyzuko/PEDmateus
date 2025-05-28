@@ -245,10 +245,12 @@
     </div>
 </div>
 
+<!-- JAVASCRIPT CORRIGIDO - FORA DOS LOOPS E PHP -->
 <script>
-// Função para mostrar toast (mesma do index)
+// Função para mostrar toast
 function showToast(message, type = 'info', duration = 4000) {
-    // Tipos: success, error, warning, info
+    console.log(`Mostrando toast: ${message} (${type})`);
+    
     const iconMap = {
         success: 'check-circle',
         error: 'exclamation-circle',
@@ -275,7 +277,7 @@ function showToast(message, type = 'info', duration = 4000) {
         </div>
     `;
     
-    // Criar ou encontrar container de toasts
+    // Garantir que o container existe
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -285,18 +287,27 @@ function showToast(message, type = 'info', duration = 4000) {
         document.body.appendChild(toastContainer);
     }
     
-    // Adicionar toast ao container
+    // Adicionar toast
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = toastContainer.lastElementChild;
     
     // Mostrar toast
-    const toastElement = toastContainer.lastElementChild;
-    const toast = new bootstrap.Toast(toastElement, { delay: duration });
-    toast.show();
-    
-    // Remover do DOM após esconder
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    try {
+        const toast = new bootstrap.Toast(toastElement, { 
+            delay: duration,
+            autohide: true 
+        });
+        toast.show();
+        
+        // Remover elemento após esconder
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+        
+        console.log('Toast mostrado com sucesso');
+    } catch (error) {
+        console.error('Erro ao mostrar toast:', error);
+    }
 }
 
 // Função para abrir modal da imagem
@@ -356,21 +367,33 @@ function downloadImage(url, filename) {
     }, 500);
 }
 
-// Mostrar toast de sucesso se houver mensagem de sessão
-@if(session('success'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showToast('{{ session('success') }}', 'success', 5000);
-    });
-@endif
+// Event listeners quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado, configurando event listeners...');
+    
+    // Toasts de sessão com delay
+    setTimeout(() => {
+        @if(session('success'))
+            showToast('{{ addslashes(session('success')) }}', 'success', 5000);
+        @endif
 
-// Mostrar toast de erro se houver mensagem de erro
-@if(session('error'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showToast('{{ session('error') }}', 'error', 5000);
-    });
-@endif
+        @if(session('error'))
+            showToast('{{ addslashes(session('error')) }}', 'error', 5000);
+        @endif
+    }, 100);
+    
+    console.log('Event listeners configurados com sucesso');
+});
+
+// Função de teste
+function testToast() {
+    showToast('Toast de teste funcionando!', 'info', 3000);
+}
+
+console.log('Script de detalhes da fatura carregado com sucesso');
 </script>
 
+<!-- CSS COMPLETO -->
 <style>
 /* Estilos para os toasts */
 .toast-container {

@@ -63,38 +63,37 @@
                                                 'acoes' => ['label' => 'Ações', 'icon' => 'cogs'],
                                             ];
                                         @endphp
-                                    @foreach($columns as $key => $col)
-                                        @if($key === 'fornecedor' || $key === 'data' || $key === 'valor')
-                                            @php
-                                                $currentSort = request('sort');
-                                                $ascKey = $key . '_asc';
-                                                $descKey = $key . '_desc';
-                                                $dir = null;
-                                                if ($currentSort === $ascKey) $dir = 'asc';
-                                                elseif ($currentSort === $descKey) $dir = 'desc';
-                                                $nextDir = $dir === 'asc' ? 'desc' : 'asc';
-                                            @endphp
-                                            <th class="text-center" style="cursor:pointer;">
-                                                <a href="{{ request()->fullUrlWithQuery(['sort' => $key . '_' . $nextDir]) }}"
-                                                class="text-white text-decoration-none d-flex align-items-center justify-content-center gap-1">
+                                        @foreach($columns as $key => $col)
+                                            @if($key === 'fornecedor' || $key === 'data' || $key === 'valor')
+                                                @php
+                                                    $currentSort = request('sort');
+                                                    $ascKey = $key . '_asc';
+                                                    $descKey = $key . '_desc';
+                                                    $dir = null;
+                                                    if ($currentSort === $ascKey) $dir = 'asc';
+                                                    elseif ($currentSort === $descKey) $dir = 'desc';
+                                                    $nextDir = $dir === 'asc' ? 'desc' : 'asc';
+                                                @endphp
+                                                <th class="text-center" style="cursor:pointer;">
+                                                    <a href="{{ request()->fullUrlWithQuery(['sort' => $key . '_' . $nextDir]) }}"
+                                                    class="text-white text-decoration-none d-flex align-items-center justify-content-center gap-1">
+                                                        <i class="fas fa-{{ $col['icon'] }}"></i>
+                                                        <span>{{ $col['label'] }}</span>
+                                                        {{-- Setas sempre visíveis --}}
+                                                        <i class="fas fa-sort-up" style="opacity: {{ $dir === 'asc' ? '1' : '0.3' }}; font-size: 0.7em;"></i>
+                                                        <i class="fas fa-sort-down" style="opacity: {{ $dir === 'desc' ? '1' : '0.3' }}; font-size: 0.7em;"></i>
+                                                    </a>
+                                                </th>
+                                            @elseif($key === 'acoes')
+                                                <th class="text-center">{{ $col['label'] }}</th>
+                                            @else
+                                                {{-- NIF e Imagem: só texto e ícone, sem link e setas --}}
+                                                <th class="text-center" style="cursor: default;">
                                                     <i class="fas fa-{{ $col['icon'] }}"></i>
                                                     <span>{{ $col['label'] }}</span>
-                                                    {{-- Setas sempre visíveis --}}
-                                                    <i class="fas fa-sort-up" style="opacity: {{ $dir === 'asc' ? '1' : '0.3' }}; font-size: 0.7em;"></i>
-                                                    <i class="fas fa-sort-down" style="opacity: {{ $dir === 'desc' ? '1' : '0.3' }}; font-size: 0.7em;"></i>
-                                                </a>
-                                            </th>
-                                        @elseif($key === 'acoes')
-                                            <th class="text-center">{{ $col['label'] }}</th>
-                                        @else
-                                            {{-- NIF e Imagem: só texto e ícone, sem link e setas --}}
-                                            <th class="text-center" style="cursor: default;">
-                                                <i class="fas fa-{{ $col['icon'] }}"></i>
-                                                <span>{{ $col['label'] }}</span>
-                                            </th>
-                                        @endif
-                                    @endforeach
-
+                                                </th>
+                                            @endif
+                                        @endforeach
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -144,14 +143,14 @@
                                                        title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                   <form action="{{ route('faturas.destroy', $fatura->id) }}"
-      method="POST"
-      class="d-inline"
-      onsubmit="return confirmDelete(this, '{{ addslashes($fatura->fornecedor) }}');">
+                                                    <form action="{{ route('faturas.destroy', $fatura->id) }}"
+                                                          method="POST"
+                                                          class="d-inline delete-form"
+                                                          data-fornecedor="{{ $fatura->fornecedor }}">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit"
-                                                                class="btn btn-sm btn-outline-danger"
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-danger delete-btn"
                                                                 title="Remover">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
@@ -159,11 +158,43 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <!-- Adicione este JavaScript no final da sua página, antes de fechar </body> -->
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 📄 Paginação -->
+                        @if(method_exists($faturas, 'links'))
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $faturas->appends(request()->except('page'))->links() }}
+                            </div>
+                        @endif
+                    @else
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-file-invoice fa-5x text-muted"></i>
+                            </div>
+                            <h4 class="text-muted">Nenhuma fatura encontrada</h4>
+                            <p class="text-muted mb-4">Comece adicionando sua primeira fatura ao sistema.</p>
+                            <a href="{{ route('faturas.create') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-plus me-2"></i>
+                                Adicionar Primeira Fatura
+                            </a>
+                        </div>
+                    @endif
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT CORRIGIDO - FORA DO LOOP -->
 <script>
 // Função para mostrar toast
 function showToast(message, type = 'info', duration = 4000) {
-    // Tipos: success, error, warning, info
+    console.log(`Mostrando toast: ${message} (${type})`);
+    
     const iconMap = {
         success: 'check-circle',
         error: 'exclamation-circle',
@@ -190,7 +221,7 @@ function showToast(message, type = 'info', duration = 4000) {
         </div>
     `;
     
-    // Criar ou encontrar container de toasts
+    // Garantir que o container existe
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -200,23 +231,37 @@ function showToast(message, type = 'info', duration = 4000) {
         document.body.appendChild(toastContainer);
     }
     
-    // Adicionar toast ao container
+    // Adicionar toast
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = toastContainer.lastElementChild;
     
     // Mostrar toast
-    const toastElement = toastContainer.lastElementChild;
-    const toast = new bootstrap.Toast(toastElement, { delay: duration });
-    toast.show();
-    
-    // Remover do DOM após esconder
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    try {
+        const toast = new bootstrap.Toast(toastElement, { 
+            delay: duration,
+            autohide: true 
+        });
+        toast.show();
+        
+        // Remover elemento após esconder
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+        
+        console.log('Toast mostrado com sucesso');
+    } catch (error) {
+        console.error('Erro ao mostrar toast:', error);
+    }
 }
 
-// Função melhorada para confirmação de eliminação
-function confirmDelete(form, fornecedor) {
-    // Modal de confirmação personalizado
+// Função para mostrar modal de confirmação
+function showDeleteModal(form, fornecedor) {
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('deleteModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
     const modalHtml = `
         <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -243,10 +288,10 @@ function confirmDelete(form, fornecedor) {
                         </p>
                     </div>
                     <div class="modal-footer border-0 justify-content-center gap-3">
-                        <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal" id="cancelBtn">
                             <i class="fas fa-times me-2"></i>Cancelar
                         </button>
-                        <button type="button" class="btn btn-danger btn-lg px-4" id="confirmDeleteBtn">
+                        <button type="button" class="btn btn-danger btn-lg px-4" id="confirmBtn">
                             <i class="fas fa-trash me-2"></i>Eliminar
                         </button>
                     </div>
@@ -255,12 +300,6 @@ function confirmDelete(form, fornecedor) {
         </div>
     `;
     
-    // Remover modal anterior se existir
-    const existingModal = document.getElementById('deleteModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
     // Adicionar modal ao body
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
@@ -268,59 +307,124 @@ function confirmDelete(form, fornecedor) {
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
     
-    // Confirmar eliminação
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    // Event listener para cancelar
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+        console.log('Eliminação cancelada pelo usuário');
+        showToast('Eliminação cancelada', 'info', 3000);
         modal.hide();
-        
-        // Toast de processamento
+    });
+    
+    // Event listener para confirmar
+    document.getElementById('confirmBtn').addEventListener('click', function() {
+        console.log('Eliminação confirmada pelo usuário');
         showToast('A eliminar fatura...', 'warning', 2000);
+        modal.hide();
         
         // Submeter formulário após pequeno delay
         setTimeout(() => {
+            console.log('Submetendo formulário...');
             form.submit();
-        }, 500);
+        }, 300);
     });
     
     // Limpar modal do DOM quando fechar
     document.getElementById('deleteModal').addEventListener('hidden.bs.modal', function() {
         this.remove();
     });
-    
-    return false; // Prevenir submissão imediata
 }
 
-// Mostrar toast de sucesso se houver mensagem de sessão
-@if(session('success'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showToast('{{ session('success') }}', 'success', 5000);
+// Event listeners quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado, configurando event listeners...');
+    
+    // Event listener para todos os botões de eliminar
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Botão eliminar clicado');
+            
+            const form = this.closest('.delete-form');
+            const fornecedor = form.getAttribute('data-fornecedor');
+            
+            showDeleteModal(form, fornecedor);
+        });
     });
-@endif
+    
+    // Toasts de sessão com delay
+    setTimeout(() => {
+        @if(session('success'))
+            showToast('{{ addslashes(session('success')) }}', 'success', 5000);
+        @endif
 
-// Mostrar toast de erro se houver mensagem de erro
-@if(session('error'))
-    document.addEventListener('DOMContentLoaded', function() {
-        showToast('{{ session('error') }}', 'error', 5000);
-    });
-@endif
+        @if(session('error'))
+            showToast('{{ addslashes(session('error')) }}', 'error', 5000);
+        @endif
+    }, 100);
+    
+    console.log('Event listeners configurados com sucesso');
+});
+
+// Função de teste
+function testToast() {
+    showToast('Toast de teste funcionando!', 'info', 3000);
+}
+
+console.log('Script de faturas carregado com sucesso');
 </script>
 
-<!-- SUBSTITUA o formulário de eliminação no seu código por este: -->
-<!-- 
-<form action="{{ route('faturas.destroy', $fatura->id) }}"
-      method="POST"
-      class="d-inline"
-      onsubmit="return confirmDelete(this, '{{ addslashes($fatura->fornecedor) }}');">
-    @csrf
-    @method('DELETE')
-    <button type="submit"
-            class="btn btn-sm btn-outline-danger"
-            title="Remover">
-        <i class="fas fa-trash"></i>
-    </button>
-</form>
--->
-
+<!-- CSS COMPLETO -->
 <style>
+/* Estilos gerais da tabela */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.btn-group .btn {
+    margin: 0 1px;
+}
+
+.img-thumbnail {
+    transition: transform 0.2s;
+    border-radius: 5px;
+}
+
+.img-thumbnail:hover {
+    transform: scale(1.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.badge {
+    font-size: 0.85em;
+}
+
+.table thead th a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+
+.table thead th a .fa-sort {
+    margin-left: 6px;
+}
+
+thead th a {
+    cursor: pointer;
+}
+
+thead th a i {
+    transition: opacity 0.3s ease;
+}
+
 /* Estilos para os toasts */
 .toast-container {
     z-index: 1055;
@@ -372,87 +476,69 @@ function confirmDelete(form, fornecedor) {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-</style>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
 
-                        <!-- 📄 Paginação -->
-                        @if(method_exists($faturas, 'links'))
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $faturas->appends(request()->except('page'))->links() }}
-                            </div>
-                        @endif
-                    @else
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="fas fa-file-invoice fa-5x text-muted"></i>
-                            </div>
-                            <h4 class="text-muted">Nenhuma fatura encontrada</h4>
-                            <p class="text-muted mb-4">Comece adicionando sua primeira fatura ao sistema.</p>
-                            <a href="{{ route('faturas.create') }}" class="btn btn-success btn-lg">
-                                <i class="fas fa-plus me-2"></i>
-                                Adicionar Primeira Fatura
-                            </a>
-                        </div>
-                    @endif
-
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.1);
+/* Estilos dos cards de informação */
+.bg-light.rounded-3 {
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
 }
 
-.btn-group .btn {
-    margin: 0 1px;
+.bg-light.rounded-3:hover {
+    border-color: rgba(13, 110, 253, 0.2);
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
 }
 
-.img-thumbnail {
-    transition: transform 0.2s;
-    border-radius: 5px;
+.text-success {
+    color: #28a745 !important;
 }
 
-.img-thumbnail:hover {
-    transform: scale(1.1);
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Botões no cabeçalho */
+.card-header .btn {
+    border-width: 2px;
+    font-weight: 600;
+}
+
+.card-header .btn-success {
+    background-color: #198754;
+    border-color: #ffffff;
+}
+
+.card-header .btn-danger {
+    background-color: #dc3545;
+    border-color: #ffffff;
+}
+
+.card-header .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Espaçamento entre seções */
+.row.g-3 > * {
+    padding: 0.75rem;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card {
-    border: none;
-    border-radius: 10px;
+    animation: fadeIn 0.6s ease-out;
 }
 
-.alert {
-    border-radius: 8px;
-}
-
-.badge {
-    font-size: 0.85em;
-}
-.table thead th a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px; /* espaço entre texto e ícone */
-    justify-content: center;
-}
-
-.table thead th a .fa-sort {
-    margin-left: 6px; /* separa mais a seta da palavra */
-}
-
-/* Cabeçalho - cursor e setas */
-thead th a {
-    cursor: pointer;
-}
-
-thead th a i {
-    transition: opacity 0.3s ease;
-}
 /* Estilos para os cards de informação */
 .bg-light.rounded-3 {
     border: 1px solid rgba(0,0,0,0.05);
@@ -482,27 +568,6 @@ thead th a i {
 
 .d-flex:has(.btn) > * {
     margin: 0.25rem;
-}
-
-/* Botões no cabeçalho com contraste adequado */
-.card-header .btn {
-    border-width: 2px;
-    font-weight: 600;
-}
-
-.card-header .btn-success {
-    background-color: #198754;
-    border-color: #ffffff;
-}
-
-.card-header .btn-danger {
-    background-color: #dc3545;
-    border-color: #ffffff;
-}
-
-.card-header .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 </style>
 @endsection
