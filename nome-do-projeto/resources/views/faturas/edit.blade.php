@@ -234,7 +234,7 @@
                             <!-- Ações principais -->
                             <div class="d-flex flex-wrap">
                                 <a href="{{ route('faturas.show', $fatura->id) }}" class="btn btn-outline-secondary btn-lg px-4 me-4">
-                                    <i class="fas fa-times me-2"></i>Cancelar
+                                    <i class="fas fa-times me-2"></i>Voltar 
                                 </a>
                                 <button type="submit" class="btn btn-primary btn-lg px-4">
                                     <i class="fas fa-save me-2"></i>Atualizar Fatura

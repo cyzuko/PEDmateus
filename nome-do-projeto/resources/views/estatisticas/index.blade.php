@@ -68,8 +68,9 @@
             <p>Visualização detalhada dos dados financeiros</p>
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-card">
+        <!-- Linha superior - Gráficos Mensais -->
+        <div class="charts-row">
+            <div class="chart-card large">
                 <div class="chart-header">
                     <h3><i class="fas fa-calendar-alt"></i> Faturas por Mês</h3>
                     <div class="chart-legend">
@@ -81,7 +82,7 @@
                 </div>
             </div>
 
-            <div class="chart-card">
+            <div class="chart-card large">
                 <div class="chart-header">
                     <h3><i class="fas fa-money-bill-wave"></i> Valor Mensal (€)</h3>
                     <div class="chart-legend">
@@ -92,8 +93,11 @@
                     <canvas id="graficoValorTotalMensal"></canvas>
                 </div>
             </div>
+        </div>
 
-            <div class="chart-card">
+        <!-- Linha inferior - Gráficos de Fornecedores -->
+        <div class="charts-row">
+            <div class="chart-card large">
                 <div class="chart-header">
                     <h3><i class="fas fa-building"></i> Faturas por Fornecedor</h3>
                     <div class="chart-legend">
@@ -105,7 +109,7 @@
                 </div>
             </div>
 
-            <div class="chart-card">
+            <div class="chart-card large">
                 <div class="chart-header">
                     <h3><i class="fas fa-chart-line"></i> Valores por Fornecedor (€)</h3>
                     <div class="chart-legend">
@@ -148,7 +152,7 @@
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -175,9 +179,12 @@
         /* Cards de estatísticas */
         .stats-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
             margin-bottom: 3rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .stats-card {
@@ -259,6 +266,9 @@
         /* Seção de gráficos */
         .charts-section {
             margin-top: 3rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .section-header {
@@ -282,10 +292,12 @@
             margin: 0;
         }
 
-        .charts-grid {
+        /* Layout em linhas para desktop */
+        .charts-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 2rem;
+            margin-bottom: 2rem;
         }
 
         .chart-card {
@@ -295,6 +307,10 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-card.large {
+            min-height: 500px;
         }
 
         .chart-card:hover {
@@ -359,7 +375,7 @@
         }
 
         .chart-container {
-            height: 350px;
+            height: 400px;
             position: relative;
         }
 
@@ -368,13 +384,28 @@
             border-radius: 8px;
         }
 
-        /* Responsivo */
+        /* Responsivo - Tablet */
         @media (max-width: 1200px) {
-            .charts-grid {
+            .stats-summary {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+            }
+
+            .charts-row {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .chart-card.large {
+                min-height: 450px;
+            }
+
+            .chart-container {
+                height: 350px;
             }
         }
 
+        /* Mobile */
         @media (max-width: 768px) {
             .content-header-modern {
                 margin: -1rem -0.5rem 2rem -0.5rem;
@@ -413,9 +444,13 @@
                 font-size: 1.8rem;
             }
 
-            .charts-grid {
+            .charts-row {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
+            }
+
+            .chart-card.large {
+                min-height: auto;
             }
 
             .chart-header {
@@ -443,6 +478,7 @@
             }
         }
 
+        /* Mobile pequeno */
         @media (max-width: 480px) {
             .content-header-modern {
                 padding: 1rem 0.75rem;
@@ -505,46 +541,6 @@
             }
         }
 
-        @media (max-width: 360px) {
-            .content-header-modern {
-                padding: 0.75rem 0.5rem;
-            }
-
-            .page-title {
-                font-size: 1.3rem;
-            }
-
-            .stats-summary {
-                gap: 0.75rem;
-            }
-
-            .stats-card {
-                padding: 1rem;
-            }
-
-            .stats-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.3rem;
-            }
-
-            .stats-content h3 {
-                font-size: 1.4rem;
-            }
-
-            .chart-card {
-                padding: 1rem;
-            }
-
-            .chart-container {
-                height: 220px;
-            }
-
-            .charts-grid {
-                gap: 1rem;
-            }
-        }
-
         /* Animações suaves */
         @keyframes fadeInUp {
             from {
@@ -578,11 +574,11 @@
             animation-delay: 0.4s;
         }
 
-        .chart-card:nth-child(3) {
+        .charts-row:nth-child(3) .chart-card:nth-child(1) {
             animation-delay: 0.5s;
         }
 
-        .chart-card:nth-child(4) {
+        .charts-row:nth-child(3) .chart-card:nth-child(2) {
             animation-delay: 0.6s;
         }
     </style>
@@ -596,8 +592,7 @@
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     Chart.defaults.color = '#6b7280';
     
-    // Configuração específica para gráficos em mobile
-    const isMobile = window.innerWidth <= 768;
+    // Configuração específica para gráficos
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -652,7 +647,10 @@
                     beginAtZero: true,
                     ticks: { 
                         stepSize: 1,
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         color: 'rgba(156, 163, 175, 0.2)'
@@ -660,7 +658,10 @@
                 },
                 x: {
                     ticks: { 
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         display: false
@@ -723,6 +724,9 @@
                     beginAtZero: true,
                     ticks: { 
                         color: '#9ca3af',
+                        font: {
+                            size: 12
+                        },
                         callback: function(value) {
                             return '€' + value.toLocaleString('pt-PT');
                         }
@@ -733,7 +737,10 @@
                 },
                 x: {
                     ticks: { 
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         display: false
@@ -787,7 +794,10 @@
                     beginAtZero: true,
                     ticks: { 
                         stepSize: 1,
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         color: 'rgba(156, 163, 175, 0.2)'
@@ -795,7 +805,10 @@
                 },
                 y: {
                     ticks: { 
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         display: false
@@ -858,6 +871,9 @@
                     beginAtZero: true,
                     ticks: { 
                         color: '#9ca3af',
+                        font: {
+                            size: 12
+                        },
                         callback: function(value) {
                             return '€' + value.toLocaleString('pt-PT');
                         }
@@ -868,7 +884,10 @@
                 },
                 x: {
                     ticks: { 
-                        color: '#9ca3af'
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
                     },
                     grid: {
                         display: false

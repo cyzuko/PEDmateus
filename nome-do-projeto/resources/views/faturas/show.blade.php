@@ -21,23 +21,6 @@
                 </div>
             </div>
 
-            <!-- Mensagem de sucesso -->
-            @if(session('success'))
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body p-4">
-                        <div class="alert alert-success border-0 shadow-sm mb-0">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-check-circle text-success me-4" style="font-size: 1.5rem;"></i>
-                                <div>
-                                    <h6 class="mb-1 fw-semibold">Sucesso!</h6>
-                                    <p class="mb-0">{{ session('success') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
             <!-- Informações Básicas -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-light border-0 py-3">
@@ -222,38 +205,38 @@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header border-0 pb-2">
-                <h5 class="modal-title fw-bold text-danger" id="deleteModalLabel">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold" id="deleteModalLabel">
                     <i class="fas fa-exclamation-triangle me-4"></i>Confirmar Exclusão
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body px-4 py-3">
                 <div class="text-center mb-4">
-                    <i class="fas fa-trash-alt text-danger" style="font-size: 3rem; opacity: 0.7;"></i>
+                    <i class="fas fa-trash-alt text-danger" style="font-size: 3rem; animation: shake 0.5s ease-in-out;"></i>
                 </div>
-                <h6 class="text-center mb-3">Tem certeza que deseja excluir esta fatura?</h6>
-                <div class="alert alert-warning border-0 bg-warning bg-opacity-10">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-exclamation-triangle text-warning me-4 mt-1"></i>
-                        <div>
-                            <small class="fw-semibold text-warning">Atenção:</small>
-                            <small class="d-block text-muted">Esta ação não pode ser desfeita. Todos os dados da fatura serão permanentemente removidos.</small>
-                        </div>
-                    </div>
+                <p class="text-center mb-3">
+                    <strong>Tem certeza que deseja eliminar a fatura de:</strong>
+                </p>
+                <div class="alert alert-light border text-center">
+                    <strong>{{ $fatura->fornecedor }}</strong>
                 </div>
+                <p class="text-muted text-center small mb-0">
+                    <i class="fas fa-warning me-1"></i>
+                    Esta ação não pode ser desfeita!
+                </p>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <!-- Botões do modal com espaçamento -->
-                <div class="d-flex gap-3 w-100 justify-content-end">
-                    <button type="button" class="btn btn-outline-secondary btn-spaced" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-3"></i>Cancelar
+                <div class="d-flex gap-3 w-100 justify-content-center">
+                    <button type="button" class="btn btn-secondary btn-lg px-4 btn-spaced" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
                     </button>
                     <form action="{{ route('faturas.destroy', $fatura->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-spaced">
-                            <i class="fas fa-trash-alt me-3"></i>Sim, Excluir
+                        <button type="submit" class="btn btn-danger btn-lg px-4 btn-spaced" id="confirmDeleteBtn">
+                            <i class="fas fa-trash me-2"></i>Eliminar
                         </button>
                     </form>
                 </div>
@@ -263,6 +246,59 @@
 </div>
 
 <script>
+// Função para mostrar toast (mesma do index)
+function showToast(message, type = 'info', duration = 4000) {
+    // Tipos: success, error, warning, info
+    const iconMap = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    
+    const colorMap = {
+        success: 'success',
+        error: 'danger',
+        warning: 'warning',
+        info: 'primary'
+    };
+    
+    const toastHtml = `
+        <div class="toast align-items-center text-bg-${colorMap[type]} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${iconMap[type]} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // Criar ou encontrar container de toasts
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1055';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Adicionar toast ao container
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Mostrar toast
+    const toastElement = toastContainer.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement, { delay: duration });
+    toast.show();
+    
+    // Remover do DOM após esconder
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
 // Função para abrir modal da imagem
 function openImageModal(imageSrc) {
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
@@ -276,58 +312,82 @@ function openImageModal(imageSrc) {
     modal.show();
 }
 
-// Função para confirmar exclusão
+// Função para confirmar exclusão com toast
 function confirmDelete() {
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
+    
+    // Adicionar evento ao botão de confirmação
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const form = confirmBtn.closest('form');
+    
+    // Remover listeners anteriores
+    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+    const newConfirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.hide();
+        
+        // Toast de processamento
+        showToast('A eliminar fatura...', 'warning', 2000);
+        
+        // Submeter formulário após pequeno delay
+        setTimeout(() => {
+            form.submit();
+        }, 500);
+    });
 }
 
-// Função para baixar imagem
+// Função para baixar imagem com toast
 function downloadImage(url, filename) {
+    showToast('A iniciar download...', 'info', 2000);
+    
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Toast de sucesso após pequeno delay
+    setTimeout(() => {
+        showToast('Download iniciado com sucesso!', 'success');
+    }, 500);
 }
 
-// Toast notification function (mesma do create)
-function showToast(message, type = 'info') {
-    const toastHtml = `
-        <div class="toast align-items-center text-bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'} me-3"></i>
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
-    
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '1055';
-        document.body.appendChild(toastContainer);
-    }
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toastElement = toastContainer.lastElementChild;
-    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
-    toast.show();
-    
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
+// Mostrar toast de sucesso se houver mensagem de sessão
+@if(session('success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ session('success') }}', 'success', 5000);
     });
-}
+@endif
+
+// Mostrar toast de erro se houver mensagem de erro
+@if(session('error'))
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ session('error') }}', 'error', 5000);
+    });
+@endif
 </script>
 
 <style>
+/* Estilos para os toasts */
+.toast-container {
+    z-index: 1055;
+}
+
+.toast {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    min-width: 300px;
+}
+
+.toast-body {
+    font-weight: 500;
+    padding: 1rem;
+}
+
 /* Estilos customizados */
 .form-control:focus, .form-select:focus {
     border-color: #0d6efd;
@@ -348,10 +408,6 @@ function showToast(message, type = 'info') {
 
 .btn:hover {
     transform: translateY(-1px);
-}
-
-.toast-container {
-    z-index: 1055;
 }
 
 /* Estilos específicos para o show */
@@ -380,6 +436,33 @@ function showToast(message, type = 'info') {
 
 .modal-xl {
     max-width: 90vw;
+}
+
+/* Estilos para o modal de confirmação */
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.modal-body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.modal-footer {
+    background: #f8f9fa;
+    padding: 1.5rem;
+}
+
+/* Animação para o ícone de lixo no modal */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Hover effects para os botões do modal */
+.modal-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 /* MELHORIAS DE ESPAÇAMENTO ENTRE ÍCONES E TEXTO */

@@ -13,25 +13,21 @@
                             <i class="fas fa-file-invoice-dollar me-2"></i>
                             Gestão de Faturas
                         </h4>
+                        <!-- Botões movidos para o cabeçalho -->
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('faturas.create') }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Nova Fatura
+                            </a>
+                            <a href="{{ route('faturas.exportPdf') }}" target="_blank" class="btn btn-danger btn-sm">
+                                <i class="fas fa-file-pdf me-1"></i>
+                                Exportar PDF
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card-body">
-
-                    <!-- Barra de Ações -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('faturas.create') }}" class="btn btn-success">
-                                    <i class="fas fa-plus me-1"></i>
-                                    Nova Fatura
-                                </a>
-                                <a href="{{ route('faturas.exportPdf') }}" target="_blank" class="btn btn-danger">
-                                    <i class="fas fa-file-pdf me-1"></i>
-                                    Exportar PDF
-                                </a>
-                            </div>
-                        </div>
 
                     <!-- ✅ Mensagens -->
                     @if(session('success'))
@@ -148,10 +144,10 @@
                                                        title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('faturas.destroy', $fatura->id) }}"
-                                                          method="POST"
-                                                          class="d-inline"
-                                                          onsubmit="return confirm('⚠️ Tem certeza que deseja remover esta fatura?\n\nEsta ação não pode ser desfeita.');">
+                                                   <form action="{{ route('faturas.destroy', $fatura->id) }}"
+      method="POST"
+      class="d-inline"
+      onsubmit="return confirmDelete(this, '{{ addslashes($fatura->fornecedor) }}');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
@@ -163,6 +159,220 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        <!-- Adicione este JavaScript no final da sua página, antes de fechar </body> -->
+<script>
+// Função para mostrar toast
+function showToast(message, type = 'info', duration = 4000) {
+    // Tipos: success, error, warning, info
+    const iconMap = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    
+    const colorMap = {
+        success: 'success',
+        error: 'danger',
+        warning: 'warning',
+        info: 'primary'
+    };
+    
+    const toastHtml = `
+        <div class="toast align-items-center text-bg-${colorMap[type]} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${iconMap[type]} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // Criar ou encontrar container de toasts
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1055';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Adicionar toast ao container
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Mostrar toast
+    const toastElement = toastContainer.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement, { delay: duration });
+    toast.show();
+    
+    // Remover do DOM após esconder
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Função melhorada para confirmação de eliminação
+function confirmDelete(form, fornecedor) {
+    // Modal de confirmação personalizado
+    const modalHtml = `
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white border-0">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Confirmar Eliminação
+                        </h5>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="text-center mb-3">
+                            <strong>Tem certeza que deseja eliminar a fatura de:</strong>
+                        </p>
+                        <div class="alert alert-light border text-center">
+                            <strong>${fornecedor}</strong>
+                        </div>
+                        <p class="text-muted text-center small mb-0">
+                            <i class="fas fa-warning me-1"></i>
+                            Esta ação não pode ser desfeita!
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center gap-3">
+                        <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg px-4" id="confirmDeleteBtn">
+                            <i class="fas fa-trash me-2"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('deleteModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Adicionar modal ao body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    // Confirmar eliminação
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        modal.hide();
+        
+        // Toast de processamento
+        showToast('A eliminar fatura...', 'warning', 2000);
+        
+        // Submeter formulário após pequeno delay
+        setTimeout(() => {
+            form.submit();
+        }, 500);
+    });
+    
+    // Limpar modal do DOM quando fechar
+    document.getElementById('deleteModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+    
+    return false; // Prevenir submissão imediata
+}
+
+// Mostrar toast de sucesso se houver mensagem de sessão
+@if(session('success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ session('success') }}', 'success', 5000);
+    });
+@endif
+
+// Mostrar toast de erro se houver mensagem de erro
+@if(session('error'))
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ session('error') }}', 'error', 5000);
+    });
+@endif
+</script>
+
+<!-- SUBSTITUA o formulário de eliminação no seu código por este: -->
+<!-- 
+<form action="{{ route('faturas.destroy', $fatura->id) }}"
+      method="POST"
+      class="d-inline"
+      onsubmit="return confirmDelete(this, '{{ addslashes($fatura->fornecedor) }}');">
+    @csrf
+    @method('DELETE')
+    <button type="submit"
+            class="btn btn-sm btn-outline-danger"
+            title="Remover">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>
+-->
+
+<style>
+/* Estilos para os toasts */
+.toast-container {
+    z-index: 1055;
+}
+
+.toast {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    min-width: 300px;
+}
+
+.toast-body {
+    font-weight: 500;
+    padding: 1rem;
+}
+
+/* Estilos para o modal de confirmação */
+.modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.modal-body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.modal-footer {
+    background: #f8f9fa;
+    padding: 1.5rem;
+}
+
+/* Animação para o ícone de lixo no modal */
+.modal-body .fa-trash-alt {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Hover effects para os botões do modal */
+.modal-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+</style>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -174,31 +384,6 @@
                                 {{ $faturas->appends(request()->except('page'))->links() }}
                             </div>
                         @endif
-
-                        <!-- Resumo -->
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                     <div class="row text-center justify-content-center">
-                                        <div class="col-md-3 d-flex flex-column align-items-center justify-content-center">
-                                            <h6 class="text-muted">Total de Faturas</h6>
-                                            <h4 class="text-primary">{{ $faturas->count() }}</h4>
-                                        </div>
-                                        <div class="col-md-3 d-flex flex-column align-items-center justify-content-center">
-                                            <h6 class="text-muted">Valor Total</h6>
-                                            <h4 class="text-success">€{{ number_format($faturas->sum('valor'), 2, ',', '.') }}</h4>
-                                        </div>
-                                        <div class="col-md-3 d-flex flex-column align-items-center justify-content-center">
-                                            <h6 class="text-muted">Com Imagem</h6>
-                                            <h4 class="text-warning">{{ $faturas->whereNotNull('imagem')->count() }}</h4>
-                                        </div>
-                                    </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     @else
                         <div class="text-center py-5">
                             <div class="mb-4">
@@ -298,5 +483,26 @@ thead th a i {
 .d-flex:has(.btn) > * {
     margin: 0.25rem;
 }
+
+/* Botões no cabeçalho com contraste adequado */
+.card-header .btn {
+    border-width: 2px;
+    font-weight: 600;
+}
+
+.card-header .btn-success {
+    background-color: #198754;
+    border-color: #ffffff;
+}
+
+.card-header .btn-danger {
+    background-color: #dc3545;
+    border-color: #ffffff;
+}
+
+.card-header .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 </style>
-@endsection 
+@endsection

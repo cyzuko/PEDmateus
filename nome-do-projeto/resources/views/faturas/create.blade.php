@@ -345,23 +345,34 @@ let imageSource = null;
 // Inicializa a câmera
 async function startCamera() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        // Detectar se é dispositivo móvel
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        const constraints = {
             video: {
                 facingMode: { ideal: 'environment' },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+                width: { ideal: isMobile ? 720 : 1280 },
+                height: { ideal: isMobile ? 1280 : 720 }
             },
             audio: false
-        });
+        };
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
         cameraPlaceholder.style.display = 'none';
+        
+        // Para dispositivos móveis, adicionar rotação CSS se necessário
+        if (isMobile) {
+            video.style.transform = 'rotate(0deg)';
+            video.style.objectFit = 'cover';
+        }
+        
     } catch (err) {
         console.error("Erro ao acessar a câmera: ", err);
         video.style.display = 'none';
         cameraPlaceholder.style.display = 'block';
     }
 }
-
 // Captura de imagem
 captureButton.addEventListener('click', function() {
     if (video.readyState >= 2) {
@@ -822,6 +833,31 @@ small i {
 
 .d-flex:has(.btn) > * {
     margin: 0.25rem;
+}
+@media (max-width: 768px) {
+    #video {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 400px;
+        object-fit: cover;
+        transform: rotate(0deg);
+    }
+    
+    /* Container da câmera em mobile */
+    .position-relative.bg-light {
+        min-height: 400px !important;
+        max-height: 500px !important;
+    }
+    
+    /* Forçar orientação portrait para a câmera */
+    @media screen and (orientation: landscape) and (max-width: 768px) {
+        #video {
+            transform: rotate(90deg);
+            width: 150%;
+            height: 150%;
+            margin: -25% 0 0 -25%;
+        }
+    }
 }
 </style>
 @endsection
