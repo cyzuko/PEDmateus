@@ -19,29 +19,46 @@ class FaturaController extends Controller
     {
         try {
             $query = Fatura::where('user_id', Auth::id());
-
-            // Aplica ordenação com base no parâmetro da query string
-            switch ($request->input('sort')) {
-                case 'fornecedor_asc':
-                    $query->orderBy('fornecedor', 'asc');
-                    break;
-                case 'fornecedor_desc':
-                    $query->orderBy('fornecedor', 'desc');
-                    break;
-                case 'data_asc':
-                    $query->orderBy('data', 'asc');
-                    break;
-                case 'data_desc':
-                    $query->orderBy('data', 'desc');
-                    break;
-                case 'valor_asc':
-                    $query->orderBy('valor', 'asc');
-                    break;
-                case 'valor_desc':
-                    $query->orderBy('valor', 'desc');
-                    break;
-                default:
-                    $query->orderBy('data', 'desc');
+            
+            // Pesquisa por fornecedor ou NIF
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('fornecedor', 'LIKE', "%{$search}%")
+                      ->orWhere('nif', 'LIKE', "%{$search}%");
+                });
+            }
+            
+            // Filtro por data
+            if ($request->filled('data_inicio')) {
+                $query->where('data', '>=', $request->data_inicio);
+            }
+            
+            if ($request->filled('data_fim')) {
+                $query->where('data', '<=', $request->data_fim);
+            }
+            
+            // Filtro por valor
+            if ($request->filled('valor_min')) {
+                $query->where('valor', '>=', $request->valor_min);
+            }
+            
+            if ($request->filled('valor_max')) {
+                $query->where('valor', '<=', $request->valor_max);
+            }
+            
+            // Ordenação
+            if ($request->filled('sort')) {
+                $sort = $request->sort;
+                if (str_ends_with($sort, '_asc')) {
+                    $field = str_replace('_asc', '', $sort);
+                    $query->orderBy($field, 'asc');
+                } elseif (str_ends_with($sort, '_desc')) {
+                    $field = str_replace('_desc', '', $sort);
+                    $query->orderBy($field, 'desc');
+                }
+            } else {
+                $query->orderBy('data', 'desc');
             }
 
             $faturas = $query->paginate(10)->withQueryString();

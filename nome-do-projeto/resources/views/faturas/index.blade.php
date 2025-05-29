@@ -46,6 +46,142 @@
                         </div>
                     @endif
 
+                    <!-- 🔍 Barra de Pesquisa -->
+                    @if($faturas->count() > 0)
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-3">
+                                        <form method="GET" action="{{ route('faturas.index') }}" id="searchForm">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0">
+                                                            <i class="fas fa-search text-muted"></i>
+                                                        </span>
+                                                        <input type="text" 
+                                                               class="form-control border-start-0" 
+                                                               name="search" 
+                                                               id="searchInput"
+                                                               value="{{ request('search') }}" 
+                                                               placeholder="Pesquisar por fornecedor ou NIF..."
+                                                               autocomplete="off">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="date" 
+                                                           class="form-control" 
+                                                           name="data_inicio" 
+                                                           id="dataInicio"
+                                                           value="{{ request('data_inicio') }}" 
+                                                           title="Data inicial">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="date" 
+                                                           class="form-control" 
+                                                           name="data_fim" 
+                                                           id="dataFim"
+                                                           value="{{ request('data_fim') }}" 
+                                                           title="Data final">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white">
+                                                            <i class="fas fa-euro-sign text-muted"></i>
+                                                        </span>
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               name="valor_min" 
+                                                               id="valorMin"
+                                                               value="{{ request('valor_min') }}" 
+                                                               placeholder="Valor mínimo"
+                                                               step="0.01">
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               name="valor_max" 
+                                                               id="valorMax"
+                                                               value="{{ request('valor_max') }}" 
+                                                               placeholder="Valor máximo"
+                                                               step="0.01">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex gap-2">
+                                                        <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                                                            <i class="fas fa-search me-1"></i>
+                                                            Pesquisar
+                                                        </button>
+                                                        <a href="{{ route('faturas.index') }}" class="btn btn-outline-secondary btn-sm">
+                                                            <i class="fas fa-times me-1"></i>
+                                                            Limpar
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Manter parâmetros de ordenação -->
+                                            @if(request('sort'))
+                                                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                                            @endif
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-info bg-opacity-10">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 text-info">
+                                                    <i class="fas fa-list-ol me-1"></i>
+                                                    Total de Registos
+                                                </h6>
+                                                <h4 class="mb-0 text-info">{{ $faturas->total() ?? $faturas->count() }}</h4>
+                                            </div>
+                                            <div class="text-info opacity-75">
+                                                <i class="fas fa-file-invoice fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 📊 Resultados da pesquisa -->
+                        @if(request()->hasAny(['search', 'data_inicio', 'data_fim', 'valor_min', 'valor_max']))
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info border-0 bg-info bg-opacity-10">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <i class="fas fa-filter me-2"></i>
+                                                <strong>Filtros ativos:</strong>
+                                                @if(request('search'))
+                                                    <span class="badge bg-primary ms-1">Texto: "{{ request('search') }}"</span>
+                                                @endif
+                                                @if(request('data_inicio'))
+                                                    <span class="badge bg-primary ms-1">De: {{ \Carbon\Carbon::parse(request('data_inicio'))->format('d/m/Y') }}</span>
+                                                @endif
+                                                @if(request('data_fim'))
+                                                    <span class="badge bg-primary ms-1">Até: {{ \Carbon\Carbon::parse(request('data_fim'))->format('d/m/Y') }}</span>
+                                                @endif
+                                                @if(request('valor_min'))
+                                                    <span class="badge bg-success ms-1">Min: €{{ number_format(request('valor_min'), 2, ',', '.') }}</span>
+                                                @endif
+                                                @if(request('valor_max'))
+                                                    <span class="badge bg-success ms-1">Max: €{{ number_format(request('valor_max'), 2, ',', '.') }}</span>
+                                                @endif
+                                            </div>
+                                            <small class="text-muted">{{ $faturas->total() ?? $faturas->count() }} resultado(s)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+
                     <!-- 🧾 Tabela -->
                     @if($faturas->count() > 0)
                         <div class="table-responsive">
@@ -73,9 +209,13 @@
                                                     if ($currentSort === $ascKey) $dir = 'asc';
                                                     elseif ($currentSort === $descKey) $dir = 'desc';
                                                     $nextDir = $dir === 'asc' ? 'desc' : 'asc';
+                                                    
+                                                    // Construir URL mantendo parâmetros de pesquisa
+                                                    $sortParams = request()->except(['sort', 'page']);
+                                                    $sortParams['sort'] = $key . '_' . $nextDir;
                                                 @endphp
                                                 <th class="text-center" style="cursor:pointer;">
-                                                    <a href="{{ request()->fullUrlWithQuery(['sort' => $key . '_' . $nextDir]) }}"
+                                                    <a href="{{ request()->fullUrlWithQuery($sortParams) }}"
                                                     class="text-white text-decoration-none d-flex align-items-center justify-content-center gap-1">
                                                         <i class="fas fa-{{ $col['icon'] }}"></i>
                                                         <span>{{ $col['label'] }}</span>
@@ -174,8 +314,17 @@
                             <div class="mb-4">
                                 <i class="fas fa-file-invoice fa-5x text-muted"></i>
                             </div>
-                            <h4 class="text-muted">Nenhuma fatura encontrada</h4>
-                            <p class="text-muted mb-4">Comece adicionando sua primeira fatura ao sistema.</p>
+                            @if(request()->hasAny(['search', 'data_inicio', 'data_fim', 'valor_min', 'valor_max']))
+                                <h4 class="text-muted">Nenhuma fatura encontrada</h4>
+                                <p class="text-muted mb-4">Tente ajustar os critérios de pesquisa ou remover os filtros.</p>
+                                <a href="{{ route('faturas.index') }}" class="btn btn-primary btn-lg me-2">
+                                    <i class="fas fa-times me-2"></i>
+                                    Limpar Filtros
+                                </a>
+                            @else
+                                <h4 class="text-muted">Nenhuma fatura encontrada</h4>
+                                <p class="text-muted mb-4">Comece adicionando sua primeira fatura ao sistema.</p>
+                            @endif
                             <a href="{{ route('faturas.create') }}" class="btn btn-success btn-lg">
                                 <i class="fas fa-plus me-2"></i>
                                 Adicionar Primeira Fatura
@@ -333,6 +482,24 @@ function showDeleteModal(form, fornecedor) {
     });
 }
 
+// Função para pesquisa em tempo real
+function setupLiveSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    searchForm.submit();
+                }
+            }, 500); // Pesquisar após 500ms de pausa na digitação
+        });
+    }
+}
+
 // Event listeners quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado, configurando event listeners...');
@@ -350,6 +517,9 @@ document.addEventListener('DOMContentLoaded', function() {
             showDeleteModal(form, fornecedor);
         });
     });
+    
+    // Configurar pesquisa em tempo real
+    setupLiveSearch();
     
     // Toasts de sessão com delay
     setTimeout(() => {
@@ -423,6 +593,40 @@ thead th a {
 
 thead th a i {
     transition: opacity 0.3s ease;
+}
+
+/* Estilos para a barra de pesquisa */
+.input-group-text {
+    border-right: none;
+    background-color: #f8f9fa;
+}
+
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-left: none;
+}
+
+.input-group-text + .form-control:focus {
+    border-left: 1px solid #86b7fe;
+}
+
+/* Card de pesquisa */
+.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+}
+
+/* Card de estatísticas */
+.bg-info.bg-opacity-10 {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+    border: 1px solid rgba(13, 202, 240, 0.2);
+    border-radius: 10px;
 }
 
 /* Estilos para os toasts */
@@ -568,6 +772,73 @@ thead th a i {
 
 .d-flex:has(.btn) > * {
     margin: 0.25rem;
+}
+
+/* Estilos específicos para a pesquisa */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Badges nos filtros ativos */
+.badge {
+    font-size: 0.75em;
+    padding: 0.375em 0.75em;
+}
+
+/* Responsividade para a barra de pesquisa */
+@media (max-width: 768px) {
+    .col-md-8 {
+        margin-bottom: 1rem;
+    }
+    
+    .input-group {
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+}
+
+/* Melhorias visuais nos campos de pesquisa */
+.input-group .form-control::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.card.border-0.bg-light {
+    transition: all 0.3s ease;
+}
+
+.card.border-0.bg-light:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+/* Estilo do contador de resultados */
+.text-info {
+    color: #0dcaf0 !important;
+}
+
+.fa-2x {
+    font-size: 2em !important;
+}
+
+/* Animação sutil para os badges */
+.badge {
+    transition: all 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* Melhorar o visual do alerta de filtros ativos */
+.alert-info.border-0.bg-info.bg-opacity-10 {
+    border: 1px solid rgba(13, 202, 240, 0.3) !important;
+    background-color: rgba(13, 202, 240, 0.05) !important;
 }
 </style>
 @endsection
