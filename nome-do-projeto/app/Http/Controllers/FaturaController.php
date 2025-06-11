@@ -89,7 +89,7 @@ class FaturaController extends Controller
             'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'email_para' => 'nullable|email',
             'telefone_para' => 'nullable|string',
-            'telefone' => 'nullable|string', // Campo adicional do formulário
+            'telefone' => 'nullable|string', // Campo adicional do formularioo
             'enviar_email' => 'nullable|boolean',
             'enviar_sms' => 'nullable|boolean',
         ]);
