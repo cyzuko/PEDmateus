@@ -11,7 +11,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">
                             <i class="fas fa-tachometer-alt me-2"></i>
-                            Dashboard - Bem-vindo, {{ Auth::user()->name }}!
+                            Bem-vindo, {{ Auth::user()->name }}!
                         </h4>
                         <!-- Botões de ação rápida no cabeçalho -->
                         <div class="d-flex gap-2">
