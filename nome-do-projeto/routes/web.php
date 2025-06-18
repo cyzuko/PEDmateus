@@ -24,12 +24,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
+    Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('password.update');
+    
     // Rotas para faturas (CRUD completo)
     Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
     Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');
     Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
+
+    // Rotas para upload múltiplo de faturas
+    Route::get('/faturas/create-multiple', [FaturaController::class, 'createMultiple'])->name('faturas.create-multiple');
+    Route::post('/faturas/store-multiple', [FaturaController::class, 'storeMultiple'])->name('faturas.store-multiple');
 
     // Coloque a rota estática primeiro para evitar conflito
     Route::get('/faturas/export-pdf', [FaturaController::class, 'exportPdf'])->name('faturas.exportPdf');

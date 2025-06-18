@@ -19,6 +19,11 @@
                                 <i class="fas fa-plus me-1"></i>
                                 Nova Fatura
                             </a>
+                            
+<a href="{{ route('faturas.create-multiple') }}" class="btn btn-warning btn-sm">
+    <i class="fas fa-upload me-1"></i>
+    Múltiplas Faturas
+</a>
                             <a href="{{ route('faturas.exportPdf') }}" target="_blank" class="btn btn-danger btn-sm">
                                 <i class="fas fa-file-pdf me-1"></i>
                                 Exportar PDF

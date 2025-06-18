@@ -89,7 +89,7 @@ class FaturaController extends Controller
             'imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'email_para' => 'nullable|email',
             'telefone_para' => 'nullable|string',
-            'telefone' => 'nullable|string', // Campo adicional do formularioo
+            'telefone' => 'nullable|string', // Campo adicional do formulário
             'enviar_email' => 'nullable|boolean',
             'enviar_sms' => 'nullable|boolean',
         ]);
@@ -158,6 +158,7 @@ class FaturaController extends Controller
                 }
             }
 
+            // CORREÇÃO: Sempre redirecionar para a lista de faturas
             return redirect()->route('faturas.index')->with('success', implode(' ', $messages));
 
         } catch (\Exception $e) {
@@ -206,42 +207,143 @@ class FaturaController extends Controller
         }
     }
 
-   public function update(Request $request, $id)
-{
-    $fatura = Fatura::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $fatura = Fatura::findOrFail($id);
 
-    $validated = $request->validate([
-        'fornecedor' => 'required|string|max:255',
-        'nif' => 'nullable|digits:9',
-        'data' => 'required|date',
-        'valor' => 'required|numeric|min:0.01',
-        'imagem' => 'nullable|image|max:2048', // imagem válida e até 2MB
-    ]);
+        $validated = $request->validate([
+            'fornecedor' => 'required|string|max:255',
+            'nif' => 'nullable|digits:9',
+            'data' => 'required|date',
+            'valor' => 'required|numeric|min:0.01',
+            'imagem' => 'nullable|image|max:2048', // imagem válida e até 2MB
+        ]);
 
-    // Upload da nova imagem
-    if ($request->hasFile('imagem')) {
-        // Remove imagem anterior se existir
-        if ($fatura->imagem && Storage::exists('public/' . $fatura->imagem)) {
-            Storage::delete('public/' . $fatura->imagem);
+        // Upload da nova imagem
+        if ($request->hasFile('imagem')) {
+            // Remove imagem anterior se existir
+            if ($fatura->imagem && Storage::exists('public/' . $fatura->imagem)) {
+                Storage::delete('public/' . $fatura->imagem);
+            }
+
+            // Guarda nova imagem
+            $path = $request->file('imagem')->store('faturas', 'public');
+            $validated['imagem'] = $path;
         }
 
-        // Guarda nova imagem
-        $path = $request->file('imagem')->store('faturas', 'public');
-        $validated['imagem'] = $path;
+        // Atualiza os dados
+        $fatura->update($validated);
+
+        return redirect()->route('faturas.index')->with('success', 'Atualizado com sucesso!');
     }
-
-    // Atualiza os dados
-    $fatura->update($validated);
-
-     return redirect()->route('faturas.index')->with('success', 'Atualizado com sucesso!');
-}
-
 
     public function exportPdf()
     {
         $faturas = Fatura::where('user_id', Auth::id())->get();
         $pdf = Pdf::loadView('faturas.pdf', compact('faturas'));
         return $pdf->download('faturas.pdf');
+    }
+
+    public function createMultiple()
+    {
+        return view('faturas.create-multiple');
+    }
+
+    public function storeMultiple(Request $request)
+    {
+        $validated = $request->validate([
+            'faturas' => 'required|array|min:1',
+            'faturas.*.fornecedor' => 'required|string|max:255',
+            'faturas.*.nif' => 'nullable|string|max:20',
+            'faturas.*.data' => 'required|date',
+            'faturas.*.valor' => 'required|numeric|min:0',
+            'faturas.*.imagem' => 'nullable|string',
+            'faturas.*.imagem_upload' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'enviar_email' => 'nullable|boolean',
+            'enviar_sms' => 'nullable|boolean',
+            'email_para' => 'nullable|email',
+            'telefone' => 'nullable|string',
+        ]);
+
+        try {
+            $faturasSalvas = [];
+            $erros = [];
+
+            foreach ($validated['faturas'] as $index => $faturaData) {
+                try {
+                    $fatura = new Fatura();
+                    $fatura->user_id = Auth::id();
+                    $fatura->fornecedor = $faturaData['fornecedor'];
+                    $fatura->nif = $faturaData['nif'] ?? null;
+                    $fatura->data = $faturaData['data'];
+                    $fatura->valor = $faturaData['valor'];
+
+                    // Processar imagem base64
+                    if (!empty($faturaData['imagem'])) {
+                        $imageData = str_replace('data:image/png;base64,', '', $faturaData['imagem']);
+                        $imageData = base64_decode($imageData);
+                        $imageName = 'fatura_' . time() . '_' . $index . '.png';
+                        Storage::disk('public')->put('faturas/' . $imageName, $imageData);
+                        $fatura->imagem = 'faturas/' . $imageName;
+                    }
+
+                    // Processar upload de arquivo
+                    if (isset($faturaData['imagem_upload'])) {
+                        $file = $faturaData['imagem_upload'];
+                        $path = $file->store('faturas', 'public');
+                        $fatura->imagem = $path;
+                    }
+
+                    $fatura->save();
+                    $faturasSalvas[] = $fatura;
+
+                } catch (\Exception $e) {
+                    $erros[] = "Erro na fatura " . ($index + 1) . ": " . $e->getMessage();
+                }
+            }
+
+            $messages = [count($faturasSalvas) . ' faturas salvas com sucesso!'];
+
+            if (!empty($erros)) {
+                $messages[] = 'Erros: ' . implode(', ', $erros);
+            }
+
+            // Enviar notificações se solicitado
+            if (!empty($validated['enviar_email']) && !empty($validated['email_para'])) {
+                try {
+                    foreach ($faturasSalvas as $fatura) {
+                        Mail::to($validated['email_para'])->send(new FaturaCriadaMail($fatura));
+                    }
+                    $messages[] = 'E-mails enviados com sucesso!';
+                } catch (\Exception $e) {
+                    $messages[] = 'Erro ao enviar e-mails: ' . $e->getMessage();
+                }
+            }
+
+            if (!empty($validated['enviar_sms']) && !empty($validated['telefone'])) {
+                try {
+                    $user = Auth::user();
+                    foreach ($faturasSalvas as $fatura) {
+                        $user->notify(new NovaFaturaNotification($fatura, null, $validated['telefone'], 'criada'));
+                    }
+                    $messages[] = 'SMS enviados com sucesso!';
+                } catch (\Exception $e) {
+                    $messages[] = 'Erro ao enviar SMS: ' . $e->getMessage();
+                }
+            }
+
+            // CORREÇÃO: Sempre redirecionar para a lista de faturas
+            return redirect()->route('faturas.index')->with('success', implode(' ', $messages));
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao salvar múltiplas faturas', [
+                'mensagem' => $e->getMessage(),
+                'arquivo' => $e->getFile(),
+                'linha' => $e->getLine()
+            ]);
+
+            return back()->withInput()->with('error', 'Erro ao criar faturas: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
