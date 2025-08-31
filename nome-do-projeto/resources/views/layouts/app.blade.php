@@ -181,6 +181,11 @@
                                     <i class="fas fa-file-invoice"></i> Faturas
                                 </a>
                             </li>
+                           <li class="nav-item">
+    <a class="nav-link" href="{{ route('explicacoes.index') }}">
+        <i class="fas fa-graduation-cap"></i> Explicações
+    </a>
+</li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('estatisticas') }}">
                                     <i class="fas fa-chart-bar"></i> Estatísticas
