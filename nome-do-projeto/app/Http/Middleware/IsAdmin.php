@@ -10,10 +10,10 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        if (Auth::check() && Auth::user()->tipo_utilizador === 'admin') {
             return $next($request);
         }
 
-        abort(403, 'Acesso negado.');
+        return redirect()->route('home')->with('error', 'Acesso negado. Apenas administradores podem aceder a esta área.');
     }
 }

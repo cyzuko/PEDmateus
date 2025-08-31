@@ -35,9 +35,69 @@
                         </div>
                     @endif
 
+                    <!-- Cards de Estatísticas com Status de Aprovação -->
+                    @if(isset($stats))
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            <div class="info-box bg-primary">
+                                <span class="info-box-icon"><i class="fas fa-calendar-plus"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total</span>
+                                    <span class="info-box-number">{{ $stats['total'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Pendentes</span>
+                                    <span class="info-box-number">{{ $stats['pendentes'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Aprovadas</span>
+                                    <span class="info-box-number">{{ $stats['aprovadas'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="info-box bg-danger">
+                                <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Rejeitadas</span>
+                                    <span class="info-box-number">{{ $stats['rejeitadas'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-check-double"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Confirmadas</span>
+                                    <span class="info-box-number">{{ $explicacoes->where('status', 'confirmada')->count() }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="info-box bg-secondary">
+                                <span class="info-box-icon"><i class="fas fa-euro-sign"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total €</span>
+                                    <span class="info-box-number">{{ number_format($explicacoes->sum('preco'), 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Filtros -->
                     <div class="row mb-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <select class="form-control" id="filtroStatus">
                                 <option value="">Todos os status</option>
                                 <option value="agendada">Agendadas</option>
@@ -46,7 +106,15 @@
                                 <option value="cancelada">Canceladas</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <select class="form-control" id="filtroAprovacao">
+                                <option value="">Status de Aprovação</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="aprovada">Aprovada</option>
+                                <option value="rejeitada">Rejeitada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <input type="date" class="form-control" id="filtroData" placeholder="Filtrar por data">
                         </div>
                         <div class="col-md-3">
@@ -71,14 +139,17 @@
                                         <th>Local</th>
                                         <th>Preço</th>
                                         <th>Status</th>
+                                        <th>Aprovação Admin</th>
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($explicacoes as $explicacao)
                                         <tr data-status="{{ $explicacao->status }}" 
+                                            data-aprovacao="{{ $explicacao->aprovacao_admin ?? 'pendente' }}"
                                             data-data="{{ $explicacao->data_explicacao }}" 
-                                            data-disciplina="{{ strtolower($explicacao->disciplina) }}">
+                                            data-disciplina="{{ strtolower($explicacao->disciplina) }}"
+                                            class="{{ $explicacao->aprovacao_admin === 'rejeitada' ? 'table-danger-light' : ($explicacao->aprovacao_admin === 'aprovada' ? 'table-success-light' : '') }}">
                                             <td>
                                                 <strong>{{ date('d/m/Y', strtotime($explicacao->data_explicacao)) }}</strong>
                                                 @if(date('Y-m-d') == $explicacao->data_explicacao)
@@ -135,6 +206,40 @@
                                                 </span>
                                             </td>
                                             <td>
+                                                @if($explicacao->aprovacao_admin === 'pendente' || !isset($explicacao->aprovacao_admin))
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        Pendente
+                                                    </span>
+                                                @elseif($explicacao->aprovacao_admin === 'aprovada')
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check mr-1"></i>
+                                                        Aprovada
+                                                    </span>
+                                                    @if($explicacao->data_aprovacao)
+                                                        <br><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small>
+                                                    @endif
+                                                    @if($explicacao->aprovadoPor)
+                                                        <br><small class="text-muted">por {{ $explicacao->aprovadoPor->name }}</small>
+                                                    @endif
+                                                @elseif($explicacao->aprovacao_admin === 'rejeitada')
+                                                    <span class="badge badge-danger">
+                                                        <i class="fas fa-times mr-1"></i>
+                                                        Rejeitada
+                                                    </span>
+                                                    @if($explicacao->data_aprovacao)
+                                                        <br><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small>
+                                                    @endif
+                                                    @if($explicacao->motivo_rejeicao)
+                                                        <br>
+                                                        <button class="btn btn-xs btn-outline-danger mt-1" 
+                                                                onclick="mostrarMotivoRejeicao('{{ addslashes($explicacao->motivo_rejeicao) }}')">
+                                                            <i class="fas fa-info-circle"></i> Ver Motivo
+                                                        </button>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                            <td>
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <!-- Ver detalhes -->
                                                     <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
@@ -146,7 +251,8 @@
                                                     @php
                                                         $dataHora = strtotime($explicacao->data_explicacao . ' ' . $explicacao->hora_fim);
                                                         $jaPassou = $dataHora < time();
-                                                        $podeSerEditada = !$jaPassou && $explicacao->status !== 'cancelada';
+                                                        $podeSerEditada = !$jaPassou && $explicacao->status !== 'cancelada' && 
+                                                                         ($explicacao->aprovacao_admin === 'pendente' || $explicacao->aprovacao_admin === 'rejeitada' || !isset($explicacao->aprovacao_admin));
                                                         $podeSerCancelada = !$jaPassou && in_array($explicacao->status, ['agendada', 'confirmada']);
                                                     @endphp
                                                     
@@ -158,7 +264,7 @@
                                                     @endif
 
                                                     <!-- Ações de status -->
-                                                    @if($explicacao->status === 'agendada')
+                                                    @if($explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada')
                                                         <form method="POST" action="{{ route('explicacoes.confirmar', $explicacao->id) }}" 
                                                               style="display: inline;">
                                                             @csrf
@@ -193,16 +299,18 @@
                                                         </form>
                                                     @endif
 
-                                                    <!-- Eliminar -->
-                                                    <form method="POST" action="{{ route('explicacoes.destroy', $explicacao->id) }}" 
-                                                          style="display: inline;" 
-                                                          onsubmit="return confirm('Tem certeza que deseja eliminar esta explicação? Esta ação não pode ser desfeita.')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <!-- Eliminar (só se pendente ou rejeitada) -->
+                                                    @if($explicacao->aprovacao_admin === 'pendente' || $explicacao->aprovacao_admin === 'rejeitada' || !isset($explicacao->aprovacao_admin))
+                                                        <form method="POST" action="{{ route('explicacoes.destroy', $explicacao->id) }}" 
+                                                              style="display: inline;" 
+                                                              onsubmit="return confirm('Tem certeza que deseja eliminar esta explicação? Esta ação não pode ser desfeita.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>
@@ -214,52 +322,6 @@
                         <!-- Paginação -->
                         <div class="d-flex justify-content-center">
                             {{ $explicacoes->links() }}
-                        </div>
-
-                        <!-- Estatísticas rápidas -->
-                        <div class="row mt-4">
-                            <div class="col-md-3">
-                                <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="fas fa-calendar-plus"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total</span>
-                                        <span class="info-box-number">{{ $explicacoes->total() }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="fas fa-check"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Confirmadas</span>
-                                        <span class="info-box-number">
-                                            {{ $explicacoes->where('status', 'confirmada')->count() }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-warning">
-                                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Agendadas</span>
-                                        <span class="info-box-number">
-                                            {{ $explicacoes->where('status', 'agendada')->count() }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-primary">
-                                    <span class="info-box-icon"><i class="fas fa-euro-sign"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total €</span>
-                                        <span class="info-box-number">
-                                            {{ number_format($explicacoes->sum('preco'), 2) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     @else
                         <div class="text-center py-5">
@@ -277,14 +339,46 @@
     </div>
 </div>
 
+<!-- Modal para mostrar motivo de rejeição -->
+<div class="modal fade" id="modalMotivoRejeicao" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle text-danger mr-2"></i>
+                    Motivo da Rejeição
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong>Motivo:</strong>
+                    <p id="motivoRejeicaoTexto" class="mb-0 mt-2"></p>
+                </div>
+                <p class="text-muted">
+                    <i class="fas fa-lightbulb mr-1"></i>
+                    Pode editar a sua explicação e submeter novamente após corrigir os pontos mencionados.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Filtros em tempo real
 document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+document.getElementById('filtroAprovacao').addEventListener('change', aplicarFiltros);
 document.getElementById('filtroData').addEventListener('change', aplicarFiltros);
 document.getElementById('filtroDisciplina').addEventListener('input', aplicarFiltros);
 
 function aplicarFiltros() {
     const statusFiltro = document.getElementById('filtroStatus').value.toLowerCase();
+    const aprovacaoFiltro = document.getElementById('filtroAprovacao').value.toLowerCase();
     const dataFiltro = document.getElementById('filtroData').value;
     const disciplinaFiltro = document.getElementById('filtroDisciplina').value.toLowerCase();
     
@@ -292,12 +386,17 @@ function aplicarFiltros() {
     
     linhas.forEach(linha => {
         const status = linha.dataset.status;
+        const aprovacao = linha.dataset.aprovacao;
         const data = linha.dataset.data;
         const disciplina = linha.dataset.disciplina;
         
         let mostrar = true;
         
         if (statusFiltro && status !== statusFiltro) {
+            mostrar = false;
+        }
+        
+        if (aprovacaoFiltro && aprovacao !== aprovacaoFiltro) {
             mostrar = false;
         }
         
@@ -315,9 +414,15 @@ function aplicarFiltros() {
 
 function limparFiltros() {
     document.getElementById('filtroStatus').value = '';
+    document.getElementById('filtroAprovacao').value = '';
     document.getElementById('filtroData').value = '';
     document.getElementById('filtroDisciplina').value = '';
     aplicarFiltros();
+}
+
+function mostrarMotivoRejeicao(motivo) {
+    document.getElementById('motivoRejeicaoTexto').innerHTML = motivo;
+    $('#modalMotivoRejeicao').modal('show');
 }
 </script>
 
@@ -338,6 +443,19 @@ function limparFiltros() {
 
 .btn-group-sm > .btn {
     margin: 0 1px;
+}
+
+.table-success-light {
+    background-color: rgba(212, 237, 218, 0.3);
+}
+
+.table-danger-light {
+    background-color: rgba(248, 215, 218, 0.3);
+}
+
+.btn-xs {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.675rem;
 }
 </style>
 @endsection

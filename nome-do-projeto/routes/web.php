@@ -17,9 +17,34 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
-// Rotas de administrador
-Route::middleware(['auth', 'admin'])->group(function () {
+// === ROTAS DE ADMINISTRADOR ===
+Route::middleware(['auth'])->group(function () {
+    // Rota de redirecionamento para /admin
+    Route::get('/admin', function () {
+        return redirect()->route('admin.dashboard');
+    })->name('admin');
+    
+    // Dashboard principal do admin
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    
+    // Gestão de explicações
+    Route::get('/admin/explicacoes', [AdminController::class, 'explicacoes'])->name('admin.explicacoes.index');
+    Route::get('/admin/explicacoes/{id}', [AdminController::class, 'explicacaoShow'])->name('admin.explicacoes.show');
+    
+    // Aprovações
+    Route::patch('/admin/explicacoes/{id}/aprovar', [AdminController::class, 'aprovarExplicacao'])->name('admin.explicacoes.aprovar');
+    Route::patch('/admin/explicacoes/{id}/rejeitar', [AdminController::class, 'rejeitarExplicacao'])->name('admin.explicacoes.rejeitar');
+    Route::patch('/admin/explicacoes/{id}/reverter', [AdminController::class, 'reverterAprovacao'])->name('admin.explicacoes.reverter');
+    
+    // Aprovação múltipla
+    Route::post('/admin/explicacoes/aprovar-multiplas', [AdminController::class, 'aprovarMultiplas'])->name('admin.explicacoes.aprovar-multiplas');
+    
+    // Relatórios
+    Route::get('/admin/relatorio-aprovacoes', [AdminController::class, 'relatorioAprovacoes'])->name('admin.relatorio-aprovacoes');
+    Route::get('/admin/exportar-relatorio', [AdminController::class, 'exportarRelatorio'])->name('admin.exportar-relatorio');
+    
+    // API para notificações
+    Route::get('/admin/api/explicacoes-pendentes', [AdminController::class, 'explicacoesPendentesCount'])->name('admin.api.explicacoes-pendentes');
 });
 
 // Rotas autenticadas
@@ -47,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/faturas/{id}', [FaturaController::class, 'update'])->name('faturas.update');
     Route::delete('/faturas/{id}', [FaturaController::class, 'destroy'])->name('faturas.destroy');
     
-    // === NOVAS ROTAS PARA EXPLICAÇÕES ===
+    // === ROTAS PARA EXPLICAÇÕES ===
     
     // Listar todos os horários de explicações
     Route::get('/explicacoes', [ExplicacaoController::class, 'index'])->name('explicacoes.index');

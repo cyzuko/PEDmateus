@@ -12,14 +12,33 @@ class ExplicacaoController extends Controller
     /**
      * Mostrar lista de explicações
      */
-    public function index()
-    {
-        $explicacoes = Explicacao::where('user_id', Auth::id())
-                                ->orderBy('data_explicacao', 'desc')
-                                ->paginate(10);
-
-        return view('explicacoes.index', compact('explicacoes'));
-    }
+    
+public function index()
+{
+    $user = auth()->user();
+    
+    // Buscar explicações do utilizador logado com informações de aprovação
+    $explicacoes = Explicacao::with(['aprovadoPor'])
+        ->where('user_id', $user->id)
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+    
+    // Estatísticas para o dashboard do professor
+    $stats = [
+        'total' => $explicacoes->total(),
+        'pendentes' => Explicacao::where('user_id', $user->id)
+            ->where('aprovacao_admin', 'pendente')
+            ->count(),
+        'aprovadas' => Explicacao::where('user_id', $user->id)
+            ->where('aprovacao_admin', 'aprovada')
+            ->count(),
+        'rejeitadas' => Explicacao::where('user_id', $user->id)
+            ->where('aprovacao_admin', 'rejeitada')
+            ->count(),
+    ];
+    
+    return view('explicacoes.index', compact('explicacoes', 'stats'));
+}
 
     /**
      * Mostrar formulário para criar nova explicação
