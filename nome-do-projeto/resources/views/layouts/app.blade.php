@@ -187,11 +187,9 @@
     </a>
 </li>
 @if(auth()->check() && auth()->user()->role === 'admin')
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('explicacoes.index') }}">
-            <i class="fas fa-graduation-cap"></i> Explicações
-        </a>
-    </li>
+<a href="{{ url('/admin') }}" class="btn btn-primary">
+    <i class="fas fa-tachometer-alt"></i> Dashboard Admin
+</a>
 @endif
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('estatisticas') }}">
