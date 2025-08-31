@@ -12,23 +12,13 @@
                     <i class="fas fa-tachometer-alt mr-2"></i>
                     Dashboard Administrativo
                 </h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group mr-2">
-                        <a href="{{ route('admin.explicacoes.index') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-list"></i> Todas as Explicações
-                        </a>
-                        <a href="{{ route('admin.relatorio-aprovacoes') }}" class="btn btn-sm btn-outline-info">
-                            <i class="fas fa-chart-bar"></i> Relatórios
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- Cartões de Estatísticas -->
     <div class="row">
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -48,7 +38,7 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -68,7 +58,7 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -87,26 +77,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Professores Ativos
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $stats['total_professores'] }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Conteúdo Principal -->
@@ -120,7 +90,12 @@
                         Explicações Pendentes de Aprovação
                     </h6>
                     @if($stats['pendentes_aprovacao'] > 0)
-                        <span class="badge badge-warning">{{ $stats['pendentes_aprovacao'] }} pendentes</span>
+                        <div>
+                            <span class="badge badge-warning">{{ $stats['pendentes_aprovacao'] }} pendentes</span>
+                            <button class="btn btn-success btn-sm ml-2" onclick="aprovarSelecionadas()" id="btnAprovarLote" style="display: none;">
+                                <i class="fas fa-check-double"></i> Aprovar Selecionadas
+                            </button>
+                        </div>
                     @endif
                 </div>
                 <div class="card-body">
@@ -129,17 +104,23 @@
                             <table class="table table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Professor</th>
+                                        <th width="30">
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                        </th>
+                                        <th>Encarregado de Educação/Aluno</th>
                                         <th>Disciplina</th>
                                         <th>Data/Hora</th>
                                         <th>Aluno</th>
-                                        <th>Criada em</th>
+                                        <th>Preço</th>
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($explicacoesPendentes as $explicacao)
                                         <tr>
+                                            <td>
+                                                <input type="checkbox" class="select-item" value="{{ $explicacao->id }}" onchange="updateSelection()">
+                                            </td>
                                             <td>
                                                 <strong>{{ $explicacao->user->name }}</strong>
                                                 <br>
@@ -159,7 +140,7 @@
                                                 <small class="text-muted">{{ $explicacao->contacto_aluno }}</small>
                                             </td>
                                             <td>
-                                                <small>{{ $explicacao->created_at->diffForHumans() }}</small>
+                                                <strong class="text-success">€{{ number_format($explicacao->preco, 2) }}</strong>
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
@@ -257,104 +238,96 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Ações Rápidas -->
-            <div class="card shadow mt-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-bolt mr-2"></i>
-                        Ações Rápidas
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <a href="{{ route('admin.explicacoes.index') }}?status_aprovacao=pendente" 
-                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-clock text-warning mr-2"></i>
-                                Explicações Pendentes
-                            </div>
-                            @if($stats['pendentes_aprovacao'] > 0)
-                                <span class="badge badge-warning badge-pill">{{ $stats['pendentes_aprovacao'] }}</span>
-                            @endif
-                        </a>
-                        
-                        <a href="{{ route('admin.explicacoes.index') }}?status_aprovacao=aprovada" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-check text-success mr-2"></i>
-                            Explicações Aprovadas
-                        </a>
-                        
-                        <a href="{{ route('admin.explicacoes.index') }}?status_aprovacao=rejeitada" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-times text-danger mr-2"></i>
-                            Explicações Rejeitadas
-                        </a>
-                        
-                        <a href="{{ route('admin.relatorio-aprovacoes') }}" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-chart-bar text-info mr-2"></i>
-                            Relatório de Aprovações
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gráfico de Atividade (placeholder para implementação futura) -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-line mr-2"></i>
-                        Resumo de Atividades dos Últimos 30 Dias
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-5">
-                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Gráfico de Atividades</h5>
-                        <p class="text-muted">Esta funcionalidade será implementada em breve para mostrar estatísticas detalhadas.</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <!-- Modal para Rejeitar Explicação -->
-<div class="modal fade" id="modalRejeicao" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="modalRejeicao" tabindex="-1" role="dialog" aria-labelledby="modalRejeicaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-times-circle text-danger mr-2"></i>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalRejeicaoLabel">
+                    <i class="fas fa-times-circle mr-2"></i>
                     Rejeitar Explicação
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="formRejeicao" method="POST">
+            
+            <form id="formRejeicao" method="POST" action="">
                 @csrf
                 @method('PATCH')
+                
                 <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Atenção:</strong> Esta ação irá rejeitar a explicação e notificar o professor sobre os motivos.
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="motivo_rejeicao">Motivo da Rejeição *</label>
-                        <textarea class="form-control" id="motivo_rejeicao" name="motivo_rejeicao" 
-                                  rows="4" required placeholder="Descreva o motivo da rejeição..."></textarea>
+                        <label for="motivo_rejeicao">
+                            <strong>Motivo da Rejeição <span class="text-danger">*</span></strong>
+                        </label>
+                        <textarea class="form-control" 
+                                  id="motivo_rejeicao" 
+                                  name="motivo_rejeicao" 
+                                  rows="5" 
+                                  required 
+                                  minlength="10"
+                                  maxlength="500"
+                                  placeholder="Descreva detalhadamente o motivo da rejeição para que o professor possa corrigir..."></textarea>
                         <small class="form-text text-muted">
-                            Este motivo será enviado ao professor para que possa corrigir e reenviar.
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Seja específico nos motivos para ajudar o professor a corrigir os problemas identificados.
+                            <br>
+                            <span id="contador-caracteres">0/500 caracteres</span>
                         </small>
                     </div>
+
+                    <div class="form-group">
+                        <label class="text-muted">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            Clique num motivo comum para pré-preencher:
+                        </label>
+                        <div class="d-flex flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Horário incompatível com disponibilidade estabelecida.">
+                                <i class="fas fa-clock mr-1"></i>Horário incompatível
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Preço não está de acordo com a tabela de valores estabelecida.">
+                                <i class="fas fa-euro-sign mr-1"></i>Preço incorreto
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Informações do aluno incompletas ou incorretas.">
+                                <i class="fas fa-user mr-1"></i>Info. aluno incompletas
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Local da explicação não especificado adequadamente.">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Local inadequado
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Disciplina não corresponde às habilitações do professor.">
+                                <i class="fas fa-book mr-1"></i>Disciplina incorreta
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
+                                    data-motivo="Dados de contacto do aluno em falta ou inválidos.">
+                                <i class="fas fa-phone mr-1"></i>Contacto inválido
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-1"></i>
-                        Rejeitar Explicação
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="btnConfirmarRejeicao">
+                        <i class="fas fa-times-circle mr-1"></i>
+                        Confirmar Rejeição
                     </button>
                 </div>
             </form>
@@ -364,21 +337,150 @@
 
 @endsection
 
-@push('scripts')
+<!-- Script inline direto no HTML -->
 <script>
+// Variáveis globais
+let selectedItems = [];
+
+// Funções globais - disponíveis imediatamente
 function mostrarModalRejeicao(explicacaoId) {
+    console.log('Abrindo modal de rejeição para explicação:', explicacaoId);
+    
+    const modal = document.getElementById('modalRejeicao');
     const form = document.getElementById('formRejeicao');
+    
+    if (!modal || !form) {
+        console.error('Modal ou form não encontrado');
+        alert('Erro: Modal não encontrado');
+        return;
+    }
+    
+    // Atualizar a action do form
     form.action = `/admin/explicacoes/${explicacaoId}/rejeitar`;
-    document.getElementById('motivo_rejeicao').value = '';
-    $('#modalRejeicao').modal('show');
+    
+    // Limpar textarea
+    const textarea = document.getElementById('motivo_rejeicao');
+    if (textarea) {
+        textarea.value = '';
+        updateCharacterCount();
+    }
+    
+    // Mostrar modal (compatível com Bootstrap 4 e 5)
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+        $('#modalRejeicao').modal('show');
+    } else if (typeof bootstrap !== 'undefined') {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    } else {
+        // Fallback manual
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        // Criar backdrop
+        const backdrop = document.createElement('div');
+        backdrop.classList.add('modal-backdrop', 'fade', 'show');
+        backdrop.id = 'modal-backdrop-manual';
+        document.body.appendChild(backdrop);
+    }
 }
 
-// Auto-refresh para contar explicações pendentes
+function fecharModal() {
+    const modal = document.getElementById('modalRejeicao');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        
+        const backdrop = document.getElementById('modal-backdrop-manual');
+        if (backdrop) {
+            backdrop.remove();
+        }
+    }
+}
+
+function updateCharacterCount() {
+    const textarea = document.getElementById('motivo_rejeicao');
+    const contador = document.getElementById('contador-caracteres');
+    
+    if (textarea && contador) {
+        const length = textarea.value.length;
+        contador.textContent = `${length}/500 caracteres`;
+        
+        if (length > 450) {
+            contador.classList.add('text-warning');
+            contador.classList.remove('text-danger');
+        } else if (length >= 500) {
+            contador.classList.remove('text-warning');
+            contador.classList.add('text-danger');
+        } else {
+            contador.classList.remove('text-warning', 'text-danger');
+        }
+    }
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.select-item');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    
+    updateSelection();
+}
+
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('.select-item:checked');
+    selectedItems = Array.from(checkboxes).map(cb => cb.value);
+    
+    const btnAprovar = document.getElementById('btnAprovarLote');
+    if (btnAprovar) {
+        if (selectedItems.length > 0) {
+            btnAprovar.style.display = 'inline-block';
+            btnAprovar.innerHTML = `<i class="fas fa-check-double"></i> Aprovar Selecionadas (${selectedItems.length})`;
+        } else {
+            btnAprovar.style.display = 'none';
+        }
+    }
+}
+
+function aprovarSelecionadas() {
+    if (selectedItems.length === 0) {
+        alert('Selecione pelo menos uma explicação');
+        return;
+    }
+    
+    if (!confirm(`Aprovar ${selectedItems.length} explicação(ões) selecionada(s)?`)) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/explicacoes/aprovar-multiplas';
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
+    form.appendChild(csrfToken);
+    
+    selectedItems.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'explicacoes[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
 function atualizarContadorPendentes() {
     fetch('/admin/api/explicacoes-pendentes')
         .then(response => response.json())
         .then(data => {
-            // Atualizar badge se existir
             const badge = document.querySelector('.badge-warning');
             if (badge && data.count > 0) {
                 badge.textContent = data.count + ' pendentes';
@@ -387,23 +489,97 @@ function atualizarContadorPendentes() {
         .catch(error => console.log('Erro ao atualizar contador:', error));
 }
 
-// Atualizar a cada 30 segundos
-setInterval(atualizarContadorPendentes, 30000);
+// Quando o documento carregar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado - inicializando funcionalidades admin');
+    
+    // Event listeners para fechar modal
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+        btn.addEventListener('click', fecharModal);
+    });
+    
+    // Fechar modal ao clicar fora
+    const modal = document.getElementById('modalRejeicao');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+    }
+    
+    // Contador de caracteres
+    const textarea = document.getElementById('motivo_rejeicao');
+    if (textarea) {
+        textarea.addEventListener('input', updateCharacterCount);
+    }
+    
+    // Preencher motivo com exemplos
+    document.querySelectorAll('.motivo-exemplo').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const motivo = this.getAttribute('data-motivo');
+            const textarea = document.getElementById('motivo_rejeicao');
+            
+            if (textarea) {
+                if (textarea.value.trim()) {
+                    textarea.value += '\n\n' + motivo;
+                } else {
+                    textarea.value = motivo;
+                }
+                textarea.focus();
+                updateCharacterCount();
+            }
+        });
+    });
+    
+    // Validação do formulário
+    const formRejeicao = document.getElementById('formRejeicao');
+    if (formRejeicao) {
+        formRejeicao.addEventListener('submit', function(e) {
+            const textarea = document.getElementById('motivo_rejeicao');
+            
+            if (!textarea || textarea.value.trim().length < 10) {
+                e.preventDefault();
+                alert('Por favor, forneça um motivo detalhado para a rejeição (mínimo 10 caracteres).');
+                if (textarea) textarea.focus();
+                return false;
+            }
+            
+            if (!confirm('Tem certeza que deseja rejeitar esta explicação?')) {
+                e.preventDefault();
+                return false;
+            }
+            
+            const btn = document.getElementById('btnConfirmarRejeicao');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A rejeitar...';
+                btn.disabled = true;
+            }
+        });
+    }
+    
+    // Auto-refresh a cada 30 segundos
+    setInterval(atualizarContadorPendentes, 30000);
+    
+    // Mostrar notificações
+    @if(session('success'))
+        if (typeof toastr !== 'undefined') {
+            toastr.success('{{ session('success') }}');
+        } else {
+            alert('{{ session('success') }}');
+        }
+    @endif
 
-// Mostrar notificações de sucesso/erro
-@if(session('success'))
-    toastr.success('{{ session('success') }}');
-@endif
-
-@if(session('error'))
-    toastr.error('{{ session('error') }}');
-@endif
-
-@if(session('info'))
-    toastr.info('{{ session('info') }}');
-@endif
+    @if(session('error'))
+        if (typeof toastr !== 'undefined') {
+            toastr.error('{{ session('error') }}');
+        } else {
+            alert('{{ session('error') }}');
+        }
+    @endif
+});
 </script>
-@endpush
 
 @push('styles')
 <style>
@@ -444,20 +620,8 @@ setInterval(atualizarContadorPendentes, 30000);
     border-radius: 10rem;
 }
 
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.badge-warning.badge-pill {
-    animation: pulse 2s infinite;
+.motivo-exemplo:hover {
+    background-color: #e9ecef;
 }
 </style>
 @endpush

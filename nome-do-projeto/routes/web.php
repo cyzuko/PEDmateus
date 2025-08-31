@@ -31,20 +31,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/explicacoes', [AdminController::class, 'explicacoes'])->name('admin.explicacoes.index');
     Route::get('/admin/explicacoes/{id}', [AdminController::class, 'explicacaoShow'])->name('admin.explicacoes.show');
     
-    // Aprovações
+    // Aprovações individuais
     Route::patch('/admin/explicacoes/{id}/aprovar', [AdminController::class, 'aprovarExplicacao'])->name('admin.explicacoes.aprovar');
     Route::patch('/admin/explicacoes/{id}/rejeitar', [AdminController::class, 'rejeitarExplicacao'])->name('admin.explicacoes.rejeitar');
     Route::patch('/admin/explicacoes/{id}/reverter', [AdminController::class, 'reverterAprovacao'])->name('admin.explicacoes.reverter');
     
-    // Aprovação múltipla
+    // Aprovação/rejeição múltipla
     Route::post('/admin/explicacoes/aprovar-multiplas', [AdminController::class, 'aprovarMultiplas'])->name('admin.explicacoes.aprovar-multiplas');
+    Route::post('/admin/explicacoes/rejeitar-multiplas', [AdminController::class, 'rejeitarMultiplas'])->name('admin.explicacoes.rejeitar-multiplas');
     
-    // Relatórios
+    // Relatórios e estatísticas
     Route::get('/admin/relatorio-aprovacoes', [AdminController::class, 'relatorioAprovacoes'])->name('admin.relatorio-aprovacoes');
     Route::get('/admin/exportar-relatorio', [AdminController::class, 'exportarRelatorio'])->name('admin.exportar-relatorio');
+    Route::get('/admin/historico-acoes', [AdminController::class, 'historicoAcoes'])->name('admin.historico-acoes');
     
-    // API para notificações
+    // APIs para funcionalidades em tempo real
     Route::get('/admin/api/explicacoes-pendentes', [AdminController::class, 'explicacoesPendentesCount'])->name('admin.api.explicacoes-pendentes');
+    Route::get('/admin/api/estatisticas-ao-vivo', [AdminController::class, 'estatisticasAoVivo'])->name('admin.api.estatisticas-ao-vivo');
+    Route::post('/admin/api/buscar-explicacoes', [AdminController::class, 'buscarExplicacoes'])->name('admin.api.buscar-explicacoes');
 });
 
 // Rotas autenticadas

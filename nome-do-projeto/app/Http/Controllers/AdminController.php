@@ -12,15 +12,20 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     /**
+     * Verificação de acesso admin em cada método
+     */
+    private function verificarAdmin()
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            abort(403, 'Acesso negado. Apenas administradores podem aceder a esta área.');
+        }
+    }
+
+    /**
      * Dashboard do administrador
      */
     public function index()
     {
-        // Verificação manual de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado. Apenas administradores podem aceder a esta área.');
-        }
-
         // Estatísticas gerais
         $stats = [
             'total_explicacoes' => Explicacao::count(),
@@ -52,11 +57,6 @@ class AdminController extends Controller
      */
     public function explicacoes(Request $request)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $query = Explicacao::with(['user']);
 
         // Filtros
@@ -92,11 +92,6 @@ class AdminController extends Controller
      */
     public function explicacaoShow($id)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $explicacao = Explicacao::with(['user', 'aprovadoPor'])->findOrFail($id);
         
         return view('admin.explicacoes.show', compact('explicacao'));
@@ -107,28 +102,27 @@ class AdminController extends Controller
      */
     public function aprovarExplicacao(Request $request, $id)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $explicacao = Explicacao::findOrFail($id);
 
         if ($explicacao->aprovacao_admin !== 'pendente') {
             return redirect()->back()->with('error', 'Esta explicação já foi processada.');
         }
 
-        DB::table('explicacoes')
-            ->where('id', $id)
-            ->update([
-                'aprovacao_admin' => 'aprovada',
-                'aprovada_por' => Auth::id(),
-                'data_aprovacao' => now(),
-                'motivo_rejeicao' => null,
-                'updated_at' => now()
-            ]);
+        try {
+            DB::table('explicacoes')
+                ->where('id', $id)
+                ->update([
+                    'aprovacao_admin' => 'aprovada',
+                    'aprovada_por' => Auth::id(),
+                    'data_aprovacao' => now(),
+                    'motivo_rejeicao' => null,
+                    'updated_at' => now()
+                ]);
 
-        return redirect()->back()->with('success', 'Explicação aprovada com sucesso!');
+            return redirect()->back()->with('success', 'Explicação aprovada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao aprovar explicação: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -136,13 +130,12 @@ class AdminController extends Controller
      */
     public function rejeitarExplicacao(Request $request, $id)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $request->validate([
-            'motivo_rejeicao' => 'required|string|max:500'
+            'motivo_rejeicao' => 'required|string|min:10|max:500'
+        ], [
+            'motivo_rejeicao.required' => 'O motivo da rejeição é obrigatório.',
+            'motivo_rejeicao.min' => 'O motivo deve ter pelo menos 10 caracteres.',
+            'motivo_rejeicao.max' => 'O motivo não pode ultrapassar 500 caracteres.'
         ]);
 
         $explicacao = Explicacao::findOrFail($id);
@@ -151,17 +144,28 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Esta explicação já foi processada.');
         }
 
-        DB::table('explicacoes')
-            ->where('id', $id)
-            ->update([
-                'aprovacao_admin' => 'rejeitada',
-                'aprovada_por' => Auth::id(),
-                'data_aprovacao' => now(),
-                'motivo_rejeicao' => $request->motivo_rejeicao,
-                'updated_at' => now()
+        try {
+            DB::table('explicacoes')
+                ->where('id', $id)
+                ->update([
+                    'aprovacao_admin' => 'rejeitada',
+                    'aprovada_por' => Auth::id(),
+                    'data_aprovacao' => now(),
+                    'motivo_rejeicao' => $request->motivo_rejeicao,
+                    'updated_at' => now()
+                ]);
+
+            // Log da atividade
+            \Log::info("Explicação rejeitada", [
+                'explicacao_id' => $id,
+                'rejeitada_por' => Auth::user()->name,
+                'motivo' => $request->motivo_rejeicao
             ]);
 
-        return redirect()->back()->with('success', 'Explicação rejeitada com sucesso!');
+            return redirect()->back()->with('success', 'Explicação rejeitada com sucesso! O professor foi notificado.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao rejeitar explicação: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -169,35 +173,50 @@ class AdminController extends Controller
      */
     public function aprovarMultiplas(Request $request)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $request->validate([
-            'explicacoes' => 'required|array',
+            'explicacoes' => 'required|array|min:1',
             'explicacoes.*' => 'exists:explicacoes,id'
         ]);
 
         $aprovadas = 0;
-        foreach ($request->explicacoes as $explicacaoId) {
-            $explicacao = Explicacao::find($explicacaoId);
-            
-            if ($explicacao && $explicacao->aprovacao_admin === 'pendente') {
-                DB::table('explicacoes')
-                    ->where('id', $explicacaoId)
-                    ->update([
-                        'aprovacao_admin' => 'aprovada',
-                        'aprovada_por' => Auth::id(),
-                        'data_aprovacao' => now(),
-                        'motivo_rejeicao' => null,
-                        'updated_at' => now()
-                    ]);
-                $aprovadas++;
-            }
-        }
+        $errors = [];
 
-        return redirect()->back()->with('success', "$aprovadas explicações aprovadas com sucesso!");
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->explicacoes as $explicacaoId) {
+                $explicacao = Explicacao::find($explicacaoId);
+                
+                if ($explicacao && $explicacao->aprovacao_admin === 'pendente') {
+                    DB::table('explicacoes')
+                        ->where('id', $explicacaoId)
+                        ->update([
+                            'aprovacao_admin' => 'aprovada',
+                            'aprovada_por' => Auth::id(),
+                            'data_aprovacao' => now(),
+                            'motivo_rejeicao' => null,
+                            'updated_at' => now()
+                        ]);
+                    $aprovadas++;
+                } else {
+                    $errors[] = "Explicação ID {$explicacaoId} já foi processada";
+                }
+            }
+
+            DB::commit();
+
+            $message = "$aprovadas explicações aprovadas com sucesso!";
+            
+            if (!empty($errors)) {
+                $message .= " Avisos: " . implode(', ', $errors);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erro ao aprovar explicações: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -205,28 +224,27 @@ class AdminController extends Controller
      */
     public function reverterAprovacao($id)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $explicacao = Explicacao::findOrFail($id);
 
         if (!in_array($explicacao->aprovacao_admin, ['aprovada', 'rejeitada'])) {
             return redirect()->back()->with('error', 'Esta explicação não pode ser revertida.');
         }
 
-        DB::table('explicacoes')
-            ->where('id', $id)
-            ->update([
-                'aprovacao_admin' => 'pendente',
-                'aprovada_por' => null,
-                'data_aprovacao' => null,
-                'motivo_rejeicao' => null,
-                'updated_at' => now()
-            ]);
+        try {
+            DB::table('explicacoes')
+                ->where('id', $id)
+                ->update([
+                    'aprovacao_admin' => 'pendente',
+                    'aprovada_por' => null,
+                    'data_aprovacao' => null,
+                    'motivo_rejeicao' => null,
+                    'updated_at' => now()
+                ]);
 
-        return redirect()->back()->with('success', 'Aprovação revertida com sucesso!');
+            return redirect()->back()->with('success', 'Aprovação revertida com sucesso! A explicação voltou para pendente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao reverter aprovação: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -234,11 +252,6 @@ class AdminController extends Controller
      */
     public function relatorioAprovacoes(Request $request)
     {
-        // Verificação de admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Acesso negado.');
-        }
-
         $dataInicio = $request->get('data_inicio', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $dataFim = $request->get('data_fim', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
@@ -279,10 +292,22 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // Motivos de rejeição mais comuns
+        $motivosRejeicao = Explicacao::select('motivo_rejeicao')
+            ->selectRaw('COUNT(*) as total')
+            ->where('aprovacao_admin', 'rejeitada')
+            ->whereBetween('data_aprovacao', [$dataInicio, $dataFim])
+            ->whereNotNull('motivo_rejeicao')
+            ->groupBy('motivo_rejeicao')
+            ->orderBy('total', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('admin.relatorio-aprovacoes', compact(
             'stats', 
             'aprovacoesPorDia', 
             'topProfessores',
+            'motivosRejeicao',
             'dataInicio',
             'dataFim'
         ));
@@ -313,8 +338,14 @@ class AdminController extends Controller
      */
     public function explicacoesPendentesCount()
     {
-        $count = Explicacao::where('aprovacao_admin', 'pendente')->count();
-        return response()->json(['count' => $count]);
+        $this->verificarAdmin();
+
+        try {
+            $count = Explicacao::where('aprovacao_admin', 'pendente')->count();
+            return response()->json(['count' => $count]);
+        } catch (\Exception $e) {
+            return response()->json(['count' => 0, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -322,8 +353,164 @@ class AdminController extends Controller
      */
     public function exportarRelatorio(Request $request)
     {
+        $this->verificarAdmin();
+        
         // Esta funcionalidade pode ser implementada depois para exportar PDF/Excel
         // Por agora, retorna erro informativo
         return redirect()->back()->with('info', 'Funcionalidade de exportação será implementada em breve.');
+    }
+
+    /**
+     * Estatísticas do dashboard em tempo real
+     */
+    public function estatisticasAoVivo()
+    {
+        $this->verificarAdmin();
+
+        try {
+            $stats = [
+                'total_explicacoes' => Explicacao::count(),
+                'pendentes_aprovacao' => Explicacao::where('aprovacao_admin', 'pendente')->count(),
+                'aprovadas_hoje' => Explicacao::where('aprovacao_admin', 'aprovada')
+                    ->whereDate('data_aprovacao', Carbon::today())->count(),
+                'rejeitadas_hoje' => Explicacao::where('aprovacao_admin', 'rejeitada')
+                    ->whereDate('data_aprovacao', Carbon::today())->count(),
+                'total_professores' => User::where('role', 'professor')->count(),
+            ];
+
+            return response()->json($stats);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Buscar explicações com filtros via AJAX
+     */
+    public function buscarExplicacoes(Request $request)
+    {
+        $this->verificarAdmin();
+
+        try {
+            $query = Explicacao::with(['user']);
+
+            // Aplicar filtros
+            if ($request->filled('status')) {
+                $query->where('aprovacao_admin', $request->status);
+            }
+
+            if ($request->filled('disciplina')) {
+                $query->where('disciplina', 'LIKE', '%' . $request->disciplina . '%');
+            }
+
+            if ($request->filled('data_inicio')) {
+                $query->where('data_explicacao', '>=', $request->data_inicio);
+            }
+
+            if ($request->filled('data_fim')) {
+                $query->where('data_explicacao', '<=', $request->data_fim);
+            }
+
+            $explicacoes = $query->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'explicacoes' => $explicacoes,
+                'total' => $explicacoes->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Rejeitar múltiplas explicações
+     */
+    public function rejeitarMultiplas(Request $request)
+    {
+        $this->verificarAdmin();
+
+        $request->validate([
+            'explicacoes' => 'required|array|min:1',
+            'explicacoes.*' => 'exists:explicacoes,id',
+            'motivo_rejeicao' => 'required|string|min:10|max:500'
+        ]);
+
+        $rejeitadas = 0;
+        $errors = [];
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->explicacoes as $explicacaoId) {
+                $explicacao = Explicacao::find($explicacaoId);
+                
+                if ($explicacao && $explicacao->aprovacao_admin === 'pendente') {
+                    DB::table('explicacoes')
+                        ->where('id', $explicacaoId)
+                        ->update([
+                            'aprovacao_admin' => 'rejeitada',
+                            'aprovada_por' => Auth::id(),
+                            'data_aprovacao' => now(),
+                            'motivo_rejeicao' => $request->motivo_rejeicao,
+                            'updated_at' => now()
+                        ]);
+                    $rejeitadas++;
+                } else {
+                    $errors[] = "Explicação ID {$explicacaoId} já foi processada";
+                }
+            }
+
+            DB::commit();
+
+            $message = "$rejeitadas explicações rejeitadas com sucesso!";
+            
+            if (!empty($errors)) {
+                $message .= " Avisos: " . implode(', ', $errors);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erro ao rejeitar explicações: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Histórico de ações do admin
+     */
+    public function historicoAcoes(Request $request)
+    {
+        $this->verificarAdmin();
+
+        $query = Explicacao::with(['user', 'aprovadoPor'])
+            ->whereNotNull('data_aprovacao');
+
+        if ($request->filled('acao')) {
+            $query->where('aprovacao_admin', $request->acao);
+        }
+
+        if ($request->filled('admin')) {
+            $query->where('aprovada_por', $request->admin);
+        }
+
+        if ($request->filled('data_inicio')) {
+            $query->whereDate('data_aprovacao', '>=', $request->data_inicio);
+        }
+
+        if ($request->filled('data_fim')) {
+            $query->whereDate('data_aprovacao', '<=', $request->data_fim);
+        }
+
+        $historico = $query->orderBy('data_aprovacao', 'desc')->paginate(20);
+
+        return view('admin.historico-acoes', compact('historico'));
     }
 }
