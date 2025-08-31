@@ -12,25 +12,19 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     /**
-     * Verificação de acesso admin em cada método
-     */
-    private function verificarAdmin()
-    {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Acesso negado. Apenas administradores podem aceder a esta área.');
-        }
-    }
-
-    /**
      * Dashboard do administrador
      */
     public function index()
     {
+        abort_unless(auth()->check() && auth()->user()->role === 'admin', 403);
+
         // Estatísticas gerais
         $stats = [
             'total_explicacoes' => Explicacao::count(),
             'pendentes_aprovacao' => Explicacao::where('aprovacao_admin', 'pendente')->count(),
             'aprovadas_hoje' => Explicacao::where('aprovacao_admin', 'aprovada')
+                ->whereDate('data_aprovacao', Carbon::today())->count(),
+            'rejeitadas_hoje' => Explicacao::where('aprovacao_admin', 'rejeitada')
                 ->whereDate('data_aprovacao', Carbon::today())->count(),
             'total_professores' => User::where('role', 'professor')->count(),
         ];
@@ -338,8 +332,6 @@ class AdminController extends Controller
      */
     public function explicacoesPendentesCount()
     {
-        $this->verificarAdmin();
-
         try {
             $count = Explicacao::where('aprovacao_admin', 'pendente')->count();
             return response()->json(['count' => $count]);
@@ -353,8 +345,6 @@ class AdminController extends Controller
      */
     public function exportarRelatorio(Request $request)
     {
-        $this->verificarAdmin();
-        
         // Esta funcionalidade pode ser implementada depois para exportar PDF/Excel
         // Por agora, retorna erro informativo
         return redirect()->back()->with('info', 'Funcionalidade de exportação será implementada em breve.');
@@ -365,8 +355,6 @@ class AdminController extends Controller
      */
     public function estatisticasAoVivo()
     {
-        $this->verificarAdmin();
-
         try {
             $stats = [
                 'total_explicacoes' => Explicacao::count(),
@@ -389,8 +377,6 @@ class AdminController extends Controller
      */
     public function buscarExplicacoes(Request $request)
     {
-        $this->verificarAdmin();
-
         try {
             $query = Explicacao::with(['user']);
 
@@ -434,8 +420,6 @@ class AdminController extends Controller
      */
     public function rejeitarMultiplas(Request $request)
     {
-        $this->verificarAdmin();
-
         $request->validate([
             'explicacoes' => 'required|array|min:1',
             'explicacoes.*' => 'exists:explicacoes,id',
@@ -488,8 +472,6 @@ class AdminController extends Controller
      */
     public function historicoAcoes(Request $request)
     {
-        $this->verificarAdmin();
-
         $query = Explicacao::with(['user', 'aprovadoPor'])
             ->whereNotNull('data_aprovacao');
 
