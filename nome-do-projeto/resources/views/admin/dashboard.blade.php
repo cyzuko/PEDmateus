@@ -198,9 +198,10 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    @if($explicacoesRecentes->count() > 0)
+                  @if($explicacoesRecentes->count() > 0)
                         @foreach($explicacoesRecentes as $explicacao)
-                            <div class="d-flex align-items-center mb-3">
+                            <a href="{{ route('admin.explicacoes.show', $explicacao->id) }}" 
+                               class="d-flex align-items-center mb-3 p-2 rounded text-decoration-none atividade-item">
                                 <div class="mr-3">
                                     @if($explicacao->aprovacao_admin === 'aprovada')
                                         <i class="fas fa-check-circle text-success"></i>
@@ -210,9 +211,9 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="small">
-                                        <strong>{{ $explicacao->user->name }}</strong>
+                                        <strong class="text-dark">{{ $explicacao->user->name }}</strong>
                                         <br>
-                                        {{ $explicacao->disciplina }} - {{ $explicacao->nome_aluno }}
+                                        <span class="text-muted">{{ $explicacao->disciplina }} - {{ $explicacao->nome_aluno }}</span>
                                         <br>
                                         <span class="badge badge-{{ $explicacao->aprovacao_admin === 'aprovada' ? 'success' : 'danger' }}">
                                             {{ $explicacao->aprovacao_admin === 'aprovada' ? 'Aprovada' : 'Rejeitada' }}
@@ -225,7 +226,10 @@
                                         @endif
                                     </div>
                                 </div>
-                            </div>
+                                <div class="ml-2">
+                                    <i class="fas fa-chevron-right text-muted"></i>
+                                </div>
+                            </a>
                             @if(!$loop->last)
                                 <hr class="my-2">
                             @endif

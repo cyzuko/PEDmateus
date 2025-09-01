@@ -25,8 +25,8 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="btn-toolbar">
-                    <a href="{{ route('admin.explicacoes.index') }}" class="btn btn-outline-secondary">
+                 <div class="btn-toolbar">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Voltar
                     </a>
                 </div>
@@ -381,7 +381,6 @@
 
 @endsection
 
-@endsection
 
 <!-- Script inline direto no HTML -->
 <script>
