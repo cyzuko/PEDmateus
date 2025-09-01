@@ -267,7 +267,7 @@
                 <div class="modal-body">
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <strong>Atenção:</strong> Esta ação irá rejeitar a explicação e notificar o professor sobre os motivos.
+                        <strong>Atenção:</strong> Esta ação irá rejeitar a explicação e notificar o aluno sobre os motivos.
                     </div>
                     
                     <div class="form-group">
@@ -281,10 +281,10 @@
                                   required 
                                   minlength="10"
                                   maxlength="500"
-                                  placeholder="Descreva detalhadamente o motivo da rejeição para que o professor possa corrigir..."></textarea>
+                                  placeholder="Descreva detalhadamente o motivo da rejeição para que o aluno possa corrigir..."></textarea>
                         <small class="form-text text-muted">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Seja específico nos motivos para ajudar o professor a corrigir os problemas identificados.
+                            Seja específico nos motivos para ajudar o aluno a corrigir os problemas identificados.
                             <br>
                             <span id="contador-caracteres">0/500 caracteres</span>
                         </small>
