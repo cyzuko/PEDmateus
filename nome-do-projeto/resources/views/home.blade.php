@@ -16,7 +16,7 @@
             <div class="col-lg-10 text-center">
                 <h1 class="hero-title animate-fade-in-up">
                     <i class="fas fa-graduation-cap me-3"></i>
-                    Sistema de Gestão de Explicações teste
+                    Sistema de Gestão de Explicações teste heheh
                 </h1>
                 <p class="hero-subtitle animate-fade-in-up">
                     A plataforma mais completa para centros de explicações em Portugal. 
