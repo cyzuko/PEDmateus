@@ -11,7 +11,7 @@
                                     <h2 class="mb-1 fw-bold text-primary">
                                         <i class="fas fa-plus-circle me-2"></i>Nova Fatura
                                     </h2>
-                                    <p class="text-muted mb-0">Adicione uma big gg nova fatura ao sistema</p>
+                                    <p class="text-muted mb-0">Adicione uma big nova fatura ao sistema</p>
                                 </div>
                                 <div class="d-none d-md-block">
                                     <i class="fas fa-file-invoice text-primary" style="font-size: 3rem; opacity: 0.1;"></i>
