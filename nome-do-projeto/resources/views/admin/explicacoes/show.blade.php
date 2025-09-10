@@ -49,7 +49,7 @@
                         <div class="col-md-6">
                             <table class="table table-borderless">
                                 <tr>
-                                    <td><strong>Professor:</strong></td>
+                                    <td><strong>Encarregado de educação/aluno:</strong></td>
                                     <td>
                                         {{ $explicacao->user->name }}
                                         <br>
