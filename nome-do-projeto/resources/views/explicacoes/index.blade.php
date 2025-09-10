@@ -83,16 +83,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="info-box bg-secondary">
-                                <span class="info-box-icon"><i class="fas fa-euro-sign"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Total €</span>
-                                    <span class="info-box-number">{{ number_format($explicacoes->sum('preco'), 2) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        
                     @endif
 
                     <!-- Filtros -->
