@@ -78,8 +78,8 @@
                             <div class="info-box bg-info">
                                 <span class="info-box-icon"><i class="fas fa-check-double"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Confirmadas</span>
-                                    <span class="info-box-number">{{ $explicacoes->where('status', 'confirmada')->count() }}</span>
+                                    <span class="info-box-text">Concluídas</span>
+                                    <span class="info-box-number">{{ $explicacoes->where('status', 'concluida')->count() }}</span>
                                 </div>
                             </div>
                         </div>
@@ -92,7 +92,6 @@
                             <select class="form-control" id="filtroStatus">
                                 <option value="">Todos os status</option>
                                 <option value="agendada">Agendadas</option>
-                                <option value="confirmada">Confirmadas</option>
                                 <option value="concluida">Concluídas</option>
                                 <option value="cancelada">Canceladas</option>
                             </select>
@@ -181,13 +180,11 @@
                                                 @php
                                                     $statusLabels = [
                                                         'agendada' => 'Agendada',
-                                                        'confirmada' => 'Confirmada',
                                                         'concluida' => 'Concluída',
                                                         'cancelada' => 'Cancelada',
                                                     ];
                                                     $statusClasses = [
                                                         'agendada' => 'warning',
-                                                        'confirmada' => 'info',
                                                         'concluida' => 'success',
                                                         'cancelada' => 'danger',
                                                     ];
@@ -244,7 +241,7 @@
                                                         $jaPassou = $dataHora < time();
                                                         $podeSerEditada = !$jaPassou && $explicacao->status !== 'cancelada' && 
                                                                          ($explicacao->aprovacao_admin === 'pendente' || $explicacao->aprovacao_admin === 'rejeitada' || !isset($explicacao->aprovacao_admin));
-                                                        $podeSerCancelada = !$jaPassou && in_array($explicacao->status, ['agendada', 'confirmada']);
+                                                        $podeSerCancelada = !$jaPassou && $explicacao->status === 'agendada';
                                                     @endphp
                                                     
                                                     @if($podeSerEditada)
@@ -254,19 +251,8 @@
                                                         </a>
                                                     @endif
 
-                                                    <!-- Ações de status -->
-                                                    @if($explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada')
-                                                        <form method="POST" action="{{ route('explicacoes.confirmar', $explicacao->id) }}" 
-                                                              style="display: inline;">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" class="btn btn-outline-success" title="Confirmar">
-                                                                <i class="fas fa-check"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-
-                                                    @if($explicacao->status === 'confirmada' && !$jaPassou)
+                                                    <!-- Marcar como concluída -->
+                                                    @if($explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada' && !$jaPassou)
                                                         <form method="POST" action="{{ route('explicacoes.concluir', $explicacao->id) }}" 
                                                               style="display: inline;">
                                                             @csrf

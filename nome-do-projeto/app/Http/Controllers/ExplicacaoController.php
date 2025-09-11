@@ -238,39 +238,80 @@ class ExplicacaoController extends Controller
     }
 
     /**
-     * Vista do calendário
+     * Vista do calendário (VERSÃO CORRIGIDA - SUBSTITUIR A ANTERIOR)
      */
-    public function calendario()
+    public function calendario(Request $request)
     {
+        // Obter mês e ano da URL ou usar valores padrão (mês/ano atual)
+        $mesAtual = (int) $request->get('mes', date('n'));
+        $anoAtual = (int) $request->get('ano', date('Y'));
+        
+        // Validar valores para evitar erros
+        if ($mesAtual < 1 || $mesAtual > 12) {
+            $mesAtual = date('n');
+        }
+        if ($anoAtual < 2020 || $anoAtual > 2030) {
+            $anoAtual = date('Y');
+        }
+        
+        // Calcular mês anterior e próximo para navegação
+        $mesAnterior = $mesAtual - 1;
+        $anoAnterior = $anoAtual;
+        if ($mesAnterior < 1) {
+            $mesAnterior = 12;
+            $anoAnterior = $anoAtual - 1;
+        }
+        
+        $mesProximo = $mesAtual + 1;
+        $anoProximo = $anoAtual;
+        if ($mesProximo > 12) {
+            $mesProximo = 1;
+            $anoProximo = $anoAtual + 1;
+        }
+        
+        // Calcular primeiro e último dia do mês
+        $primeiroDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual, 1, $anoAtual));
+        $ultimoDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual + 1, 0, $anoAtual));
+        
+        // Buscar todas as explicações do usuário para o mês selecionado
         $explicacoes = Explicacao::where('user_id', Auth::id())
-            ->whereIn('status', ['agendada', 'confirmada', 'concluida'])
-            ->where('aprovacao_admin', 'aprovada')
-            ->get()
-            ->map(function ($explicacao) {
-                return [
-                    'id' => $explicacao->id,
-                    'title' => $explicacao->disciplina . ' - ' . $explicacao->nome_aluno,
-                    'start' => $explicacao->data_explicacao . 'T' . $explicacao->hora_inicio,
-                    'end' => $explicacao->data_explicacao . 'T' . $explicacao->hora_fim,
-                    'backgroundColor' => $this->getStatusColor($explicacao->status),
-                    'borderColor' => $this->getStatusColor($explicacao->status),
-                    'url' => route('explicacoes.show', $explicacao->id)
-                ];
-            });
+            ->whereBetween('data_explicacao', [$primeiroDiaDoMes, $ultimoDiaDoMes])
+            ->orderBy('data_explicacao')
+            ->orderBy('hora_inicio')
+            ->get();
+        
+        // Debug (pode comentar em produção)
+        // \Log::info("Calendário - Mês: $mesAtual, Ano: $anoAtual, Explicações encontradas: " . $explicacoes->count());
             
-        return view('explicacoes.calendario', compact('explicacoes'));
+        return view('explicacoes.calendario', compact(
+            'explicacoes', 
+            'mesAtual', 
+            'anoAtual',
+            'mesAnterior',
+            'anoAnterior', 
+            'mesProximo',
+            'anoProximo'
+        ));
     }
 
     /**
-     * Obter cor para o status
+     * Obter cor para o status (versão expandida)
      */
-    private function getStatusColor($status)
+    private function getStatusColor($status, $aprovacao = null)
     {
+        // Se não foi aprovada, usar cores mais apagadas
+        if ($aprovacao === 'pendente') {
+            return '#6c757d'; // Cinza para pendentes
+        } elseif ($aprovacao === 'rejeitada') {
+            return '#dc3545'; // Vermelho para rejeitadas
+        }
+        
+        // Cores para explicações aprovadas
         $colors = [
-            'agendada' => '#ffc107',
-            'confirmada' => '#17a2b8',
-            'concluida' => '#28a745',
-            'cancelada' => '#dc3545'
+            'agendada' => '#ffc107',    // Amarelo
+            'confirmada' => '#17a2b8',  // Azul
+            'concluida' => '#28a745',   // Verde
+            'cancelada' => '#fd7e14'    // Laranja para canceladas
         ];
         
         return $colors[$status] ?? '#6c757d';
