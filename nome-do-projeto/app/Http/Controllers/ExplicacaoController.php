@@ -50,6 +50,9 @@ class ExplicacaoController extends Controller
     /**
      * Guardar nova explicação
      */
+   /**
+     * Guardar nova explicação
+     */
     public function store(Request $request)
     {
         // Validação melhorada
@@ -63,6 +66,8 @@ class ExplicacaoController extends Controller
             'observacoes' => 'nullable|string|max:1000',
             'nome_aluno' => 'required|string|max:255',
             'contacto_aluno' => 'required|string|max:255',
+            'enviar_email_aluno' => 'nullable|boolean',
+            'enviar_email_admin' => 'nullable|boolean',
         ]);
 
         try {
@@ -82,10 +87,63 @@ class ExplicacaoController extends Controller
             $explicacao->aprovacao_admin = 'pendente';
             $explicacao->save();
 
-            return redirect()->route('explicacoes.index')
-                            ->with('success', 'Explicação criada com sucesso e enviada para aprovação!');
+            // Carregar o relacionamento user para ter acesso aos dados do professor
+            $explicacao->load('user');
+
+            // === ENVIO DE NOTIFICAÇÕES ===
+            
+            // 1. Sempre notificar o professor que criou a explicação
+            try {
+                $user = Auth::user();
+                if ($user && $user->email) {
+                    \Illuminate\Support\Facades\Notification::route('mail', $user->email)
+                        ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $user->email, 'criada'));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar notificação para o professor: ' . $e->getMessage());
+            }
+
+            // 2. Notificar administradores se opção selecionada
+            if ($request->has('enviar_email_admin') && $request->enviar_email_admin) {
+                $emailsAdmin = [
+                    'mateus23viana@gmail.com', // Email do sistema
+                    // Adicione outros emails de admin aqui
+                ];
+
+                foreach ($emailsAdmin as $emailAdmin) {
+                    if (!empty($emailAdmin) && filter_var($emailAdmin, FILTER_VALIDATE_EMAIL)) {
+                        try {
+                            \Illuminate\Support\Facades\Notification::route('mail', $emailAdmin)
+                                ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $emailAdmin, 'criada'));
+                        } catch (\Exception $e) {
+                            \Log::error("Erro ao enviar notificação para admin ($emailAdmin): " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            // 3. Notificar o aluno se opção selecionada e tiver email válido
+            if ($request->has('enviar_email_aluno') && $request->enviar_email_aluno) {
+                if (!empty($explicacao->contacto_aluno) && filter_var($explicacao->contacto_aluno, FILTER_VALIDATE_EMAIL)) {
+                    try {
+                        \Illuminate\Support\Facades\Notification::route('mail', $explicacao->contacto_aluno)
+                            ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $explicacao->contacto_aluno, 'criada'));
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao enviar notificação para o aluno: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            // Mensagem de sucesso dinâmica baseada nas notificações enviadas
+            $mensagem = 'Explicação criada com sucesso e enviada para aprovação!';
+            if ($request->enviar_email_aluno || $request->enviar_email_admin) {
+                $mensagem .= ' Notificações foram enviadas.';
+            }
+
+            return redirect()->route('explicacoes.index')->with('success', $mensagem);
 
         } catch (\Exception $e) {
+            \Log::error('Erro ao criar explicação: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Erro ao criar explicação: ' . $e->getMessage()])->withInput();
         }
     }
