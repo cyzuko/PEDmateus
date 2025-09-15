@@ -137,13 +137,13 @@
     </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition layout-top-nav">
     <div class="wrapper">
         
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand-md navbar-white navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url('/') }}">
+                <a class="navbar-brand" href="{{ url('/') }}" style="margin-left: 20px;">
                     {{ config('app.name', 'Sistema de Faturas') }}
                 </a>
                 
@@ -216,65 +216,6 @@
             </div>
         </nav>
 
-        <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="{{ url('/') }}" class="brand-link">
-                <span class="brand-text font-weight-light">{{ config('app.name', 'Sistema de Faturas') }}</span>
-            </a>
-            
-            <!-- Sidebar -->
-            <div class="sidebar">
-
-                <!-- Painel do Utilizador com dropdown -->
-                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    <div class="info w-100">
-
-                        <!-- Botão que mostra/esconde ações -->
-                        <a href="#" class="d-flex align-items-center text-white ps-2 pe-2" id="user-toggle" style="text-decoration: none;">
-                            <i class="fas fa-user nav-icon" style="margin-left: 14px; margin-right: 9px;"></i>
-                            <span class="flex-grow-1">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down ms-auto" id="chevron-icon"></i>
-                        </a>
-
-                        <!-- Dropdown com links -->
-                        <div id="user-actions" class="ps-4 pt-2" style="display: none;">
-                            <a href="{{ route('password.change') }}" class="d-block text-white mb-1">
-                                <i class="fas fa-key me-2"></i> Alterar Senha
-                            </a>
-                            <a href="{{ route('logout') }}" class="d-block text-white">
-                                <i class="fas fa-sign-out-alt me-2"></i> Terminar Sessão
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="{{ route('home') }}" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Casa</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('faturas.index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-file-invoice"></i>
-                                <p>Faturas</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('estatisticas') }}" class="nav-link">
-                                <i class="nav-icon fas fa-chart-bar"></i>
-                                <p>Estatísticas</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-
-        </aside>
-
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->
@@ -320,25 +261,6 @@
     </div>
 
     <!-- Scripts -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Script para o dropdown do usuário na sidebar
-            const toggle = document.getElementById("user-toggle");
-            const actions = document.getElementById("user-actions");
-            const chevron = document.getElementById("chevron-icon");
-
-            if (toggle) {
-                toggle.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    const isVisible = actions.style.display === "block";
-                    actions.style.display = isVisible ? "none" : "block";
-                    chevron.classList.toggle("fa-chevron-down", isVisible);
-                    chevron.classList.toggle("fa-chevron-up", !isVisible);
-                });
-            }
-        });
-    </script>
-
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
