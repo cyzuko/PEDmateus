@@ -83,7 +83,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+                    </div>
                     @endif
 
                     <!-- Filtros -->
@@ -235,29 +235,38 @@
                                                         <i class="fas fa-eye"></i>
                                                     </a>
 
-                                                    <!-- Editar (se pode ser editada) -->
                                                     @php
                                                         $dataHora = strtotime($explicacao->data_explicacao . ' ' . $explicacao->hora_fim);
-                                                        $jaPassou = $dataHora < time();
-                                                        $podeSerEditada = !$jaPassou && $explicacao->status !== 'cancelada' && 
-                                                                         ($explicacao->aprovacao_admin === 'pendente' || $explicacao->aprovacao_admin === 'rejeitada' || !isset($explicacao->aprovacao_admin));
+                                                        $agora = time();
+                                                        $jaPassou = $dataHora < $agora;
+                                                        
+                                                        // Debug: mostrar sempre o botão editar exceto para explicações concluídas
+                                                        $podeSerEditada = $explicacao->status !== 'concluida';
                                                         $podeSerCancelada = !$jaPassou && $explicacao->status === 'agendada';
+                                                        $podeSerConcluida = $explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada' && !$jaPassou;
                                                     @endphp
                                                     
+                                                    <!-- Botão Editar - SEMPRE visível exceto para concluídas -->
                                                     @if($podeSerEditada)
                                                         <a href="{{ route('explicacoes.edit', $explicacao->id) }}" 
                                                            class="btn btn-outline-primary" title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
+                                                    @else
+                                                        <!-- Debug: mostrar por que não pode editar -->
+                                                        <span class="btn btn-outline-secondary disabled" title="Não pode editar ({{ $explicacao->status }})">
+                                                            <i class="fas fa-edit"></i>
+                                                        </span>
                                                     @endif
 
                                                     <!-- Marcar como concluída -->
-                                                    @if($explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada' && !$jaPassou)
+                                                    @if($podeSerConcluida)
                                                         <form method="POST" action="{{ route('explicacoes.concluir', $explicacao->id) }}" 
                                                               style="display: inline;">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="btn btn-outline-success" title="Marcar como concluída">
+                                                            <button type="submit" class="btn btn-outline-success" title="Marcar como concluída"
+                                                                    onclick="return confirm('Marcar esta explicação como concluída?')">
                                                                 <i class="fas fa-check-double"></i>
                                                             </button>
                                                         </form>
@@ -276,8 +285,8 @@
                                                         </form>
                                                     @endif
 
-                                                    <!-- Eliminar (só se pendente ou rejeitada) -->
-                                                    @if($explicacao->aprovacao_admin === 'pendente' || $explicacao->aprovacao_admin === 'rejeitada' || !isset($explicacao->aprovacao_admin))
+                                                    <!-- Eliminar -->
+                                                    @if($explicacao->status !== 'concluida')
                                                         <form method="POST" action="{{ route('explicacoes.destroy', $explicacao->id) }}" 
                                                               style="display: inline;" 
                                                               onsubmit="return confirm('Tem certeza que deseja eliminar esta explicação? Esta ação não pode ser desfeita.')">
