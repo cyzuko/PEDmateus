@@ -144,7 +144,8 @@
         <nav class="main-header navbar navbar-expand-md navbar-white navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url('/') }}" style="margin-left: 20px;">
-                    {{ config('app.name', 'Sistema de Faturas') }}
+                    <i class="fas fas fa-building me-2"></i>
+                    {{ config('app.name', 'explicacoes') }}
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
