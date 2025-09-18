@@ -10,7 +10,7 @@
 <body class="font-sans bg-gray-100">
     <div class="min-h-screen flex flex-col">
         <header class="bg-blue-600 text-white p-4">
-            <h1 class="text-center text-xl">Sistema de Faturas</h1>
+            <h1 class="text-center text-xl">Eureka</h1>
         </header>
 
         <main class="flex-1">
@@ -20,7 +20,7 @@
         </main>
 
         <footer class="bg-blue-600 text-white p-4 text-center">
-            © {{ date('Y') }} Sistema de Faturas
+            © {{ date('Y') }} Eureka
         </footer>
     </div>
     

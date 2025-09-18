@@ -255,7 +255,7 @@
                 <div class="float-right d-none d-sm-block">
                     <b>Version</b> 3.2.0
                 </div>
-                <strong>&copy; {{ date('Y') }} <a href="#">Sistema de Faturas</a>.</strong> Todos os direitos reservados.
+                <strong>&copy; {{ date('Y') }} <a href="#">Eureka</a>.</strong> Todos os direitos reservados.
             </div>
         </footer>
 
