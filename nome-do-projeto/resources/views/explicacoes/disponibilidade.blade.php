@@ -265,79 +265,119 @@
     </div>
 </div>
 
-<!-- Modal para criação rápida -->
-<div class="modal fade" id="modalCriarExplicacao" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal para criação rápida ATUALIZADO -->
+<div class="modal fade" id="modalCriarExplicacao" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Nova Explicação</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Nova Explicação
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <form id="formCriarExplicacao" method="POST" action="{{ route('explicacoes.store') }}">
-                    @csrf
-                    <input type="hidden" id="modalData" name="data_explicacao">
-                    <input type="hidden" id="modalHora" name="hora_inicio">
-                    
+            <form id="formCriarExplicacao" method="POST" action="{{ route('explicacoes.store') }}">
+                @csrf
+                <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Data:</label>
-                                <input type="text" class="form-control" id="modalDataMostrar" readonly>
+                                <label><i class="fas fa-calendar"></i> Data:</label>
+                                <input type="date" class="form-control" id="modalData" name="data_explicacao" readonly>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="form-group">
-                                <label>Hora de início:</label>
-                                <input type="time" class="form-control" id="modalHoraMostrar" name="hora_inicio_display">
+                                <label><i class="fas fa-clock"></i> Hora de início:</label>
+                                <input type="time" class="form-control" id="modalHoraInicio" name="hora_inicio" required>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Disciplina:</label>
-                        <input type="text" class="form-control" name="disciplina" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Nome do Aluno:</label>
-                        <input type="text" class="form-control" name="nome_aluno" required>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-clock"></i> Hora de fim:</label>
+                                <input type="time" class="form-control" id="modalHoraFim" name="hora_fim" required>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hora de fim:</label>
-                                <input type="time" class="form-control" name="hora_fim" required>
+                                <label><i class="fas fa-book"></i> Disciplina: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="disciplina" placeholder="Ex: Matemática, Português..." required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Preço (€):</label>
-                                <input type="number" step="0.01" class="form-control" name="preco" required>
+                                <label><i class="fas fa-user"></i> Nome do Aluno: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="nome_aluno" placeholder="Nome completo do aluno" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-map-marker-alt"></i> Local: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="local" placeholder="Ex: Online, Domicílio, Centro..." required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-euro-sign"></i> Preço (€): <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="0" class="form-control" name="preco" placeholder="0.00" required>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Local:</label>
-                        <input type="text" class="form-control" name="local">
+                        <label><i class="fas fa-phone"></i> Contacto do Aluno: <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="contacto_aluno" placeholder="Telemóvel ou email" required>
                     </div>
 
                     <div class="form-group">
-                        <label>Contacto do Aluno:</label>
-                        <input type="text" class="form-control" name="contacto_aluno">
+                        <label><i class="fas fa-sticky-note"></i> Observações:</label>
+                        <textarea class="form-control" name="observacoes" rows="3" placeholder="Observações adicionais (opcional)..."></textarea>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="submit" form="formCriarExplicacao" class="btn btn-success">
-                    <i class="fas fa-save"></i> Criar Explicação
-                </button>
-            </div>
+
+                    <!-- Opções de notificação -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-bell"></i> Notificações por Email</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="enviarEmailAdmin" name="enviar_email_admin" value="1">
+                                        <label class="form-check-label" for="enviarEmailAdmin">
+                                            <i class="fas fa-user-shield"></i> Notificar administrador
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="enviarEmailAluno" name="enviar_email_aluno" value="1">
+                                        <label class="form-check-label" for="enviarEmailAluno">
+                                            <i class="fas fa-user-graduate"></i> Notificar aluno
+                                        </label>
+                                        <small class="text-muted d-block">Apenas se o contacto for um email</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Criar Explicação
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -350,6 +390,27 @@ $(document).ready(function() {
     $('#semanaInicio').on('change', function() {
         var semana = $(this).val();
         window.location.href = '{{ route("explicacoes.disponibilidade") }}?semana=' + semana;
+    });
+
+    // Validação do formulário
+    $('#formCriarExplicacao').on('submit', function(e) {
+        var horaInicio = $('#modalHoraInicio').val();
+        var horaFim = $('#modalHoraFim').val();
+        
+        if (horaInicio && horaFim && horaInicio >= horaFim) {
+            e.preventDefault();
+            alert('A hora de fim deve ser posterior à hora de início!');
+            return false;
+        }
+        
+        // Mostrar loading
+        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Criando...');
+    });
+
+    // Reset do modal quando fechar
+    $('#modalCriarExplicacao').on('hidden.bs.modal', function() {
+        $(this).find('form')[0].reset();
+        $(this).find('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Criar Explicação');
     });
 });
 
@@ -375,23 +436,35 @@ function semanaAtual() {
 }
 
 function criarExplicacao(data, hora) {
+    // Preencher dados do modal
     document.getElementById('modalData').value = data;
-    document.getElementById('modalHora').value = hora;
-    document.getElementById('modalDataMostrar').value = formatarData(data);
-    document.getElementById('modalHoraMostrar').value = hora;
+    document.getElementById('modalHoraInicio').value = hora;
     
     // Sugerir hora de fim (1 hora depois)
-    var horaFim = new Date('2000-01-01 ' + hora);
-    horaFim.setHours(horaFim.getHours() + 1);
-    var horaFimFormatada = horaFim.toTimeString().slice(0, 5);
-    document.querySelector('input[name="hora_fim"]').value = horaFimFormatada;
+    var horaInicio = new Date('2000-01-01 ' + hora);
+    horaInicio.setHours(horaInicio.getHours() + 1);
+    var horaFimSugerida = horaInicio.toTimeString().slice(0, 5);
+    document.getElementById('modalHoraFim').value = horaFimSugerida;
     
+    // Limpar outros campos
+    document.querySelector('input[name="disciplina"]').value = '';
+    document.querySelector('input[name="nome_aluno"]').value = '';
+    document.querySelector('input[name="local"]').value = '';
+    document.querySelector('input[name="preco"]').value = '';
+    document.querySelector('input[name="contacto_aluno"]').value = '';
+    document.querySelector('textarea[name="observacoes"]').value = '';
+    
+    // Desmarcar checkboxes
+    document.getElementById('enviarEmailAdmin').checked = false;
+    document.getElementById('enviarEmailAluno').checked = false;
+    
+    // Mostrar modal
     $('#modalCriarExplicacao').modal('show');
-}
-
-function formatarData(data) {
-    var partes = data.split('-');
-    return partes[2] + '/' + partes[1] + '/' + partes[0];
+    
+    // Focar no primeiro campo
+    setTimeout(function() {
+        document.querySelector('input[name="disciplina"]').focus();
+    }, 500);
 }
 
 // Hover effects nos slots
@@ -401,6 +474,11 @@ $(document).on('mouseenter', '.slot-livre', function() {
 
 $(document).on('mouseleave', '.slot-livre', function() {
     $(this).removeClass('slot-hover');
+});
+
+// Tooltips para explicações
+$(document).ready(function() {
+    $('[title]').tooltip();
 });
 </script>
 
@@ -438,6 +516,7 @@ $(document).on('mouseleave', '.slot-livre', function() {
     border-color: #28a745;
     background-color: rgba(40, 167, 69, 0.1);
     color: #28a745;
+    transform: scale(1.02);
 }
 
 .slot-livre-texto {
@@ -458,11 +537,12 @@ $(document).on('mouseleave', '.slot-livre', function() {
 
 .slot-hoje {
     background-color: rgba(0, 123, 255, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(0, 123, 255, 0.2);
 }
 
 .explicacao-slot .btn {
     font-size: 0.7em;
-    padding: 1px 3px;
+    padding: 2px 4px;
     line-height: 1.1;
     margin: 1px 0;
 }
@@ -501,6 +581,31 @@ $(document).on('mouseleave', '.slot-livre', function() {
     font-weight: bold;
 }
 
+/* Modal melhorado */
+.modal-lg {
+    max-width: 800px;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Responsivo */
 @media (max-width: 768px) {
     .horarios-table {
         font-size: 0.7em;
@@ -513,6 +618,10 @@ $(document).on('mouseleave', '.slot-livre', function() {
     .explicacao-slot .btn {
         font-size: 0.6em;
         padding: 1px 2px;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
     }
 }
 </style>
