@@ -16,7 +16,6 @@ Uma explicação foi atualizada no sistema.
 ## Detalhes da Explicação
 
 **Disciplina:** {{ $explicacao->disciplina }}  
-**Professor:** {{ $explicacao->user->name ?? 'N/A' }}  
 **Aluno:** {{ $explicacao->nome_aluno }}  
 **Data:** {{ \Carbon\Carbon::parse($explicacao->data_explicacao)->format('d/m/Y') }}  
 **Horário:** {{ substr($explicacao->hora_inicio, 0, 5) }} às {{ substr($explicacao->hora_fim, 0, 5) }}  

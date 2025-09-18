@@ -31,7 +31,7 @@ class NovaExplicacaoNotification extends Notification
             'email_para' => $emailPara,
             'acao' => $acao,
             'disciplina' => $explicacao->disciplina,
-            'professor' => $explicacao->user->name ?? 'N/A'
+           
         ]);
     }
 
@@ -81,7 +81,6 @@ class NovaExplicacaoNotification extends Notification
             ->line($greeting)
             ->line('**Detalhes da Explicação:**')
             ->line('• Disciplina: ' . $this->explicacao->disciplina)
-            ->line('• Professor: ' . ($this->explicacao->user->name ?? 'N/A'))
             ->line('• Aluno: ' . $this->explicacao->nome_aluno)
             ->line('• Data: ' . \Carbon\Carbon::parse($this->explicacao->data_explicacao)->format('d/m/Y'))
             ->line('• Horário: ' . substr($this->explicacao->hora_inicio, 0, 5) . ' às ' . substr($this->explicacao->hora_fim, 0, 5))
@@ -113,7 +112,6 @@ class NovaExplicacaoNotification extends Notification
         return [
             'explicacao_id' => $this->explicacao->id,
             'disciplina' => $this->explicacao->disciplina,
-            'professor' => $this->explicacao->user->name ?? 'N/A',
             'aluno' => $this->explicacao->nome_aluno,
             'data_explicacao' => $this->explicacao->data_explicacao,
             'preco' => $this->explicacao->preco,
