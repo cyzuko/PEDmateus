@@ -153,7 +153,7 @@
                         <hr>
                         <div class="row">
                             <div class="col-12">
-                                <h6><i class="fas fa-sticky-note text-warning mr-2"></i>Observações do Professor:</h6>
+                                <h6><i class="fas fa-sticky-note text-warning mr-2"></i>Observações:</h6>
                                 <div class="alert alert-light">
                                     {{ $explicacao->observacoes }}
                                 </div>
@@ -308,7 +308,7 @@
                 <div class="modal-body">
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <strong>Atenção:</strong> Esta ação irá rejeitar a explicação e notificar o professor sobre os motivos.
+                        <strong>Atenção:</strong> Esta ação irá rejeitar a explicação e notificar sobre os motivos.
                     </div>
                     
                     <div class="form-group">
@@ -322,10 +322,10 @@
                                   required 
                                   minlength="10"
                                   maxlength="500"
-                                  placeholder="Descreva detalhadamente o motivo da rejeição para que o professor possa corrigir..."></textarea>
+                                  placeholder="Descreva detalhadamente o motivo da rejeição para que se possa corrigir..."></textarea>
                         <small class="form-text text-muted">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Seja específico nos motivos para ajudar o professor a corrigir os problemas identificados.
+                            Seja específico nos motivos para ajudar na correção dos os problemas identificados.
                             <br>
                             <span id="contador-caracteres">0/500 caracteres</span>
                         </small>
@@ -354,7 +354,7 @@
                                 <i class="fas fa-map-marker-alt mr-1"></i>Local inadequado
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
-                                    data-motivo="Disciplina não corresponde às habilitações do professor.">
+                                    data-motivo="Disciplina não corresponde às habilitações do explicador.">
                                 <i class="fas fa-book mr-1"></i>Disciplina incorreta
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 motivo-exemplo" 
