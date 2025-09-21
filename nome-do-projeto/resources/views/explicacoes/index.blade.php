@@ -92,6 +92,7 @@
                             <select class="form-control" id="filtroStatus">
                                 <option value="">Todos os status</option>
                                 <option value="agendada">Agendadas</option>
+                                <option value="confirmada">Confirmadas</option>
                                 <option value="concluida">Concluídas</option>
                                 <option value="cancelada">Canceladas</option>
                             </select>
@@ -135,7 +136,17 @@
                                 </thead>
                                 <tbody>
                                     @foreach($explicacoes as $explicacao)
-                                        <tr data-status="{{ $explicacao->status }}" 
+                                        @php
+                                            // Lógica para determinar o status da explicação
+                                            $statusExplicacao = $explicacao->status;
+                                            
+                                            // Se foi aprovada pelo admin e ainda está como "agendada", muda para "confirmada"
+                                            if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status === 'agendada') {
+                                                $statusExplicacao = 'confirmada';
+                                            }
+                                        @endphp
+                                        
+                                        <tr data-status="{{ $statusExplicacao }}" 
                                             data-aprovacao="{{ $explicacao->aprovacao_admin ?? 'pendente' }}"
                                             data-data="{{ $explicacao->data_explicacao }}" 
                                             data-disciplina="{{ strtolower($explicacao->disciplina) }}"
@@ -180,17 +191,22 @@
                                                 @php
                                                     $statusLabels = [
                                                         'agendada' => 'Agendada',
+                                                        'confirmada' => 'Confirmada',
                                                         'concluida' => 'Concluída',
                                                         'cancelada' => 'Cancelada',
                                                     ];
                                                     $statusClasses = [
                                                         'agendada' => 'warning',
-                                                        'concluida' => 'success',
+                                                        'confirmada' => 'success',
+                                                        'concluida' => 'info',
                                                         'cancelada' => 'danger',
                                                     ];
                                                 @endphp
-                                                <span class="badge badge-{{ $statusClasses[$explicacao->status] ?? 'secondary' }}">
-                                                    {{ $statusLabels[$explicacao->status] ?? $explicacao->status }}
+                                                <span class="badge badge-{{ $statusClasses[$statusExplicacao] ?? 'secondary' }}">
+                                                    @if($statusExplicacao === 'confirmada')
+                                                        <i class="fas fa-check-circle mr-1"></i>
+                                                    @endif
+                                                    {{ $statusLabels[$statusExplicacao] ?? $statusExplicacao }}
                                                 </span>
                                             </td>
                                             <td>
@@ -240,20 +256,19 @@
                                                         $agora = time();
                                                         $jaPassou = $dataHora < $agora;
                                                         
-                                                        // Debug: mostrar sempre o botão editar exceto para explicações concluídas
-                                                        $podeSerEditada = $explicacao->status !== 'concluida';
-                                                        $podeSerCancelada = !$jaPassou && $explicacao->status === 'agendada';
-                                                        $podeSerConcluida = $explicacao->status === 'agendada' && $explicacao->aprovacao_admin === 'aprovada' && !$jaPassou;
+                                                        // Lógica atualizada para considerar o status "confirmada"
+                                                        $podeSerEditada = !in_array($explicacao->status, ['concluida']);
+                                                        $podeSerCancelada = !$jaPassou && in_array($statusExplicacao, ['agendada', 'confirmada']);
+                                                        $podeSerConcluida = in_array($statusExplicacao, ['confirmada']) && !$jaPassou;
                                                     @endphp
                                                     
-                                                    <!-- Botão Editar - SEMPRE visível exceto para concluídas -->
+                                                    <!-- Botão Editar -->
                                                     @if($podeSerEditada)
                                                         <a href="{{ route('explicacoes.edit', $explicacao->id) }}" 
                                                            class="btn btn-outline-primary" title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                     @else
-                                                        <!-- Debug: mostrar por que não pode editar -->
                                                         <span class="btn btn-outline-secondary disabled" title="Não pode editar ({{ $explicacao->status }})">
                                                             <i class="fas fa-edit"></i>
                                                         </span>
@@ -442,6 +457,15 @@ function mostrarMotivoRejeicao(motivo) {
 .btn-xs {
     padding: 0.125rem 0.25rem;
     font-size: 0.675rem;
+}
+
+/* Estilo especial para explicações confirmadas */
+.badge-primary {
+    background-color: #007bff !important;
+}
+
+.text-success {
+    color: #28a745 !important;
 }
 </style>
 @endsection

@@ -16,6 +16,9 @@ class ExplicacaoController extends Controller
     {
         $user = auth()->user();
         
+        // NOVA FUNCIONALIDADE: Atualizar automaticamente explicações aprovadas para "confirmada"
+        $this->atualizarStatusAprovadas($user->id);
+        
         // Buscar explicações do utilizador logado com informações de aprovação
         $explicacoes = Explicacao::with(['aprovadoPor'])
             ->where('user_id', $user->id)
@@ -40,6 +43,20 @@ class ExplicacaoController extends Controller
     }
 
     /**
+     * NOVO MÉTODO: Atualiza automaticamente o status das explicações aprovadas
+     */
+    private function atualizarStatusAprovadas($userId)
+    {
+        Explicacao::where('user_id', $userId)
+            ->where('aprovacao_admin', 'aprovada')
+            ->where('status', 'agendada')
+            ->update([
+                'status' => 'confirmada',
+                'updated_at' => now()
+            ]);
+    }
+
+    /**
      * Mostrar formulário para criar nova explicação
      */
     public function create()
@@ -48,9 +65,6 @@ class ExplicacaoController extends Controller
     }
 
     /**
-     * Guardar nova explicação
-     */
-   /**
      * Guardar nova explicação
      */
     public function store(Request $request)
@@ -166,10 +180,10 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
-        // Verificar se pode ser editada
-        if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status !== 'agendada') {
+        // ATUALIZADO: Verificar se pode ser editada considerando o novo status "confirmada"
+        if ($explicacao->status === 'concluida') {
             return redirect()->route('explicacoes.index')
-                ->with('error', 'Esta explicação não pode ser editada pois já foi aprovada e confirmada.');
+                ->with('error', 'Esta explicação não pode ser editada pois já foi concluída.');
         }
         
         return view('explicacoes.edit', compact('explicacao'));
@@ -182,10 +196,10 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
 
-        // Verificar se pode ser editada
-        if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status !== 'agendada') {
+        // ATUALIZADO: Verificar se pode ser editada considerando o novo status "confirmada"
+        if ($explicacao->status === 'concluida') {
             return redirect()->route('explicacoes.index')
-                ->with('error', 'Esta explicação não pode ser editada.');
+                ->with('error', 'Esta explicação não pode ser editada pois já foi concluída.');
         }
 
         $validated = $request->validate([
@@ -201,6 +215,15 @@ class ExplicacaoController extends Controller
         ]);
 
         try {
+            // NOVO: Se a explicação foi confirmada (aprovada), resetar para agendada para nova aprovação
+            if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status === 'confirmada') {
+                $validated['status'] = 'agendada';
+                $validated['aprovacao_admin'] = 'pendente';
+                $validated['motivo_rejeicao'] = null;
+                $validated['aprovada_por'] = null;
+                $validated['data_aprovacao'] = null;
+            }
+            
             // Resetar aprovação se foi rejeitada antes
             if ($explicacao->aprovacao_admin === 'rejeitada') {
                 $validated['aprovacao_admin'] = 'pendente';
@@ -212,7 +235,7 @@ class ExplicacaoController extends Controller
             $explicacao->update($validated);
 
             return redirect()->route('explicacoes.index')
-                            ->with('success', 'Explicação atualizada com sucesso!');
+                            ->with('success', 'Explicação atualizada com sucesso e enviada para nova aprovação!');
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erro ao atualizar: ' . $e->getMessage()])->withInput();
@@ -227,10 +250,10 @@ class ExplicacaoController extends Controller
         try {
             $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
             
-            // Só permitir eliminar se não foi aprovada ou se foi rejeitada
-            if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status !== 'agendada') {
+            // ATUALIZADO: Só permitir eliminar se não foi concluída
+            if ($explicacao->status === 'concluida') {
                 return redirect()->route('explicacoes.index')
-                    ->with('error', 'Não é possível eliminar uma explicação aprovada.');
+                    ->with('error', 'Não é possível eliminar uma explicação concluída.');
             }
 
             $explicacao->delete();
@@ -244,24 +267,8 @@ class ExplicacaoController extends Controller
     }
 
     /**
-     * Confirmar explicação
+     * REMOVIDO: Método confirmar() - agora é automático quando aprovado pelo admin
      */
-    public function confirmar($id)
-    {
-        $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
-        
-        if ($explicacao->aprovacao_admin !== 'aprovada') {
-            return redirect()->back()->with('error', 'Só é possível confirmar explicações aprovadas pelo administrador.');
-        }
-        
-        if ($explicacao->status !== 'agendada') {
-            return redirect()->back()->with('error', 'Esta explicação já foi processada.');
-        }
-
-        $explicacao->update(['status' => 'confirmada']);
-
-        return redirect()->back()->with('success', 'Explicação confirmada!');
-    }
 
     /**
      * Cancelar explicação
@@ -270,6 +277,7 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
+        // ATUALIZADO: Incluir "confirmada" nos status que podem ser cancelados
         if (!in_array($explicacao->status, ['agendada', 'confirmada'])) {
             return redirect()->back()->with('error', 'Esta explicação não pode ser cancelada.');
         }
@@ -286,8 +294,9 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
+        // ATUALIZADO: Permitir conclusão apenas de explicações confirmadas
         if ($explicacao->status !== 'confirmada') {
-            return redirect()->back()->with('error', 'Só é possível concluir explicações confirmadas.');
+            return redirect()->back()->with('error', 'Só é possível concluir explicações confirmadas (aprovadas pelo admin).');
         }
 
         $explicacao->update(['status' => 'concluida']);
@@ -300,6 +309,11 @@ class ExplicacaoController extends Controller
      */
     public function calendario(Request $request)
     {
+        $user = auth()->user();
+        
+        // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar o calendário
+        $this->atualizarStatusAprovadas($user->id);
+        
         // Obter mês e ano da URL ou usar valores padrão (mês/ano atual)
         $mesAtual = (int) $request->get('mes', date('n'));
         $anoAtual = (int) $request->get('ano', date('Y'));
@@ -337,9 +351,6 @@ class ExplicacaoController extends Controller
             ->orderBy('data_explicacao')
             ->orderBy('hora_inicio')
             ->get();
-        
-        // Debug (pode comentar em produção)
-        // \Log::info("Calendário - Mês: $mesAtual, Ano: $anoAtual, Explicações encontradas: " . $explicacoes->count());
             
         return view('explicacoes.calendario', compact(
             'explicacoes', 
@@ -353,7 +364,7 @@ class ExplicacaoController extends Controller
     }
 
     /**
-     * Obter cor para o status (versão expandida)
+     * ATUALIZADO: Obter cor para o status (versão expandida)
      */
     private function getStatusColor($status, $aprovacao = null)
     {
@@ -366,10 +377,10 @@ class ExplicacaoController extends Controller
         
         // Cores para explicações aprovadas
         $colors = [
-            'agendada' => '#ffc107',    // Amarelo
-            'confirmada' => '#17a2b8',  // Azul
-            'concluida' => '#28a745',   // Verde
-            'cancelada' => '#fd7e14'    // Laranja para canceladas
+            'agendada' => '#ffc107',     // Amarelo
+            'confirmada' => '#28a745',   // Verde - NOVA COR para confirmadas
+            'concluida' => '#17a2b8',    // Azul para concluídas
+            'cancelada' => '#fd7e14'     // Laranja para canceladas
         ];
         
         return $colors[$status] ?? '#6c757d';
@@ -380,6 +391,11 @@ class ExplicacaoController extends Controller
      */
     public function disponibilidade(Request $request)
     {
+        $user = auth()->user();
+        
+        // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar disponibilidade
+        $this->atualizarStatusAprovadas($user->id);
+        
         // Obter a semana selecionada (padrão: segunda-feira da semana atual)
         $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
         
@@ -387,11 +403,11 @@ class ExplicacaoController extends Controller
         $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
         $fimSemana = date('Y-m-d', strtotime($inicioSemana . ' +6 days'));
         
-        // Buscar explicações da semana atual do usuário logado
+        // ATUALIZADO: Buscar explicações incluindo o novo status "confirmada"
         $explicacoes = Explicacao::where('user_id', Auth::id())
             ->whereBetween('data_explicacao', [$inicioSemana, $fimSemana])
             ->where('aprovacao_admin', 'aprovada')
-            ->whereIn('status', ['agendada', 'confirmada', 'concluida'])
+            ->whereIn('status', ['confirmada', 'concluida']) // Removido 'agendada' pois agora vira 'confirmada'
             ->orderBy('data_explicacao')
             ->orderBy('hora_inicio')
             ->get();
