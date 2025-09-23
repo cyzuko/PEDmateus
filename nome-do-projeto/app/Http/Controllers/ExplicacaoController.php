@@ -396,7 +396,7 @@ class ExplicacaoController extends Controller
         // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar disponibilidade
         $this->atualizarStatusAprovadas($user->id);
         
-        // Obter a semana selecionada (padrão: segunda-feira da semana atual)
+        // Obter a semana selecionadaa (padrão: segunda-feira da semana atual)
         $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
         
         // Calcular início e fim da semana
