@@ -7,11 +7,12 @@ use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExplicacaoController;
 
-// Rotas públicas
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// === ROTAS PÚBLICAS ===
 
+// Página inicial pública (sem autenticação)
+Route::get('/', [HomeController::class, 'publicHome'])->name('public.home');
+
+// Rotas de autenticação
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -51,9 +52,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/api/buscar-explicacoes', [AdminController::class, 'buscarExplicacoes'])->name('admin.api.buscar-explicacoes');
 });
 
-// Rotas autenticadas
+// === ROTAS AUTENTICADAS ===
 Route::middleware(['auth'])->group(function () {
+    // Dashboard/Home autenticado (diferente da página inicial pública)
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    
+    // Autenticação
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('password.update');

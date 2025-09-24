@@ -1,27 +1,36 @@
 <?php
-// app/Http/Controllers/HomeController.php
 
 namespace App\Http\Controllers;
 
-use App\Models\Fatura;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
+    /**
+     * Página inicial pública (sem autenticação necessária)
+     * Esta é a landing page que todos podem ver
+     */
+    public function publicHome()
+    {
+        return view('public.home');
+    }
+
+    /**
+     * Dashboard autenticado (requer login)
+     * Esta é a área privada após login
+     */
     public function index()
     {
-        try {
-            // Tentativa de obter as faturas
-            $faturas = Fatura::where('user_id', Auth::id())
-                        ->orderBy('data', 'desc')
-                        ->take(5)
-                        ->get();
-        } catch (\Exception $e) {
-            // Em caso de erro, inicializa com uma coleção vazia
-            $faturas = collect([]);
-        }
-                    
-        return view('home', compact('faturas'));
+        // Aqui você pode adicionar dados específicos para usuários autenticados
+        $user = auth()->user();
+        
+        // Exemplo de dados que podem ser úteis no dashboard
+        $stats = [
+            'total_explicacoes' => 0, // Buscar do banco de dados
+            'explicacoes_pendentes' => 0,
+            'explicacoes_concluidas' => 0,
+        ];
+
+        return view('home', compact('stats'));
     }
 }

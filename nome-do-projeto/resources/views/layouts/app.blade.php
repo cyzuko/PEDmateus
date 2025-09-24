@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Sistema de Faturas') }}</title>
+    <title>{{ config('app.name', 'Sistema de Explicações') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -97,6 +97,13 @@
                 margin-top: 5px;
                 padding: 0;
             }
+            
+            /* Botão admin responsivo */
+            .admin-btn-mobile {
+                margin: 2px 8px;
+                width: calc(100% - 16px);
+                text-align: left;
+            }
         }
         
         /* Hamburger menu customizado */
@@ -123,7 +130,8 @@
         /* Remove o outline azul dos links */
         .nav-link:focus,
         .dropdown-item:focus,
-        .navbar-toggler:focus {
+        .navbar-toggler:focus,
+        .btn:focus {
             outline: none !important;
             box-shadow: none !important;
         }
@@ -133,6 +141,19 @@
         .dropdown-item:active,
         .btn:active {
             background-color: transparent !important;
+        }
+        
+        /* Estilo para o botão admin */
+        .admin-btn {
+            margin-left: 8px;
+            margin-right: 8px;
+        }
+        
+        @media (min-width: 768px) {
+            .admin-btn {
+                margin-left: 15px;
+                margin-right: 0;
+            }
         }
     </style>
 
@@ -144,8 +165,8 @@
         <nav class="main-header navbar navbar-expand-md navbar-white navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url('/') }}" style="margin-left: 20px;">
-                    <i class="fas fas fa-building me-2"></i>
-                    {{ config('app.name', 'explicacoes') }}
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    {{ config('app.name', 'Sistema de Explicações') }}
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -161,6 +182,7 @@
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
                         @guest
+                            <!-- Links para visitantes não autenticados -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('login') }}">
                                     <i class="fas fa-sign-in-alt"></i> Login
@@ -171,45 +193,63 @@
                                     <i class="fas fa-user-plus"></i> Registro
                                 </a>
                             </li>
-                       @else
+                        @else
+                            <!-- Links para usuários autenticados -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('home') }}">
-                                    <i class="fas fa-home"></i> Casa
+                                    <i class="fas fa-lightbulb"></i> Eureka
                                 </a>
                             </li>
+                            
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('faturas.index') }}">
-                                    <i class="fas fa-file-invoice"></i> Faturas
+                                <a class="nav-link" href="{{ route('explicacoes.index') }}">
+                                    <i class="fas fa-graduation-cap"></i> Explicações
                                 </a>
                             </li>
-                           <li class="nav-item">
-    <a class="nav-link" href="{{ route('explicacoes.index') }}">
-        <i class="fas fa-graduation-cap"></i> Explicações
-    </a>
-</li>
-@if(auth()->check() && auth()->user()->role === 'admin')
-<a href="{{ url('/admin') }}" class="btn btn-primary">
-    <i class="fas fa-tachometer-alt"></i> Dashboard Admin
-</a>
-@endif
+                            
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('estatisticas') }}">
                                     <i class="fas fa-chart-bar"></i> Estatísticas
                                 </a>
                             </li>
+                            
+                             <li class="nav-item">
+                                
+                            <a class="nav-link" href="{{ route('faturas.index') }}">
+                                    <i class="fas fa-file-invoice"></i> Faturas
+                                </a>
+                            </li>
+                           <li class="nav-item"></li>
+                            <!-- Botão Admin - Desktop -->
+                            @if(auth()->check() && auth()->user()->role === 'admin')
+                                <li class="nav-item d-none d-md-block">
+                                    <a href="{{ url('/admin') }}" class="btn btn-primary admin-btn">
+                                        <i class="fas fa-cog"></i> Dashboard Admin
+                                    </a>
+                                </li>
+                            @endif
+                            
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-user"></i> {{ Auth::user()->name }}
                                 </a>
-                               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                  <a class="dropdown-item" href="{{ route('password.change') }}">
-                                      <i class="fas fa-key"></i> Alterar Senha
-                                  </a>
-                                  <div class="dropdown-divider"></div>
-                                  <a class="dropdown-item" href="{{ route('logout') }}">
-                                     <i class="fas fa-sign-out-alt"></i> Terminar Sessão
-                                  </a>
-                               </div>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                    <!-- Botão Admin - Mobile (dentro do dropdown) -->
+                                    @if(auth()->check() && auth()->user()->role === 'admin')
+                                        <a class="dropdown-item d-md-none" href="{{ url('/admin') }}">
+                                            <i class="fas fa-cog"></i> Admin
+                                        </a>
+                                        <div class="dropdown-divider d-md-none"></div>
+                                    @endif
+                                    
+                                    <a class="dropdown-item" href="{{ route('password.change') }}">
+                                        <i class="fas fa-key"></i> Alterar Senha
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{{ route('logout') }}">
+                                        <i class="fas fa-sign-out-alt"></i> Terminar Sessão
+                                    </a>
+                                </div>
                             </li>
                         @endguest
                     </ul>
@@ -228,7 +268,6 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-
                                 
                             </ol>
                         </div>
@@ -255,7 +294,7 @@
                 <div class="float-right d-none d-sm-block">
                     <b>Version</b> 3.2.0
                 </div>
-                <strong>&copy; {{ date('Y') }} <a href="#">Eureka</a>.</strong> Todos os direitos reservados.
+                <strong>&copy; {{ date('Y') }} <a href="#">Sistema de Explicações</a>.</strong> Todos os direitos reservados.
             </div>
         </footer>
 
