@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gerenciamento de Faturas</title>
+    <title>Sistema de Gerenciamento de explicacoes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -89,45 +89,11 @@
 <body>
     <div class="hero">
         <div class="container">
-            <h1>Sistema de Gerenciamento de Faturas</h1>
-            <p>Uma maneira simples e eficiente de organizar suas faturas</p>
+            <h1>Sistema de Gerenciamento explicacoes</h1>
+           
         </div>
     </div>
 
-    <div class="container">
-        <div class="features">
-            <div class="feature">
-                <h3>Organize suas Faturas</h3>
-                <p>Mantenha todas as suas faturas organizadas em um só lugar, com acesso fácil quando precisar.</p>
-            </div>
-            <div class="feature">
-                <h3>Upload de Imagens</h3>
-                <p>Faça upload de imagens das suas faturas para ter o documento completo sempre à mão.</p>
-            </div>
-            <div class="feature">
-                <h3>Acesso Seguro</h3>
-                <p>Seus dados estão protegidos por sistemas de segurança avançados.</p>
-            </div>
-        </div>
-
-        <div class="cta">
-            @if(Auth::check())
-                <a href="{{ route('dashboard') }}" class="btn">Ir para Dashboard</a>
-                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-outline" style="cursor: pointer;">Sair</button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" class="btn">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-outline">Registar</a>
-            @endif
-        </div>
-    </div>
-
-    <div class="footer">
-        <div class="container">
-            <p>&copy; 2025 Sistema de Gerenciamento de Faturas. Todos os direitos reservados.</p>
-        </div>
-    </div>
+    
 </body>
 </html>
