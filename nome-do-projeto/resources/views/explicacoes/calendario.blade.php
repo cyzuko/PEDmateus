@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="card-body">
-                    <!-- Filtros rápidos -->
+                    <!-- Filtros rápis -->
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <label>Mês:</label>
