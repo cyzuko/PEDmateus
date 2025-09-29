@@ -7,7 +7,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <i class="fas fa-chart-bar"></i>
-                Estatísticas das Faturas
+                Estatísticas das Explicacoes
             </h1>
             <p class="page-subtitle">Análise detalhada do desempenho financeiro</p>
         </div>
@@ -24,7 +24,7 @@
             </div>
             <div class="stats-content">
                 <h3>{{ $totalFaturas }}</h3>
-                <p>Total de Faturas</p>
+                <p>Total de Explicacoes</p>
                 <span class="stats-trend">
                     <i class="fas fa-arrow-up"></i>
                     Registadas
@@ -72,7 +72,7 @@
         <div class="charts-row">
             <div class="chart-card large">
                 <div class="chart-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Faturas por Mês</h3>
+                    <h3><i class="fas fa-calendar-alt"></i> Explicacoes por Mês</h3>
                     <div class="chart-legend">
                         <span class="legend-item blue">Quantidade mensal</span>
                     </div>
