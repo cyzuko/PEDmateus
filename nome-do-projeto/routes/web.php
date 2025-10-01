@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExplicacaoController;
 
