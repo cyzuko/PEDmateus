@@ -49,7 +49,7 @@
         z-index: 1000;
     }
     
-    /* Adiciona espaço no topo para o título */
+    /* Adiciona espaço no topo peara o título */
     .login-box {
         margin-top: 6rem !important;
     }
