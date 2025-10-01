@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Estatísticas das Faturas')
+@section('title', 'Estatísticas das Explicações')
 
 @section('content_header')
     <div class="content-header-modern">
         <div class="header-content">
             <h1 class="page-title">
                 <i class="fas fa-chart-bar"></i>
-                Estatísticas das Explicacoes
+                Estatísticas das Explicações
             </h1>
-            <p class="page-subtitle">Análise detalhada do desempenho financeiro</p>
+            <p class="page-subtitle">Análise detalhada do desempenho</p>
         </div>
     </div>
 @stop
@@ -20,11 +20,11 @@
     <div class="stats-summary">
         <div class="stats-card primary">
             <div class="stats-icon">
-                <i class="fas fa-file-invoice"></i>
+                <i class="fas fa-graduation-cap"></i>
             </div>
             <div class="stats-content">
-                <h3>{{ $totalFaturas }}</h3>
-                <p>Total de Explicacoes</p>
+                <h3>{{ $totalExplicacoes }}</h3>
+                <p>Total de Explicações</p>
                 <span class="stats-trend">
                     <i class="fas fa-arrow-up"></i>
                     Registadas
@@ -55,7 +55,7 @@
                 <p>Valor Médio</p>
                 <span class="stats-trend">
                     <i class="fas fa-balance-scale"></i>
-                    Por Fatura
+                    Por Explicação
                 </span>
             </div>
         </div>
@@ -65,20 +65,20 @@
     <div class="charts-section">
         <div class="section-header">
             <h2><i class="fas fa-analytics"></i> Análises Gráficas</h2>
-            <p>Visualização detalhada dos dados financeiros</p>
+            <p>Visualização detalhada dos dados</p>
         </div>
 
         <!-- Linha superior - Gráficos Mensais -->
         <div class="charts-row">
             <div class="chart-card large">
                 <div class="chart-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Explicacoes por Mês</h3>
+                    <h3><i class="fas fa-calendar-alt"></i> Explicações por Mês</h3>
                     <div class="chart-legend">
                         <span class="legend-item blue">Quantidade mensal</span>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="graficoTotalFaturasMensal"></canvas>
+                    <canvas id="graficoTotalExplicacoesMensal"></canvas>
                 </div>
             </div>
 
@@ -95,29 +95,29 @@
             </div>
         </div>
 
-        <!-- Linha inferior - Gráficos de Fornecedores -->
+        <!-- Linha inferior - Gráficos de Disciplinas -->
         <div class="charts-row">
             <div class="chart-card large">
                 <div class="chart-header">
-                    <h3><i class="fas fa-building"></i> Faturas por Fornecedor</h3>
+                    <h3><i class="fas fa-book"></i> Explicações por Disciplina</h3>
                     <div class="chart-legend">
-                        <span class="legend-item teal">Distribuição por fornecedor</span>
+                        <span class="legend-item teal">Distribuição por disciplina</span>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="graficoTotalFaturasFornecedor"></canvas>
+                    <canvas id="graficoTotalExplicacoesDisciplina"></canvas>
                 </div>
             </div>
 
             <div class="chart-card large">
                 <div class="chart-header">
-                    <h3><i class="fas fa-chart-line"></i> Valores por Fornecedor (€)</h3>
+                    <h3><i class="fas fa-chart-line"></i> Valores por Disciplina (€)</h3>
                     <div class="chart-legend">
                         <span class="legend-item purple">Análise de valores</span>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="graficoValorTotalFornecedor"></canvas>
+                    <canvas id="graficoValorTotalDisciplina"></canvas>
                 </div>
             </div>
         </div>
@@ -591,31 +591,24 @@
     // Configurações globais do Chart.js
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     Chart.defaults.color = '#6b7280';
-    
-    // Configuração específica para gráficos
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        devicePixelRatio: window.devicePixelRatio || 1
-    };
 
     // Dados
     const meses = @json($estatisticasMensais->pluck('mes'));
-    const totalFaturasMes = @json($estatisticasMensais->pluck('total'));
+    const totalExplicacoesMes = @json($estatisticasMensais->pluck('total'));
     const valorTotalMes = @json($estatisticasMensais->pluck('total_valor'));
 
-    const fornecedores = @json($estatisticasFornecedor->pluck('fornecedor'));
-    const totalFaturasFornecedor = @json($estatisticasFornecedor->pluck('total'));
-    const valorTotalFornecedor = @json($estatisticasFornecedor->pluck('total_valor'));
+    const disciplinas = @json($estatisticasDisciplina->pluck('disciplina'));
+    const totalExplicacoesDisciplina = @json($estatisticasDisciplina->pluck('total'));
+    const valorTotalDisciplina = @json($estatisticasDisciplina->pluck('total_valor'));
 
-    // Gráfico barras - Total de Faturas Mensais
-    new Chart(document.getElementById('graficoTotalFaturasMensal'), {
+    // Gráfico barras - Total de Explicações Mensais
+    new Chart(document.getElementById('graficoTotalExplicacoesMensal'), {
         type: 'bar',
         data: {
             labels: meses,
             datasets: [{
-                label: 'Total de Faturas',
-                data: totalFaturasMes,
+                label: 'Total de Explicações',
+                data: totalExplicacoesMes,
                 backgroundColor: 'rgba(59, 130, 246, 0.8)',
                 borderColor: 'rgba(59, 130, 246, 1)',
                 borderWidth: 2,
@@ -754,14 +747,14 @@
         }
     });
 
-    // Gráfico barras horizontal - Total de Faturas por Fornecedor
-    new Chart(document.getElementById('graficoTotalFaturasFornecedor'), {
+    // Gráfico barras horizontal - Total de Explicações por Disciplina
+    new Chart(document.getElementById('graficoTotalExplicacoesDisciplina'), {
         type: 'bar',
         data: {
-            labels: fornecedores,
+            labels: disciplinas,
             datasets: [{
-                label: 'Total de Faturas',
-                data: totalFaturasFornecedor,
+                label: 'Total de Explicações',
+                data: totalExplicacoesDisciplina,
                 backgroundColor: 'rgba(20, 184, 166, 0.8)',
                 borderColor: 'rgba(20, 184, 166, 1)',
                 borderWidth: 2,
@@ -822,14 +815,14 @@
         }
     });
 
-    // Gráfico linha - Valor Total por Fornecedor
-    new Chart(document.getElementById('graficoValorTotalFornecedor'), {
+    // Gráfico linha - Valor Total por Disciplina
+    new Chart(document.getElementById('graficoValorTotalDisciplina'), {
         type: 'line',
         data: {
-            labels: fornecedores,
+            labels: disciplinas,
             datasets: [{
                 label: 'Valor Total (€)',
-                data: valorTotalFornecedor,
+                data: valorTotalDisciplina,
                 fill: true,
                 borderColor: 'rgba(139, 92, 246, 1)',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',

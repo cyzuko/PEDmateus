@@ -213,12 +213,7 @@
                                 </a>
                             </li>
                             
-                             <li class="nav-item">
-                                
-                            <a class="nav-link" href="{{ route('faturas.index') }}">
-                                    <i class="fas fa-file-invoice"></i> Faturas
-                                </a>
-                            </li>
+                            
                            <li class="nav-item"></li>
                             <!-- Botão Admin - Desktop -->
                             @if(auth()->check() && auth()->user()->role === 'admin')

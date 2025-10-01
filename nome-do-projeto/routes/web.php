@@ -62,7 +62,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('password.update');
     
-    // Rotas para faturas (CRUD completo)
+    // === ROTAS PARA FATURAS (DESATIVADAS - 01/10/2025) ===
+    /*
     Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
     Route::get('/faturas/create', [FaturaController::class, 'create'])->name('faturas.create');
     Route::post('/faturas', [FaturaController::class, 'store'])->name('faturas.store');
@@ -79,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/faturas/{id}/edit', [FaturaController::class, 'edit'])->name('faturas.edit');
     Route::put('/faturas/{id}', [FaturaController::class, 'update'])->name('faturas.update');
     Route::delete('/faturas/{id}', [FaturaController::class, 'destroy'])->name('faturas.destroy');
+    */
     
     // === ROTAS PARA EXPLICAÇÕES ===
     
