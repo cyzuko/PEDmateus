@@ -16,7 +16,7 @@
 
 @section('content')
 
-    <!-- Cards de Resumo -->
+    <!-- Cards de Resum -->
     <div class="stats-summary">
         <div class="stats-card primary">
             <div class="stats-icon">
