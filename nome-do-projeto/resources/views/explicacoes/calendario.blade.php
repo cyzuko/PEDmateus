@@ -11,19 +11,35 @@
                     <h3>
                         <i class="fas fa-calendar mr-2"></i>
                         Calendário de Explicações - {{ date('F Y', mktime(0, 0, 0, $mesAtual, 1, $anoAtual)) }}
+                        @if(auth()->user()->role === 'admin')
+                            <span class="badge badge-danger ml-2">Modo Admin</span>
+                        @endif
                     </h3>
                     <div class="btn-group">
                         <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
                             <i class="fas fa-plus"></i> Nova Explicação
                         </a>
                         <a href="{{ route('explicacoes.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-list"></i> Lista
+                            <i class="fas fa-list"></i> As Minhas Explicações
                         </a>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    <!-- Filtros rápis -->
+                    <!-- Info sobre visualização -->
+                @if(auth()->user()->role === 'admin')
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações.
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 
+                            Visualização: <strong>todas as suas explicações</strong> + <strong>explicações confirmadas de outros alunos</strong>.
+                        </div>
+                    @endif
+
+                    <!-- Filtros rápidos -->
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <label>Mês:</label>
@@ -113,9 +129,7 @@
                                     $diasNoMes = date('t', mktime(0, 0, 0, $mesAtual, 1, $anoAtual));
                                     $diaAtual = 1;
                                     $semanas = ceil(($diasNoMes + $primeiroDia) / 7);
-                                    
-                                    // Para debug
-                                    // dd("Mês: $mesAtual, Ano: $anoAtual, Primeiro dia: $primeiroDia, Dias no mês: $diasNoMes");
+                                    $userLogado = auth()->user();
                                 @endphp
 
                                 @for($semana = 0; $semana < $semanas; $semana++)
@@ -141,9 +155,13 @@
 
                                                         @foreach($explicacoesDia as $explicacao)
                                                             @php
+                                                                // Verificar se é do usuário logado
+                                                                $ehMinhaExplicacao = $explicacao->user_id == $userLogado->id;
+                                                                
                                                                 // Definir classe CSS baseada no status e aprovação
                                                                 $classeCSS = 'secondary';
                                                                 $icone = 'fas fa-question-circle';
+                                                                $borderClass = $ehMinhaExplicacao ? 'border-own' : 'border-other';
                                                                 
                                                                 if ($explicacao->aprovacao_admin === 'pendente') {
                                                                     $classeCSS = 'secondary';
@@ -171,16 +189,35 @@
                                                                             break;
                                                                     }
                                                                 }
+                                                                
+                                                                // Tooltip com informações
+                                                                $professorNome = $explicacao->user->name ?? 'Professor';
+                                                                $tooltipText = $explicacao->disciplina . ' - ' . $explicacao->nome_aluno . 
+                                                                               ' (' . substr($explicacao->hora_inicio, 0, 5) . ')' .
+                                                                               ($ehMinhaExplicacao ? ' [MINHA]' : '  ' . $professorNome . '') .
+                                                                               ' - Status: ' . ucfirst($explicacao->status) . 
+                                                                               ' - Aprovação: ' . ucfirst($explicacao->aprovacao_admin);
+                                                                
+                                                                if ($explicacao->aprovacao_admin === 'rejeitada' && $explicacao->motivo_rejeicao) {
+                                                                    $tooltipText .= ' - ' . $explicacao->motivo_rejeicao;
+                                                                }
                                                             @endphp
-                                                            <div class="explicacao-item mb-1" 
+                                                            <div class="explicacao-item mb-1 {{ $borderClass }}" 
                                                                  data-status="{{ $explicacao->status }}" 
-                                                                 data-aprovacao="{{ $explicacao->aprovacao_admin }}">
+                                                                 data-aprovacao="{{ $explicacao->aprovacao_admin }}"
+                                                                 data-own="{{ $ehMinhaExplicacao ? '1' : '0' }}">
                                                                 <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
                                                                    class="btn btn-{{ $classeCSS }} btn-sm btn-block text-truncate" 
-                                                                   title="{{ $explicacao->disciplina }} - {{ $explicacao->nome_aluno }} ({{ substr($explicacao->hora_inicio, 0, 5) }}) - Status: {{ ucfirst($explicacao->status) }} - Aprovação: {{ ucfirst($explicacao->aprovacao_admin) }}{{ $explicacao->aprovacao_admin === 'rejeitada' && $explicacao->motivo_rejeicao ? ' - ' . $explicacao->motivo_rejeicao : '' }}">
+                                                                   title="{{ $tooltipText }}">
                                                                     <i class="{{ $icone }} me-1"></i>
+                                                                    @if(!$ehMinhaExplicacao)
+                                                                        <i class="fas fa-user-friends" style="font-size: 0.7em;"></i>
+                                                                    @endif
                                                                     {{ substr($explicacao->disciplina, 0, 8) }}{{ strlen($explicacao->disciplina) > 8 ? '...' : '' }}
                                                                     <br><small>{{ substr($explicacao->hora_inicio, 0, 5) }}</small>
+                                                                    @if(!$ehMinhaExplicacao)
+                                                                        <br><small style="font-size: 0.6em;">{{ substr($professorNome, 0, 10) }}</small>
+                                                                    @endif
                                                                 </a>
                                                             </div>
                                                         @endforeach
@@ -207,9 +244,14 @@
                                 <span class="badge badge-dark mr-2"><i class="fas fa-ban"></i> Cancelada</span>
                             </div>
                             <h6>Legenda por Aprovação:</h6>
-                            <div>
+                            <div class="mb-2">
                                 <span class="badge badge-secondary mr-2"><i class="fas fa-clock"></i> Pendente de Aprovação</span>
                                 <span class="badge badge-danger mr-2"><i class="fas fa-times-circle"></i> Rejeitada</span>
+                            </div>
+                            <h6>Legenda por Propriedade:</h6>
+                            <div>
+                                <span class="badge badge-primary mr-2 border-own-demo">As minhas Explicações</span>
+                                <span class="badge badge-secondary mr-2 border-other-demo"><i class="fas fa-user-friends"></i> Explicações de Outros Alunos</span>
                             </div>
                         </div>
                     </div>
@@ -281,25 +323,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const filtroStatus = document.getElementById('filtroStatus');
     const filtroAprovacao = document.getElementById('filtroAprovacao');
 
-    // Função para atualizar calendário (mês/ano) - Melhorada
+    // Função para atualizar calendário (mês/ano)
     function atualizarCalendario() {
         const mes = filtroMes.value;
         const ano = filtroAno.value;
         
         if (mes && ano) {
-            // Criar URL com parâmetros
             const baseUrl = '{{ route("explicacoes.calendario") }}';
             const url = `${baseUrl}?mes=${mes}&ano=${ano}`;
-            
-            // Mostrar indicador de carregamento
             document.body.style.cursor = 'wait';
-            
-            // Redirecionar
             window.location.href = url;
         }
     }
 
-    // Event listeners para filtros de mês/ano - Sem debounce para melhor UX
+    // Event listeners para filtros de mês/ano
     if (filtroMes) {
         filtroMes.addEventListener('change', atualizarCalendario);
     }
@@ -307,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filtroAno.addEventListener('change', atualizarCalendario);
     }
 
-    // Filtros locais (status e aprovação) - Mantém a funcionalidade original
+    // Filtros locais (status e aprovação)
     function aplicarFiltros() {
         const statusSelecionado = filtroStatus ? filtroStatus.value : '';
         const aprovacaoSelecionada = filtroAprovacao ? filtroAprovacao.value : '';
@@ -319,17 +356,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const aprovacao = item.getAttribute('data-aprovacao');
             let mostrar = true;
             
-            // Filtrar por status
             if (statusSelecionado && status !== statusSelecionado) {
                 mostrar = false;
             }
             
-            // Filtrar por aprovação
             if (aprovacaoSelecionada && aprovacao !== aprovacaoSelecionada) {
                 mostrar = false;
             }
             
-            // Mostrar/ocultar
             if (mostrar) {
                 item.style.display = 'block';
             } else {
@@ -346,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filtroAprovacao.addEventListener('change', aplicarFiltros);
     }
 
-    // Inicializar tooltips (se Bootstrap estiver disponível)
+    // Inicializar tooltips
     if (typeof bootstrap !== 'undefined') {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
         tooltipTriggerList.map(function(tooltipTriggerEl) {
@@ -354,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Restaurar cursor normal quando página carrega
     document.body.style.cursor = 'default';
 });
 </script>
@@ -392,13 +425,33 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #f8f9fa;
 }
 
-/* Cores específicas para estados mistos */
+/* Bordas para diferenciar explicações próprias e de outros */
+.border-own {
+    border-left: 3px solid #007bff !important;
+    padding-left: 2px;
+}
+
+.border-other {
+    border-left: 3px solid #6c757d !important;
+    padding-left: 2px;
+}
+
+/* Para demonstração na legenda */
+.border-own-demo {
+    border-left: 3px solid #007bff !important;
+    padding-left: 8px;
+}
+
+.border-other-demo {
+    border-left: 3px solid #6c757d !important;
+    padding-left: 8px;
+}
+
 .btn-dark {
     background-color: #6c757d;
     border-color: #6c757d;
 }
 
-/* Indicador de carregamento */
 body[style*="cursor: wait"] {
     pointer-events: none;
 }

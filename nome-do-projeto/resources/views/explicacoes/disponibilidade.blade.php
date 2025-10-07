@@ -11,13 +11,16 @@
                     <h3 class="card-title">
                         <i class="fas fa-clock mr-2"></i>
                         Disponibilidade de Horários
+                        @if(isset($modoVisualizacao) && $modoVisualizacao === 'admin')
+                            <span class="badge badge-danger ml-2">Modo Admin</span>
+                        @endif
                     </h3>
                     <div class="btn-group">
                         <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
                             <i class="fas fa-plus"></i> Nova Explicação
                         </a>
                         <a href="{{ route('explicacoes.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-list"></i> Lista
+                            <i class="fas fa-list"></i> Minhas Explicações
                         </a>
                         <a href="{{ route('explicacoes.calendario') }}" class="btn btn-info">
                             <i class="fas fa-calendar"></i> Calendário
@@ -26,6 +29,19 @@
                 </div>
 
                 <div class="card-body">
+                    <!-- Info sobre visualização -->
+                  @if(auth()->user()->role === 'admin')
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações de todos os alunos.
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 
+                            Visualização <strong>as suas explicações confirmadas</strong> + <strong>explicações confirmadas de outros alunos</strong>.
+                        </div>
+                    @endif
+
                     <!-- Filtros de semana -->
                     <div class="row mb-4">
                         <div class="col-md-4">
@@ -76,6 +92,7 @@
                                             'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'
                                         ];
                                         $semanaInicio = request('semana', date('Y-m-d', strtotime('monday this week')));
+                                        $userLogado = auth()->user();
                                     @endphp
                                     @for($i = 0; $i < 7; $i++)
                                         @php
@@ -135,21 +152,31 @@
                                                 @if($explicacoesSlot->count() > 0)
                                                     @foreach($explicacoesSlot as $explicacao)
                                                         @php
+                                                            $ehMinhaExplicacao = $explicacao->user_id == $userLogado->id;
+                                                            $alunoNome = $explicacao->nome_aluno ?? 'Aluno';
+                                                            
                                                             $statusClasses = [
-                                                                'agendada' => 'warning',
-                                                                'confirmada' => 'info',
-                                                                'concluida' => 'success',
-                                                                'cancelada' => 'danger',
+                                                                'confirmada' => $ehMinhaExplicacao ? 'info' : 'secondary',
+                                                                'concluida' => $ehMinhaExplicacao ? 'success' : 'dark',
                                                             ];
+                                                            
+                                                            $borderClass = $ehMinhaExplicacao ? 'border-own-slot' : 'border-other-slot';
+                                                            
+                                                            $tooltipText = $explicacao->disciplina . ' - ' . $alunoNome . 
+                                                                          ' (' . $explicacao->hora_inicio . '-' . $explicacao->hora_fim . ')' .
+                                                                          ($ehMinhaExplicacao ? ' [MINHA]' : '');
                                                         @endphp
-                                                        <div class="explicacao-slot mb-1">
+                                                        <div class="explicacao-slot mb-1 {{ $borderClass }}">
                                                             <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
                                                                class="btn btn-{{ $statusClasses[$explicacao->status] ?? 'secondary' }} btn-sm btn-block text-truncate"
-                                                               title="{{ $explicacao->disciplina }} - {{ $explicacao->nome_aluno }} ({{ $explicacao->hora_inicio }}-{{ $explicacao->hora_fim }})">
+                                                               title="{{ $tooltipText }}">
                                                                 <small>
-                                                                    <strong>{{ $explicacao->hora_inicio }}</strong><br>
+                                                                    @if(!$ehMinhaExplicacao)
+                                                                        <i class="fas fa-user-friends" style="font-size: 0.7em;"></i>
+                                                                    @endif
+                                                                    <strong>{{ substr($explicacao->hora_inicio, 0, 5) }}</strong><br>
                                                                     {{ substr($explicacao->disciplina, 0, 8) }}{{ strlen($explicacao->disciplina) > 8 ? '...' : '' }}<br>
-                                                                    <span class="text-truncate d-block">{{ substr($explicacao->nome_aluno, 0, 10) }}</span>
+                                                                    <span class="text-truncate d-block">{{ substr($alunoNome, 0, 10) }}</span>
                                                                 </small>
                                                             </a>
                                                         </div>
@@ -179,18 +206,21 @@
 
                     <!-- Legenda -->
                     <div class="row mt-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h6>Legenda de Status:</h6>
-                            <span class="badge badge-warning mr-2">Agendada</span>
                             <span class="badge badge-info mr-2">Confirmada</span>
                             <span class="badge badge-success mr-2">Concluída</span>
-                            <span class="badge badge-danger mr-2">Cancelada</span>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h6>Disponibilidade:</h6>
                             <span class="badge badge-light mr-2"><i class="fas fa-plus"></i> Horário Livre</span>
                             <span class="badge badge-secondary mr-2">Horário Passado</span>
                             <span class="badge badge-primary mr-2">Hoje</span>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Propriedade:</h6>
+                            <span class="badge badge-info mr-2 border-own-demo-slot">As Minhas Explicações</span>
+                            <span class="badge badge-secondary mr-2 border-other-demo-slot"><i class="fas fa-user-friends"></i> Outros Alunos</span>
                         </div>
                     </div>
 
@@ -206,8 +236,9 @@
                                             $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
                                             $fimSemana = date('Y-m-d', strtotime($semanaInicio . ' +6 days'));
                                             $explicacoesSemana = $explicacoes->whereBetween('data_explicacao', [$inicioSemana, $fimSemana]);
+                                            $minhasExplicacoes = $explicacoesSemana->where('user_id', $userLogado->id);
                                         @endphp
-                                        {{ $explicacoesSemana->count() }}
+                                        {{ $explicacoesSemana->count() }} ({{ $minhasExplicacoes->count() }} minhas)
                                     </span>
                                 </div>
                             </div>
@@ -216,11 +247,11 @@
                             <div class="info-box bg-info">
                                 <span class="info-box-icon"><i class="fas fa-clock"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Horas/Semana</span>
+                                    <span class="info-box-text">As Minhas Horas</span>
                                     <span class="info-box-number">
                                         @php
                                             $totalHoras = 0;
-                                            foreach($explicacoesSemana as $exp) {
+                                            foreach($minhasExplicacoes as $exp) {
                                                 $inicio = strtotime($exp->hora_inicio);
                                                 $fim = strtotime($exp->hora_fim);
                                                 $totalHoras += ($fim - $inicio) / 3600;
@@ -235,9 +266,9 @@
                             <div class="info-box bg-warning">
                                 <span class="info-box-icon"><i class="fas fa-euro-sign"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Receita/Semana</span>
+                                    <span class="info-box-text">A Minha Receita</span>
                                     <span class="info-box-number">
-                                        €{{ number_format($explicacoesSemana->sum('preco'), 2) }}
+                                        €{{ number_format($minhasExplicacoes->sum('preco'), 2) }}
                                     </span>
                                 </div>
                             </div>
@@ -265,7 +296,7 @@
     </div>
 </div>
 
-<!-- Modal para criação rápida ATUALIZADO -->
+<!-- Modal para criação rápida -->
 <div class="modal fade" id="modalCriarExplicacao" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -545,6 +576,28 @@ $(document).ready(function() {
     padding: 2px 4px;
     line-height: 1.1;
     margin: 1px 0;
+}
+
+/* Bordas para diferenciar explicações próprias e de outros */
+.border-own-slot {
+    border-left: 3px solid #007bff !important;
+    padding-left: 2px;
+}
+
+.border-other-slot {
+    border-left: 3px solid #6c757d !important;
+    padding-left: 2px;
+}
+
+/* Para demonstração na legenda */
+.border-own-demo-slot {
+    border-left: 3px solid #007bff !important;
+    padding-left: 8px;
+}
+
+.border-other-demo-slot {
+    border-left: 3px solid #6c757d !important;
+    padding-left: 8px;
 }
 
 .info-box {

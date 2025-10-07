@@ -6,20 +6,20 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">
-                        <i class="fas fa-calendar-alt mr-2"></i>
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                    <h3 class="card-title mb-0 font-weight-bold">
+                        <i class="fas fa-calendar-alt mr-2 text-primary"></i>
                         Horários de Explicações
                     </h3>
-                    <div class="btn-group">
-                        <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
-                            <i class="fas fa-plus"></i> Nova Explicação
+                    <div>
+                        <a href="{{ route('explicacoes.create') }}" class="btn btn-sm btn-success mr-1">
+                            <i class="fas fa-plus"></i> Nova
                         </a>
-                        <a href="{{ route('explicacoes.calendario') }}" class="btn btn-info">
+                        <a href="{{ route('explicacoes.calendario') }}" class="btn btn-sm btn-info mr-1">
                             <i class="fas fa-calendar"></i> Calendário
                         </a>
-                        <a href="{{ route('explicacoes.disponibilidade') }}" class="btn btn-warning">
+                        <a href="{{ route('explicacoes.disponibilidade') }}" class="btn btn-sm btn-warning">
                             <i class="fas fa-clock"></i> Disponibilidade
                         </a>
                     </div>
@@ -28,58 +28,68 @@
                 <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
+                            <i class="fas fa-check-circle mr-1"></i>{{ session('success') }}
                             <button type="button" class="close" data-dismiss="alert">
                                 <span>&times;</span>
                             </button>
                         </div>
                     @endif
 
-                    <!-- Cards de Estatísticas com Status de Aprovação -->
+                    <!-- Cards de Estatísticas -->
                     @if(isset($stats))
                     <div class="row mb-4">
-                        <div class="col-md-2">
-                            <div class="info-box bg-primary">
-                                <span class="info-box-icon"><i class="fas fa-calendar-plus"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Total</span>
-                                    <span class="info-box-number">{{ $stats['total'] }}</span>
+                        <div class="col">
+                            <div class="stat-card stat-primary">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total</div>
+                                    <div class="stat-value">{{ $stats['total'] }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="info-box bg-warning">
-                                <span class="info-box-icon"><i class="fas fa-clock"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Pendentes</span>
-                                    <span class="info-box-number">{{ $stats['pendentes'] }}</span>
+                        <div class="col">
+                            <div class="stat-card stat-warning">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Pendentes</div>
+                                    <div class="stat-value">{{ $stats['pendentes'] }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="info-box bg-success">
-                                <span class="info-box-icon"><i class="fas fa-check"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Aprovadas</span>
-                                    <span class="info-box-number">{{ $stats['aprovadas'] }}</span>
+                        <div class="col">
+                            <div class="stat-card stat-success">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Aprovadas</div>
+                                    <div class="stat-value">{{ $stats['aprovadas'] }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="info-box bg-danger">
-                                <span class="info-box-icon"><i class="fas fa-times"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Rejeitadas</span>
-                                    <span class="info-box-number">{{ $stats['rejeitadas'] }}</span>
+                        <div class="col">
+                            <div class="stat-card stat-danger">
+                                <div class="stat-icon">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Rejeitadas</div>
+                                    <div class="stat-value">{{ $stats['rejeitadas'] }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="info-box bg-info">
-                                <span class="info-box-icon"><i class="fas fa-check-double"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Concluídas</span>
-                                    <span class="info-box-number">{{ $explicacoes->where('status', 'concluida')->count() }}</span>
+                        <div class="col">
+                            <div class="stat-card stat-info">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-double"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Concluídas</div>
+                                    <div class="stat-value">{{ $explicacoes->where('status', 'concluida')->count() }}</div>
                                 </div>
                             </div>
                         </div>
@@ -87,41 +97,43 @@
                     @endif
 
                     <!-- Filtros -->
-                    <div class="row mb-3">
-                        <div class="col-md-2">
-                            <select class="form-control" id="filtroStatus">
-                                <option value="">Todos os status</option>
-                                <option value="agendada">Agendadas</option>
-                                <option value="confirmada">Confirmadas</option>
-                                <option value="concluida">Concluídas</option>
-                                <option value="cancelada">Canceladas</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-control" id="filtroAprovacao">
-                                <option value="">Status de Aprovação</option>
-                                <option value="pendente">Pendente</option>
-                                <option value="aprovada">Aprovada</option>
-                                <option value="rejeitada">Rejeitada</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" id="filtroData" placeholder="Filtrar por data">
-                        </div>
-                        <div class="col-md-3">
-                            <input type="text" class="form-control" id="filtroDisciplina" placeholder="Filtrar por disciplina">
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-secondary" onclick="limparFiltros()">
-                                <i class="fas fa-times"></i> Limpar
-                            </button>
+                    <div class="filters-section mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-2">
+                                <select class="form-control form-control-sm" id="filtroStatus">
+                                    <option value="">Todos os status</option>
+                                    <option value="agendada">Agendadas</option>
+                                    <option value="confirmada">Confirmadas</option>
+                                    <option value="concluida">Concluídas</option>
+                                    <option value="cancelada">Canceladas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-control form-control-sm" id="filtroAprovacao">
+                                    <option value="">Status de Aprovação</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="aprovada">Aprovada</option>
+                                    <option value="rejeitada">Rejeitada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" class="form-control form-control-sm" id="filtroData">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-sm" id="filtroDisciplina" placeholder="Filtrar por disciplina">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-outline-secondary btn-block" onclick="limparFiltros()">
+                                    <i class="fas fa-times mr-1"></i>Limpar
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     @if($explicacoes->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="thead-dark">
+                            <table class="table table-hover align-middle">
+                                <thead>
                                     <tr>
                                         <th>Data</th>
                                         <th>Horário</th>
@@ -130,19 +142,29 @@
                                         <th>Local</th>
                                         <th>Preço</th>
                                         <th>Status</th>
-                                        <th>Aprovação Admin</th>
-                                        <th>Ações</th>
+                                        <th>Aprovação</th>
+                                        <th class="text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($explicacoes as $explicacao)
                                         @php
-                                            // Lógica para determinar o status da explicação
                                             $statusExplicacao = $explicacao->status;
-                                            
-                                            // Se foi aprovada pelo admin e ainda está como "agendada", muda para "confirmada"
                                             if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status === 'agendada') {
                                                 $statusExplicacao = 'confirmada';
+                                            }
+                                            
+                                            $dataHora = strtotime($explicacao->data_explicacao . ' ' . $explicacao->hora_fim);
+                                            $jaPassou = $dataHora < time();
+                                            $podeSerEditada = !in_array($explicacao->status, ['concluida']);
+                                            $podeSerCancelada = !$jaPassou && in_array($statusExplicacao, ['agendada', 'confirmada']);
+                                            $podeSerConcluida = in_array($statusExplicacao, ['confirmada']) && !$jaPassou;
+                                            
+                                            $rowClass = '';
+                                            if ($explicacao->aprovacao_admin === 'rejeitada') {
+                                                $rowClass = 'row-rejeitada';
+                                            } elseif ($explicacao->aprovacao_admin === 'aprovada') {
+                                                $rowClass = 'row-aprovada';
                                             }
                                         @endphp
                                         
@@ -150,165 +172,135 @@
                                             data-aprovacao="{{ $explicacao->aprovacao_admin ?? 'pendente' }}"
                                             data-data="{{ $explicacao->data_explicacao }}" 
                                             data-disciplina="{{ strtolower($explicacao->disciplina) }}"
-                                            class="{{ $explicacao->aprovacao_admin === 'rejeitada' ? 'table-danger-light' : ($explicacao->aprovacao_admin === 'aprovada' ? 'table-success-light' : '') }}">
+                                            class="{{ $rowClass }}">
                                             <td>
-                                                <strong>{{ date('d/m/Y', strtotime($explicacao->data_explicacao)) }}</strong>
+                                                <div class="font-weight-bold">{{ date('d/m/Y', strtotime($explicacao->data_explicacao)) }}</div>
                                                 @if(date('Y-m-d') == $explicacao->data_explicacao)
-                                                    <span class="badge badge-primary ml-1">Hoje</span>
+                                                    <small><span class="badge badge-sm badge-primary">Hoje</span></small>
                                                 @elseif(date('Y-m-d', strtotime('+1 day')) == $explicacao->data_explicacao)
-                                                    <span class="badge badge-info ml-1">Amanhã</span>
+                                                    <small><span class="badge badge-sm badge-info">Amanhã</span></small>
                                                 @elseif($explicacao->data_explicacao < date('Y-m-d'))
-                                                    <span class="badge badge-secondary ml-1">Passou</span>
+                                                    <small><span class="badge badge-sm badge-secondary">Passou</span></small>
                                                 @endif
                                             </td>
                                             <td>
-                                                <span class="text-muted">{{ $explicacao->hora_inicio }} - {{ $explicacao->hora_fim }}</span>
-                                                <br>
+                                                <div>{{ $explicacao->hora_inicio }} - {{ $explicacao->hora_fim }}</div>
                                                 <small class="text-muted">
                                                     @php
                                                         $inicio = strtotime($explicacao->hora_inicio);
                                                         $fim = strtotime($explicacao->hora_fim);
-                                                        $duracao = ($fim - $inicio) / 60; // em minutos
+                                                        $duracao = ($fim - $inicio) / 60;
                                                     @endphp
-                                                    ({{ $duracao }}min)
+                                                    {{ $duracao }}min
                                                 </small>
                                             </td>
                                             <td>
-                                                <span class="badge badge-light p-2">
-                                                    {{ $explicacao->disciplina }}
-                                                </span>
+                                                <span class="badge badge-light">{{ $explicacao->disciplina }}</span>
                                             </td>
                                             <td>
-                                                <strong>{{ $explicacao->nome_aluno }}</strong>
-                                                <br>
+                                                <div class="font-weight-medium">{{ $explicacao->nome_aluno }}</div>
                                                 <small class="text-muted">{{ $explicacao->contacto_aluno }}</small>
                                             </td>
-                                            <td>{{ $explicacao->local }}</td>
                                             <td>
-                                                <strong class="text-success">€{{ number_format($explicacao->preco, 2) }}</strong>
+                                                <small>{{ $explicacao->local }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="font-weight-bold text-success">€{{ number_format($explicacao->preco, 2) }}</span>
                                             </td>
                                             <td>
                                                 @php
                                                     $statusLabels = [
-                                                        'agendada' => 'Agendada',
-                                                        'confirmada' => 'Confirmada',
-                                                        'concluida' => 'Concluída',
-                                                        'cancelada' => 'Cancelada',
+                                                        'agendada' => ['label' => 'Agendada', 'class' => 'warning'],
+                                                        'confirmada' => ['label' => 'Confirmada', 'class' => 'success'],
+                                                        'concluida' => ['label' => 'Concluída', 'class' => 'info'],
+                                                        'cancelada' => ['label' => 'Cancelada', 'class' => 'danger'],
                                                     ];
-                                                    $statusClasses = [
-                                                        'agendada' => 'warning',
-                                                        'confirmada' => 'success',
-                                                        'concluida' => 'info',
-                                                        'cancelada' => 'danger',
-                                                    ];
+                                                    $statusInfo = $statusLabels[$statusExplicacao] ?? ['label' => $statusExplicacao, 'class' => 'secondary'];
                                                 @endphp
-                                                <span class="badge badge-{{ $statusClasses[$statusExplicacao] ?? 'secondary' }}">
+                                                <span class="badge badge-{{ $statusInfo['class'] }} badge-pill">
                                                     @if($statusExplicacao === 'confirmada')
                                                         <i class="fas fa-check-circle mr-1"></i>
                                                     @endif
-                                                    {{ $statusLabels[$statusExplicacao] ?? $statusExplicacao }}
+                                                    {{ $statusInfo['label'] }}
                                                 </span>
                                             </td>
                                             <td>
                                                 @if($explicacao->aprovacao_admin === 'pendente' || !isset($explicacao->aprovacao_admin))
-                                                    <span class="badge badge-warning">
-                                                        <i class="fas fa-clock mr-1"></i>
-                                                        Pendente
+                                                    <span class="badge badge-warning badge-pill">
+                                                        <i class="fas fa-clock"></i> Pendente
                                                     </span>
                                                 @elseif($explicacao->aprovacao_admin === 'aprovada')
-                                                    <span class="badge badge-success">
-                                                        <i class="fas fa-check mr-1"></i>
-                                                        Aprovada
+                                                    <span class="badge badge-success badge-pill">
+                                                        <i class="fas fa-check"></i> Aprovada
                                                     </span>
                                                     @if($explicacao->data_aprovacao)
-                                                        <br><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small>
+                                                        <div><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small></div>
                                                     @endif
                                                     @if($explicacao->aprovadoPor)
-                                                        <br><small class="text-muted">por {{ $explicacao->aprovadoPor->name }}</small>
+                                                        <div><small class="text-muted">por {{ $explicacao->aprovadoPor->name }}</small></div>
                                                     @endif
                                                 @elseif($explicacao->aprovacao_admin === 'rejeitada')
-                                                    <span class="badge badge-danger">
-                                                        <i class="fas fa-times mr-1"></i>
-                                                        Rejeitada
+                                                    <span class="badge badge-danger badge-pill">
+                                                        <i class="fas fa-times"></i> Rejeitada
                                                     </span>
                                                     @if($explicacao->data_aprovacao)
-                                                        <br><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small>
+                                                        <div><small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m H:i') }}</small></div>
                                                     @endif
                                                     @if($explicacao->motivo_rejeicao)
-                                                        <br>
-                                                        <button class="btn btn-xs btn-outline-danger mt-1" 
-                                                                onclick="mostrarMotivoRejeicao('{{ addslashes($explicacao->motivo_rejeicao) }}')">
-                                                            <i class="fas fa-info-circle"></i> Ver Motivo
-                                                        </button>
+                                                        <div class="mt-1">
+                                                            <button class="btn btn-xs btn-link text-danger p-0" 
+                                                                    onclick="mostrarMotivoRejeicao('{{ addslashes($explicacao->motivo_rejeicao) }}')">
+                                                                <i class="fas fa-info-circle"></i> Ver motivo
+                                                            </button>
+                                                        </div>
                                                     @endif
                                                 @endif
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <!-- Ver detalhes -->
+                                                <div class="action-buttons">
                                                     <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
-                                                       class="btn btn-outline-info" title="Ver detalhes">
+                                                       class="btn btn-sm btn-light" title="Ver detalhes">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
 
-                                                    @php
-                                                        $dataHora = strtotime($explicacao->data_explicacao . ' ' . $explicacao->hora_fim);
-                                                        $agora = time();
-                                                        $jaPassou = $dataHora < $agora;
-                                                        
-                                                        // Lógica atualizada para considerar o status "confirmada"
-                                                        $podeSerEditada = !in_array($explicacao->status, ['concluida']);
-                                                        $podeSerCancelada = !$jaPassou && in_array($statusExplicacao, ['agendada', 'confirmada']);
-                                                        $podeSerConcluida = in_array($statusExplicacao, ['confirmada']) && !$jaPassou;
-                                                    @endphp
-                                                    
-                                                    <!-- Botão Editar -->
                                                     @if($podeSerEditada)
                                                         <a href="{{ route('explicacoes.edit', $explicacao->id) }}" 
-                                                           class="btn btn-outline-primary" title="Editar">
-                                                            <i class="fas fa-edit"></i>
+                                                           class="btn btn-sm btn-light" title="Editar">
+                                                            <i class="fas fa-edit text-primary"></i>
                                                         </a>
-                                                    @else
-                                                        <span class="btn btn-outline-secondary disabled" title="Não pode editar ({{ $explicacao->status }})">
-                                                            <i class="fas fa-edit"></i>
-                                                        </span>
                                                     @endif
 
-                                                    <!-- Marcar como concluída -->
                                                     @if($podeSerConcluida)
-                                                        <form method="POST" action="{{ route('explicacoes.concluir', $explicacao->id) }}" 
-                                                              style="display: inline;">
+                                                        <form method="POST" action="{{ route('explicacoes.concluir', $explicacao->id) }}" class="d-inline">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="btn btn-outline-success" title="Marcar como concluída"
-                                                                    onclick="return confirm('Marcar esta explicação como concluída?')">
-                                                                <i class="fas fa-check-double"></i>
+                                                            <button type="submit" class="btn btn-sm btn-light" title="Marcar como concluída"
+                                                                    onclick="return confirm('Marcar como concluída?')">
+                                                                <i class="fas fa-check-double text-success"></i>
                                                             </button>
                                                         </form>
                                                     @endif
 
-                                                    <!-- Cancelar -->
                                                     @if($podeSerCancelada)
                                                         <form method="POST" action="{{ route('explicacoes.cancelar', $explicacao->id) }}" 
-                                                              style="display: inline;" 
-                                                              onsubmit="return confirm('Tem certeza que deseja cancelar esta explicação?')">
+                                                              class="d-inline"
+                                                              onsubmit="return confirm('Cancelar esta explicação?')">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="btn btn-outline-warning" title="Cancelar">
-                                                                <i class="fas fa-times"></i>
+                                                            <button type="submit" class="btn btn-sm btn-light" title="Cancelar">
+                                                                <i class="fas fa-ban text-warning"></i>
                                                             </button>
                                                         </form>
                                                     @endif
 
-                                                    <!-- Eliminar -->
                                                     @if($explicacao->status !== 'concluida')
                                                         <form method="POST" action="{{ route('explicacoes.destroy', $explicacao->id) }}" 
-                                                              style="display: inline;" 
-                                                              onsubmit="return confirm('Tem certeza que deseja eliminar esta explicação? Esta ação não pode ser desfeita.')">
+                                                              class="d-inline"
+                                                              onsubmit="return confirm('Eliminar esta explicação?')">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                                                <i class="fas fa-trash"></i>
+                                                            <button type="submit" class="btn btn-sm btn-light" title="Eliminar">
+                                                                <i class="fas fa-trash text-danger"></i>
                                                             </button>
                                                         </form>
                                                     @endif
@@ -320,17 +312,16 @@
                             </table>
                         </div>
 
-                        <!-- Paginação -->
-                        <div class="d-flex justify-content-center">
+                        <div class="d-flex justify-content-center mt-3">
                             {{ $explicacoes->links() }}
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
-                            <h4 class="text-muted">Nenhuma explicação encontrada</h4>
-                            <p class="text-muted">Comece por criar a sua primeira explicação.</p>
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma explicação encontrada</h5>
+                            <p class="text-muted mb-4">Comece por criar a sua primeira explicação.</p>
                             <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
-                                <i class="fas fa-plus"></i> Nova Explicação
+                                <i class="fas fa-plus mr-1"></i>Nova Explicação
                             </a>
                         </div>
                     @endif
@@ -340,42 +331,196 @@
     </div>
 </div>
 
-<!-- Modal para mostrar motivo de rejeição -->
-<div class="modal fade" id="modalMotivoRejeicao" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<!-- Modal -->
+<div class="modal fade" id="modalMotivoRejeicao" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-info-circle text-danger mr-2"></i>
-                    Motivo da Rejeição
+                    <i class="fas fa-info-circle text-danger mr-2"></i>Motivo da Rejeição
                 </h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-danger">
+                <div class="alert alert-danger mb-3">
                     <strong>Motivo:</strong>
                     <p id="motivoRejeicaoTexto" class="mb-0 mt-2"></p>
                 </div>
-                <p class="text-muted">
+                <p class="text-muted small mb-0">
                     <i class="fas fa-lightbulb mr-1"></i>
-                    Pode editar a sua explicação e submeter novamente após corrigir os pontos mencionados.
+                    Pode editar a explicação e submeter novamente.
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* Stats Cards */
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 10px;
+    background: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.stat-primary .stat-icon { 
+    background: #3b82f6;
+    color: white;
+}
+
+.stat-warning .stat-icon { 
+    background: #f59e0b;
+    color: white;
+}
+
+.stat-success .stat-icon { 
+    background: #10b981;
+    color: white;
+}
+
+.stat-danger .stat-icon { 
+    background: #ef4444;
+    color: white;
+}
+
+.stat-info .stat-icon { 
+    background: #06b6d4;
+    color: white;
+}
+
+/* Table */
+.table {
+    font-size: 0.95rem;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    background: #f8f9fa;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.row-aprovada {
+    background-color: rgba(212, 237, 218, 0.2);
+}
+
+.row-rejeitada {
+    background-color: rgba(248, 215, 218, 0.2);
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.7em;
+    font-size: 0.85rem;
+}
+
+.badge-sm {
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+}
+
+.badge-pill {
+    border-radius: 10rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+.action-buttons .btn:hover {
+    background: #e9ecef;
+}
+
+.btn-xs {
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Filters */
+.filters-section {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.font-weight-medium {
+    font-weight: 500;
+}
+</style>
+
 <script>
-// Filtros em tempo real
-document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
-document.getElementById('filtroAprovacao').addEventListener('change', aplicarFiltros);
-document.getElementById('filtroData').addEventListener('change', aplicarFiltros);
-document.getElementById('filtroDisciplina').addEventListener('input', aplicarFiltros);
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroAprovacao').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroData').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroDisciplina').addEventListener('input', aplicarFiltros);
+});
 
 function aplicarFiltros() {
     const statusFiltro = document.getElementById('filtroStatus').value.toLowerCase();
@@ -393,21 +538,10 @@ function aplicarFiltros() {
         
         let mostrar = true;
         
-        if (statusFiltro && status !== statusFiltro) {
-            mostrar = false;
-        }
-        
-        if (aprovacaoFiltro && aprovacao !== aprovacaoFiltro) {
-            mostrar = false;
-        }
-        
-        if (dataFiltro && data !== dataFiltro) {
-            mostrar = false;
-        }
-        
-        if (disciplinaFiltro && !disciplina.includes(disciplinaFiltro)) {
-            mostrar = false;
-        }
+        if (statusFiltro && status !== statusFiltro) mostrar = false;
+        if (aprovacaoFiltro && aprovacao !== aprovacaoFiltro) mostrar = false;
+        if (dataFiltro && data !== dataFiltro) mostrar = false;
+        if (disciplinaFiltro && !disciplina.includes(disciplinaFiltro)) mostrar = false;
         
         linha.style.display = mostrar ? '' : 'none';
     });
@@ -426,46 +560,4 @@ function mostrarMotivoRejeicao(motivo) {
     $('#modalMotivoRejeicao').modal('show');
 }
 </script>
-
-<style>
-.info-box {
-    border-radius: 10px;
-    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
-    margin-bottom: 1rem;
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0,123,255,.075);
-}
-
-.badge {
-    font-size: 0.875em;
-}
-
-.btn-group-sm > .btn {
-    margin: 0 1px;
-}
-
-.table-success-light {
-    background-color: rgba(212, 237, 218, 0.3);
-}
-
-.table-danger-light {
-    background-color: rgba(248, 215, 218, 0.3);
-}
-
-.btn-xs {
-    padding: 0.125rem 0.25rem;
-    font-size: 0.675rem;
-}
-
-/* Estilo especial para explicações confirmadas */
-.badge-primary {
-    background-color: #007bff !important;
-}
-
-.text-success {
-    color: #28a745 !important;
-}
-</style>
 @endsection
