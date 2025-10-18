@@ -630,7 +630,7 @@ p {
                 </h1>
                 
                 <p class="hero-subtitle animate-fade-in-up">
-                    Gerir horários e alunos nunca foi tão simples, eficiente e intuitivo.
+                    Gerir horários e explicações nunca foi tão simples, eficiente e intuitivo.
                 </p>
                 
                 <div class="hero-cta animate-fade-in-up">
