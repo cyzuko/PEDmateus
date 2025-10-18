@@ -35,7 +35,7 @@ return [
             'driver' => 'mysql',
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-           'database' => env('DB_DATABASE', 'faturas_db'),  // Nome da sua base de dados
+           'database' => env('DB_DATABASE', 'expliacoes_db'),  // Nome da sua base de dados
             'username' => env('DB_USERNAME', 'root'), // Seu nome de usuário do MySQL
             'password' => env('DB_PASSWORD', ''), // Sua senha do MySQL
             'unix_socket' => env('DB_SOCKET', ''),
@@ -70,7 +70,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'faturas_db'),  // Nome da sua base de dados
+            'database' => env('DB_DATABASE', 'expliacoes_db'),  // Nome da sua base de dados
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
