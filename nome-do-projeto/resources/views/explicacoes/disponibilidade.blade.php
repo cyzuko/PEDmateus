@@ -39,6 +39,8 @@
                         <div class="alert alert-info mb-3">
                             <i class="fas fa-info-circle"></i> 
                             Visualização <strong>as suas explicações confirmadas</strong> + <strong>explicações confirmadas de outros alunos</strong>.
+                            <br>
+                            <i class="fas fa-check-circle text-success"></i> <strong>Horário disponível para novas explicações: 14:00 - 18:00</strong>
                         </div>
                     @endif
 
@@ -93,6 +95,10 @@
                                         ];
                                         $semanaInicio = request('semana', date('Y-m-d', strtotime('monday this week')));
                                         $userLogado = auth()->user();
+                                        
+                                        // Definir horário disponível
+                                        $horaDisponivelInicio = 14;
+                                        $horaDisponivelFim = 18;
                                     @endphp
                                     @for($i = 0; $i < 7; $i++)
                                         @php
@@ -142,12 +148,20 @@
                                                 
                                                 $isPassado = strtotime($dataSlot . ' ' . $horaSlot) < time();
                                                 $isHoje = $dataSlot == date('Y-m-d');
+                                                
+                                                // Verificar se está no horário disponível (14:00 - 18:00)
+                                                $isHorarioDisponivel = ($hora >= $horaDisponivelInicio && $hora <= $horaDisponivelFim);
+                                                
+                                                // NOVO: Verificar quantos slots estão ocupados (máximo 4 alunos)
+                                                $vagasOcupadas = $explicacoesSlot->count();
+                                                $vagasDisponiveis = 4 - $vagasOcupadas;
+                                                $slotCheio = $vagasOcupadas >= 4;
                                             @endphp
                                             
-                                            <td class="horario-slot {{ $isPassado ? 'slot-passado' : '' }} {{ $isHoje ? 'slot-hoje' : '' }}" 
+                                            <td class="horario-slot {{ $isPassado ? 'slot-passado' : '' }} {{ $isHoje ? 'slot-hoje' : '' }} {{ !$isHorarioDisponivel ? 'slot-indisponivel' : '' }}" 
                                                 data-data="{{ $dataSlot }}" 
                                                 data-hora="{{ $horaSlot }}"
-                                                style="height: 60px; position: relative; cursor: pointer;">
+                                                style="height: 60px; position: relative; cursor: {{ ($isHorarioDisponivel && !$isPassado && !$slotCheio) ? 'pointer' : 'not-allowed' }};">
                                                 
                                                 @if($explicacoesSlot->count() > 0)
                                                     @foreach($explicacoesSlot as $explicacao)
@@ -181,15 +195,36 @@
                                                             </a>
                                                         </div>
                                                     @endforeach
-                                                @else
-                                                    <!-- Slot livre -->
-                                                    @if(!$isPassado)
-                                                        <div class="slot-livre" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}')">
-                                                            <span class="slot-livre-texto">
-                                                                <i class="fas fa-plus"></i>
-                                                                <br><small>Livre</small>
+                                                    
+                                                    {{-- NOVO: Mostrar vagas disponíveis se ainda houver espaço --}}
+                                                    @if($isHorarioDisponivel && !$isPassado && $vagasDisponiveis > 0)
+                                                        <div class="slot-vagas" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}')">
+                                                            <span class="slot-vagas-texto">
+                                                                <i class="fas fa-plus-circle"></i>
+                                                                <small>{{ $vagasDisponiveis }} vaga{{ $vagasDisponiveis > 1 ? 's' : '' }}</small>
                                                             </span>
                                                         </div>
+                                                    @endif
+                                                @else
+                                                    <!-- Slot completamente livre ou indisponível -->
+                                                    @if(!$isPassado)
+                                                        @if($isHorarioDisponivel)
+                                                            <!-- Horário disponível: 14:00 - 18:00 -->
+                                                            <div class="slot-livre" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}')">
+                                                                <span class="slot-livre-texto">
+                                                                    <i class="fas fa-plus"></i>
+                                                                    <br><small>4 vagas</small>
+                                                                </span>
+                                                            </div>
+                                                        @else
+                                                            <!-- Horário fora do período disponível -->
+                                                            <div class="slot-bloqueado">
+                                                                <span class="slot-bloqueado-texto">
+                                                                    <i class="fas fa-lock"></i>
+                                                                    <br><small>Indisponível</small>
+                                                                </span>
+                                                            </div>
+                                                        @endif
                                                     @else
                                                         <div class="slot-passado-texto">
                                                             <small class="text-muted">-</small>
@@ -214,6 +249,7 @@
                         <div class="col-md-4">
                             <h6>Disponibilidade:</h6>
                             <span class="badge badge-light mr-2"><i class="fas fa-plus"></i> Horário Livre</span>
+                            <span class="badge badge-warning mr-2"><i class="fas fa-lock"></i> Indisponível</span>
                             <span class="badge badge-secondary mr-2">Horário Passado</span>
                             <span class="badge badge-primary mr-2">Hoje</span>
                         </div>
@@ -530,6 +566,33 @@ $(document).ready(function() {
     position: relative;
 }
 
+.slot-vagas {
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #28a745;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.05);
+    padding: 3px;
+    margin-top: 2px;
+}
+
+.slot-vagas:hover {
+    border-color: #218838;
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #218838;
+    transform: scale(1.02);
+}
+
+.slot-vagas-texto {
+    text-align: center;
+    font-size: 0.75em;
+}
+
 .slot-livre {
     height: 100%;
     display: flex;
@@ -552,6 +615,27 @@ $(document).ready(function() {
 
 .slot-livre-texto {
     text-align: center;
+}
+
+.slot-bloqueado {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffc107;
+    border-radius: 5px;
+    background-color: rgba(255, 193, 7, 0.1);
+    cursor: not-allowed;
+    color: #856404;
+}
+
+.slot-bloqueado-texto {
+    text-align: center;
+    opacity: 0.7;
+}
+
+.slot-indisponivel {
+    background-color: #fff9e6;
 }
 
 .slot-passado {
