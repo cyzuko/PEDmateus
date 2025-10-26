@@ -757,18 +757,18 @@ p {
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="section-title">As nossas Explicadoras</h2>
-            <p class="section-subtitle">Conheça Sofia e Joana, as profissionais que fazem a diferença</p>
+            <p class="section-subtitle">Conheça as explicadoras Sofia e Joana, as profissionais que fazem a diferença</p>
             <div class="section-divider"></div>
         </div>
         
         <div class="row">
-            <div class="col-md-6 mb-4">
+            <div class="col-md-6 mb-4"> 
                 <div class="card explicadora-card h-100 border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h3 class="explicadora-nome fw-bold">Sofia Oliveira</h3>
-                        <h6 class="explicadora-disciplina text-muted">Matemática e Física</h6>
+                        <h3 class="explicadora-nome fw-bold">Explicadora Sofia</h3>
+                        <h6 class="explicadora-disciplina text-muted">Matemática </h6>
                         <p class="explicadora-texto text-muted">
-                            Licenciada em Matemática com especialização em ensino. Com mais de 10 anos de experiência, a Sofia tem ajudado centenas de alunos a alcançar excelentes resultados nos exames nacionais.
+                           Exemplo
                         </p>
                     </div>
                 </div>
@@ -777,10 +777,10 @@ p {
             <div class="col-md-6 mb-4">
                 <div class="card explicadora-card h-100 border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h3 class="explicadora-nome fw-bold">Joana Santos</h3>
-                        <h6 class="explicadora-disciplina text-muted">Português e Inglês</h6>
+                        <h3 class="explicadora-nome fw-bold">Explicadora Joana </h3>
+                        <h6 class="explicadora-disciplina text-muted">Matemática</h6>
                         <p class="explicadora-texto text-muted">
-                            Mestre em Linguística e certificada em ensino de inglês como língua estrangeira. A Joana é conhecida pela sua abordagem dinâmica e pela capacidade de tornar o aprendizado de línguas divertido e eficaz.
+                            Exemplo
                         </p>
                     </div>
                 </div>
@@ -823,7 +823,7 @@ p {
                         <div class="card centro-photo-card border-0 shadow-sm h-100">
                             <img src="https://images.unsplash.com/photo-1581078426770-6d336e5de7bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top" alt="Sala de Informática">
                             <div class="card-body">
-                                <h5 class="card-title">Sala de Informática</h5>
+                                <h5 class="card-title">Sala Exemplo</h5>
                                 <p class="card-text">Equipada com computadores modernos e softwares educacionais para aulas de programação e pesquisa.</p>
                             </div>
                         </div>

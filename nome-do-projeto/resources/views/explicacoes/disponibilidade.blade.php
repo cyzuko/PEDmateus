@@ -44,6 +44,30 @@
                         </div>
                     @endif
 
+                    <!-- NOVO: Seletor de Disciplina -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <label class="mb-0"><i class="fas fa-book"></i> <strong>Selecione a Disciplina:</strong></label>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <select class="form-control form-control-lg" id="disciplinaSelecionada" onchange="filtrarPorDisciplina()">
+                                                <option value="Matemática" selected>📐 Matemática</option>
+                                                <option value="Física">🔬 Física</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                          
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Filtros de semana -->
                     <div class="row mb-4">
                         <div class="col-md-4">
@@ -136,8 +160,8 @@
                                                 $horaSlot = sprintf('%02d:00', $hora);
                                                 $horaSlot30 = sprintf('%02d:30', $hora);
                                                 
-                                                // Verificar se há explicações neste slot
-                                                $explicacoesSlot = $explicacoes->filter(function($exp) use ($dataSlot, $horaSlot, $horaSlot30) {
+                                                // Verificar explicações neste slot (TODAS as disciplinas)
+                                                $todasExplicacoesSlot = $explicacoes->filter(function($exp) use ($dataSlot, $horaSlot, $horaSlot30) {
                                                     if ($exp->data_explicacao != $dataSlot) return false;
                                                     $inicio = strtotime($exp->hora_inicio);
                                                     $fim = strtotime($exp->hora_fim);
@@ -146,90 +170,166 @@
                                                     return ($inicio < $slotFim) && ($fim > $slotInicio);
                                                 });
                                                 
+                                                // Separar por disciplina
+                                                $explicacoesMatematica = $todasExplicacoesSlot->where('disciplina', 'Matemática');
+                                                $explicacoesFisica = $todasExplicacoesSlot->where('disciplina', 'Física');
+                                                
+                                                // Contar vagas por disciplina
+                                                $vagasMatematica = 4 - $explicacoesMatematica->count();
+                                                $vagasFisica = 4 - $explicacoesFisica->count();
+                                                
                                                 $isPassado = strtotime($dataSlot . ' ' . $horaSlot) < time();
                                                 $isHoje = $dataSlot == date('Y-m-d');
                                                 
                                                 // Verificar se está no horário disponível (14:00 - 18:00)
                                                 $isHorarioDisponivel = ($hora >= $horaDisponivelInicio && $hora <= $horaDisponivelFim);
-                                                
-                                                // NOVO: Verificar quantos slots estão ocupados (máximo 4 alunos)
-                                                $vagasOcupadas = $explicacoesSlot->count();
-                                                $vagasDisponiveis = 4 - $vagasOcupadas;
-                                                $slotCheio = $vagasOcupadas >= 4;
                                             @endphp
                                             
                                             <td class="horario-slot {{ $isPassado ? 'slot-passado' : '' }} {{ $isHoje ? 'slot-hoje' : '' }} {{ !$isHorarioDisponivel ? 'slot-indisponivel' : '' }}" 
                                                 data-data="{{ $dataSlot }}" 
                                                 data-hora="{{ $horaSlot }}"
-                                                style="height: 60px; position: relative; cursor: {{ ($isHorarioDisponivel && !$isPassado && !$slotCheio) ? 'pointer' : 'not-allowed' }};">
+                                                data-vagas-matematica="{{ $vagasMatematica }}"
+                                                data-vagas-fisica="{{ $vagasFisica }}"
+                                                style="height: 60px; position: relative; cursor: pointer;">
                                                 
-                                                @if($explicacoesSlot->count() > 0)
-                                                    @foreach($explicacoesSlot as $explicacao)
-                                                        @php
-                                                            $ehMinhaExplicacao = $explicacao->user_id == $userLogado->id;
-                                                            $alunoNome = $explicacao->nome_aluno ?? 'Aluno';
-                                                            
-                                                            $statusClasses = [
-                                                                'confirmada' => $ehMinhaExplicacao ? 'info' : 'secondary',
-                                                                'concluida' => $ehMinhaExplicacao ? 'success' : 'dark',
-                                                            ];
-                                                            
-                                                            $borderClass = $ehMinhaExplicacao ? 'border-own-slot' : 'border-other-slot';
-                                                            
-                                                            $tooltipText = $explicacao->disciplina . ' - ' . $alunoNome . 
-                                                                          ' (' . $explicacao->hora_inicio . '-' . $explicacao->hora_fim . ')' .
-                                                                          ($ehMinhaExplicacao ? ' [MINHA]' : '');
-                                                        @endphp
-                                                        <div class="explicacao-slot mb-1 {{ $borderClass }}">
-                                                            <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
-                                                               class="btn btn-{{ $statusClasses[$explicacao->status] ?? 'secondary' }} btn-sm btn-block text-truncate"
-                                                               title="{{ $tooltipText }}">
-                                                                <small>
-                                                                    @if(!$ehMinhaExplicacao)
-                                                                        <i class="fas fa-user-friends" style="font-size: 0.7em;"></i>
-                                                                    @endif
-                                                                    <strong>{{ substr($explicacao->hora_inicio, 0, 5) }}</strong><br>
-                                                                    {{ substr($explicacao->disciplina, 0, 8) }}{{ strlen($explicacao->disciplina) > 8 ? '...' : '' }}<br>
-                                                                    <span class="text-truncate d-block">{{ substr($alunoNome, 0, 10) }}</span>
-                                                                </small>
-                                                            </a>
-                                                        </div>
-                                                    @endforeach
-                                                    
-                                                    {{-- NOVO: Mostrar vagas disponíveis se ainda houver espaço --}}
-                                                    @if($isHorarioDisponivel && !$isPassado && $vagasDisponiveis > 0)
-                                                        <div class="slot-vagas" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}')">
-                                                            <span class="slot-vagas-texto">
-                                                                <i class="fas fa-plus-circle"></i>
-                                                                <small>{{ $vagasDisponiveis }} vaga{{ $vagasDisponiveis > 1 ? 's' : '' }}</small>
-                                                            </span>
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    <!-- Slot completamente livre ou indisponível -->
-                                                    @if(!$isPassado)
-                                                        @if($isHorarioDisponivel)
-                                                            <!-- Horário disponível: 14:00 - 18:00 -->
-                                                            <div class="slot-livre" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}')">
-                                                                <span class="slot-livre-texto">
-                                                                    <i class="fas fa-plus"></i>
-                                                                    <br><small>4 vagas</small>
+                                                {{-- Container para Matemática --}}
+                                                <div class="disciplina-container" data-disciplina="Matemática">
+                                                    @if($explicacoesMatematica->count() > 0)
+                                                        @foreach($explicacoesMatematica as $explicacao)
+                                                            @php
+                                                                $ehMinhaExplicacao = $explicacao->user_id == $userLogado->id;
+                                                                $alunoNome = $explicacao->nome_aluno ?? 'Aluno';
+                                                                
+                                                                $statusClasses = [
+                                                                    'confirmada' => $ehMinhaExplicacao ? 'info' : 'secondary',
+                                                                    'concluida' => $ehMinhaExplicacao ? 'success' : 'dark',
+                                                                ];
+                                                                
+                                                                $borderClass = $ehMinhaExplicacao ? 'border-own-slot' : 'border-other-slot';
+                                                                
+                                                                $tooltipText = $explicacao->disciplina . ' - ' . $alunoNome . 
+                                                                              ' (' . $explicacao->hora_inicio . '-' . $explicacao->hora_fim . ')' .
+                                                                              ($ehMinhaExplicacao ? ' [MINHA]' : '');
+                                                            @endphp
+                                                            <div class="explicacao-slot mb-1 {{ $borderClass }}">
+                                                                <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
+                                                                   class="btn btn-{{ $statusClasses[$explicacao->status] ?? 'secondary' }} btn-sm btn-block text-truncate"
+                                                                   title="{{ $tooltipText }}">
+                                                                    <small>
+                                                                        @if(!$ehMinhaExplicacao)
+                                                                            <i class="fas fa-user-friends" style="font-size: 0.7em;"></i>
+                                                                        @endif
+                                                                        <strong>{{ substr($explicacao->hora_inicio, 0, 5) }}</strong><br>
+                                                                        📐 S1 {{ substr($alunoNome, 0, 6) }}
+                                                                    </small>
+                                                                </a>
+                                                            </div>
+                                                        @endforeach
+                                                        
+                                                        @if($isHorarioDisponivel && !$isPassado && $vagasMatematica > 0)
+                                                            <div class="slot-vagas" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}', 'Matemática')">
+                                                                <span class="slot-vagas-texto">
+                                                                    <i class="fas fa-plus-circle"></i>
+                                                                    <small>📐 {{ $vagasMatematica }} vaga{{ $vagasMatematica > 1 ? 's' : '' }}</small>
                                                                 </span>
                                                             </div>
-                                                        @else
-                                                            <!-- Horário fora do período disponível -->
+                                                        @endif
+                                                    @else
+                                                        @if($isHorarioDisponivel && !$isPassado)
+                                                            <div class="slot-livre" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}', 'Matemática')">
+                                                                <span class="slot-livre-texto">
+                                                                    <i class="fas fa-plus"></i>
+                                                                    <br><small>📐 4 vagas</small>
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                
+                                                {{-- Container para Física --}}
+                                                <div class="disciplina-container" data-disciplina="Física" style="display: none;">
+                                                    @if($explicacoesFisica->count() > 0)
+                                                        @foreach($explicacoesFisica as $explicacao)
+                                                            @php
+                                                                $ehMinhaExplicacao = $explicacao->user_id == $userLogado->id;
+                                                                $alunoNome = $explicacao->nome_aluno ?? 'Aluno';
+                                                                
+                                                                $statusClasses = [
+                                                                    'confirmada' => $ehMinhaExplicacao ? 'info' : 'secondary',
+                                                                    'concluida' => $ehMinhaExplicacao ? 'success' : 'dark',
+                                                                ];
+                                                                
+                                                                $borderClass = $ehMinhaExplicacao ? 'border-own-slot' : 'border-other-slot';
+                                                                
+                                                                $tooltipText = $explicacao->disciplina . ' - ' . $alunoNome . 
+                                                                              ' (' . $explicacao->hora_inicio . '-' . $explicacao->hora_fim . ')' .
+                                                                              ($ehMinhaExplicacao ? ' [MINHA]' : '');
+                                                            @endphp
+                                                            <div class="explicacao-slot mb-1 {{ $borderClass }}">
+                                                                <a href="{{ route('explicacoes.show', $explicacao->id) }}" 
+                                                                   class="btn btn-{{ $statusClasses[$explicacao->status] ?? 'secondary' }} btn-sm btn-block text-truncate"
+                                                                   title="{{ $tooltipText }}">
+                                                                    <small>
+                                                                        @if(!$ehMinhaExplicacao)
+                                                                            <i class="fas fa-user-friends" style="font-size: 0.7em;"></i>
+                                                                        @endif
+                                                                        <strong>{{ substr($explicacao->hora_inicio, 0, 5) }}</strong><br>
+                                                                        🔬 S2 {{ substr($alunoNome, 0, 6) }}
+                                                                    </small>
+                                                                </a>
+                                                            </div>
+                                                        @endforeach
+                                                        
+                                                        @if($isHorarioDisponivel && !$isPassado && $vagasFisica > 0)
+                                                            <div class="slot-vagas" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}', 'Física')">
+                                                                <span class="slot-vagas-texto">
+                                                                    <i class="fas fa-plus-circle"></i>
+                                                                    <small>🔬 {{ $vagasFisica }} vaga{{ $vagasFisica > 1 ? 's' : '' }}</small>
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    @else
+                                                        @if($isHorarioDisponivel && !$isPassado)
+                                                            <div class="slot-livre" onclick="criarExplicacao('{{ $dataSlot }}', '{{ $horaSlot }}', 'Física')">
+                                                                <span class="slot-livre-texto">
+                                                                    <i class="fas fa-plus"></i>
+                                                                    <br><small>🔬 4 vagas</small>
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                
+                                                {{-- Slot indisponível ou passado (mostra em ambas disciplinas) --}}
+                                                @if(!$isHorarioDisponivel || $isPassado)
+                                                    <div class="disciplina-container slot-global" data-disciplina="Matemática">
+                                                        @if(!$isHorarioDisponivel)
                                                             <div class="slot-bloqueado">
                                                                 <span class="slot-bloqueado-texto">
                                                                     <i class="fas fa-lock"></i>
                                                                     <br><small>Indisponível</small>
                                                                 </span>
                                                             </div>
+                                                        @else
+                                                            <div class="slot-passado-texto">
+                                                                <small class="text-muted">-</small>
+                                                            </div>
                                                         @endif
-                                                    @else
-                                                        <div class="slot-passado-texto">
-                                                            <small class="text-muted">-</small>
-                                                        </div>
-                                                    @endif
+                                                    </div>
+                                                    <div class="disciplina-container slot-global" data-disciplina="Física" style="display: none;">
+                                                        @if(!$isHorarioDisponivel)
+                                                            <div class="slot-bloqueado">
+                                                                <span class="slot-bloqueado-texto">
+                                                                    <i class="fas fa-lock"></i>
+                                                                    <br><small>Indisponível</small>
+                                                                </span>
+                                                            </div>
+                                                        @else
+                                                            <div class="slot-passado-texto">
+                                                                <small class="text-muted">-</small>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                 @endif
                                             </td>
                                         @endfor
@@ -372,7 +472,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label><i class="fas fa-book"></i> Disciplina: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="disciplina" placeholder="Ex: Matemática, Português..." required>
+                                <input type="text" class="form-control" id="modalDisciplina" name="disciplina" placeholder="Ex: Matemática, Física..." required readonly>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -387,7 +487,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label><i class="fas fa-map-marker-alt"></i> Local: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="local" placeholder="Ex: Online, Domicílio, Centro..." required>
+                                <input type="text" class="form-control" id="modalLocal" name="local" placeholder="Sala será preenchida automaticamente" required readonly>
+                                <small class="text-muted">📐 Matemática = Sala 1 | 🔬 Física = Sala 2</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -502,10 +603,25 @@ function semanaAtual() {
     window.location.href = '{{ route("explicacoes.disponibilidade") }}?semana=' + novaData;
 }
 
-function criarExplicacao(data, hora) {
+function criarExplicacao(data, hora, disciplina) {
+    // Se disciplina não foi passada, pegar do dropdown
+    if (!disciplina) {
+        disciplina = document.getElementById('disciplinaSelecionada').value;
+    }
+    
+    // Definir o local baseado na disciplina
+    var local = '';
+    if (disciplina === 'Matemática') {
+        local = 'Sala 1';
+    } else if (disciplina === 'Física') {
+        local = 'Sala 2';
+    }
+    
     // Preencher dados do modal
     document.getElementById('modalData').value = data;
     document.getElementById('modalHoraInicio').value = hora;
+    document.getElementById('modalDisciplina').value = disciplina;
+    document.getElementById('modalLocal').value = local;
     
     // Sugerir hora de fim (1 hora depois)
     var horaInicio = new Date('2000-01-01 ' + hora);
@@ -514,9 +630,7 @@ function criarExplicacao(data, hora) {
     document.getElementById('modalHoraFim').value = horaFimSugerida;
     
     // Limpar outros campos
-    document.querySelector('input[name="disciplina"]').value = '';
     document.querySelector('input[name="nome_aluno"]').value = '';
-    document.querySelector('input[name="local"]').value = '';
     document.querySelector('input[name="preco"]').value = '';
     document.querySelector('input[name="contacto_aluno"]').value = '';
     document.querySelector('textarea[name="observacoes"]').value = '';
@@ -528,11 +642,29 @@ function criarExplicacao(data, hora) {
     // Mostrar modal
     $('#modalCriarExplicacao').modal('show');
     
-    // Focar no primeiro campo
+    // Focar no primeiro campo editável
     setTimeout(function() {
-        document.querySelector('input[name="disciplina"]').focus();
+        document.querySelector('input[name="nome_aluno"]').focus();
     }, 500);
 }
+
+// NOVA FUNÇÃO: Filtrar horários por disciplina (VERSÃO CORRIGIDA)
+function filtrarPorDisciplina() {
+    var disciplinaSelecionada = document.getElementById('disciplinaSelecionada').value;
+    
+    // Esconder todos os containers de disciplina
+    $('.disciplina-container').hide();
+    
+    // Mostrar apenas os containers da disciplina selecionada
+    $('.disciplina-container[data-disciplina="' + disciplinaSelecionada + '"]').show();
+    
+    console.log('Filtrando por disciplina:', disciplinaSelecionada);
+}
+
+// Executar filtro ao carregar a página
+$(document).ready(function() {
+    filtrarPorDisciplina();
+});
 
 // Hover effects nos slots
 $(document).on('mouseenter', '.slot-livre', function() {
@@ -564,6 +696,10 @@ $(document).ready(function() {
 .horario-slot {
     padding: 2px;
     position: relative;
+}
+
+.disciplina-container {
+    width: 100%;
 }
 
 .slot-vagas {
