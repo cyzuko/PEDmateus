@@ -14,6 +14,7 @@ class Disciplina extends Model
         'hora_inicio',
         'hora_fim',
         'cor_badge',
+        'sala',
         'ativa',
         'ordem'
     ];
@@ -33,5 +34,15 @@ class Disciplina extends Model
     public function scopeAtivas($query)
     {
         return $query->where('ativa', true)->orderBy('ordem');
+    }
+    
+    // Helper para verificar se um horário está dentro do range da disciplina
+    public function horarioDisponivel($hora)
+    {
+        $horaCheck = strtotime($hora);
+        $inicio = strtotime($this->hora_inicio);
+        $fim = strtotime($this->hora_fim);
+        
+        return $horaCheck >= $inicio && $horaCheck <= $fim;
     }
 }

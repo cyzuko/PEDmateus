@@ -20,11 +20,19 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            @endif
+
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th width="60">Emoji</th>
                         <th>Nome</th>
+                        <th>Sala</th>
                         <th>Horário</th>
                         <th>Capacidade</th>
                         <th>Cor</th>
@@ -37,6 +45,7 @@
                     <tr>
                         <td style="font-size: 1.8em;">{{ $disc->emoji }}</td>
                         <td><strong>{{ $disc->nome }}</strong></td>
+                        <td><span class="badge badge-secondary">{{ $disc->sala ?? 'N/A' }}</span></td>
                         <td><small>{{ $disc->hora_inicio }} - {{ $disc->hora_fim }}</small></td>
                         <td><span class="badge badge-info">{{ $disc->capacidade }} vagas</span></td>
                         <td><span class="badge" style="background-color: {{ $disc->cor_badge ?? '#6c757d' }}">■</span></td>
@@ -52,12 +61,13 @@
                             <form action="{{ route('disciplinas.toggle', $disc) }}" method="POST" style="display: inline;">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-sm btn-{{ $disc->ativa ? 'warning' : 'success' }}">
+                                <button type="submit" class="btn btn-sm btn-{{ $disc->ativa ? 'warning' : 'success' }}" 
+                                        title="{{ $disc->ativa ? 'Desativar' : 'Ativar' }}">
                                     <i class="fas fa-{{ $disc->ativa ? 'eye-slash' : 'eye' }}"></i>
                                 </button>
                             </form>
                             <form action="{{ route('disciplinas.destroy', $disc) }}" method="POST" style="display: inline;" 
-                                  onsubmit="return confirm('Remover disciplina?')">
+                                  onsubmit="return confirm('Tem certeza que deseja remover esta disciplina?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">
@@ -68,7 +78,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted">Nenhuma disciplina cadastrada</td>
+                        <td colspan="8" class="text-center text-muted">Nenhuma disciplina cadastrada</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -89,30 +99,36 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Nome:</label>
+                        <label>Nome: <span class="text-danger">*</span></label>
                         <input type="text" name="nome" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Emoji:</label>
+                        <label>Emoji: <span class="text-danger">*</span></label>
                         <input type="text" name="emoji" class="form-control" placeholder="📚" required>
+                        <small class="text-muted">Pode copiar de: 📐 🔬 📚 📖 🧪 🎨 🎵 ⚽ 💻</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Sala: <span class="text-danger">*</span></label>
+                        <input type="text" name="sala" class="form-control" placeholder="Ex: Sala 1, Lab A, etc." required>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hora Início:</label>
+                                <label>Hora Início: <span class="text-danger">*</span></label>
                                 <input type="time" name="hora_inicio" class="form-control" value="14:00" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hora Fim:</label>
+                                <label>Hora Fim: <span class="text-danger">*</span></label>
                                 <input type="time" name="hora_fim" class="form-control" value="18:00" required>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Capacidade (vagas simultâneas):</label>
+                        <label>Capacidade (vagas simultâneas): <span class="text-danger">*</span></label>
                         <input type="number" name="capacidade" class="form-control" value="4" min="1" max="20" required>
+                        <small class="text-muted">Número máximo de explicações simultâneas nesta disciplina</small>
                     </div>
                     <div class="form-group">
                         <label>Cor do Badge:</label>
@@ -141,29 +157,33 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Nome:</label>
+                        <label>Nome: <span class="text-danger">*</span></label>
                         <input type="text" name="nome" id="editNome" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Emoji:</label>
+                        <label>Emoji: <span class="text-danger">*</span></label>
                         <input type="text" name="emoji" id="editEmoji" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sala: <span class="text-danger">*</span></label>
+                        <input type="text" name="sala" id="editSala" class="form-control" required>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hora Início:</label>
+                                <label>Hora Início: <span class="text-danger">*</span></label>
                                 <input type="time" name="hora_inicio" id="editHoraInicio" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hora Fim:</label>
+                                <label>Hora Fim: <span class="text-danger">*</span></label>
                                 <input type="time" name="hora_fim" id="editHoraFim" class="form-control" required>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Capacidade:</label>
+                        <label>Capacidade: <span class="text-danger">*</span></label>
                         <input type="number" name="capacidade" id="editCapacidade" class="form-control" min="1" max="20" required>
                     </div>
                     <div class="form-group">
@@ -187,6 +207,7 @@ function editarDisciplina(disc) {
     document.getElementById('formEditar').action = '/disciplinas/' + disc.id;
     document.getElementById('editNome').value = disc.nome;
     document.getElementById('editEmoji').value = disc.emoji;
+    document.getElementById('editSala').value = disc.sala || '';
     document.getElementById('editHoraInicio').value = disc.hora_inicio;
     document.getElementById('editHoraFim').value = disc.hora_fim;
     document.getElementById('editCapacidade').value = disc.capacidade;
