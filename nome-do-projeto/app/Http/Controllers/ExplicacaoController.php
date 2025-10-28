@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Explicacao;
+use App\Models\Disciplina;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 class ExplicacaoController extends Controller
 {
     /**
@@ -420,54 +420,56 @@ public function calendario(Request $request)
  * Todos os usuários veem explicações confirmadas
  */
 public function disponibilidade(Request $request)
-{
-    $user = auth()->user();
-    
-    // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar disponibilidade
-    $this->atualizarStatusAprovadas($user->id);
-    
-    // Obter a semana selecionada (padrão: segunda-feira da semana atual)
-    $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
-    
-    // Calcular início e fim da semana
-    $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
-    $fimSemana = date('Y-m-d', strtotime($inicioSemana . ' +6 days'));
-    
-    // Inicializar variável de modo de visualização
-    $modoVisualizacao = 'usuario';
-    
-    // NOVA LÓGICA: Buscar explicações baseado no tipo de usuário
-    $query = Explicacao::whereBetween('data_explicacao', [$inicioSemana, $fimSemana])
-        ->orderBy('data_explicacao')
-        ->orderBy('hora_inicio');
-    
-    // Se for admin, vê TODAS as explicações confirmadas e concluídas
-    if (isset($user->is_admin) && $user->is_admin) {
-        $explicacoes = $query->where('aprovacao_admin', 'aprovada')
-            ->whereIn('status', ['confirmada', 'concluida'])
-            ->get();
-        $modoVisualizacao = 'admin';
-    } 
-    // Se for usuário normal, vê:
-    // 1. TODAS as suas próprias explicações confirmadas/concluídas
-    // 2. Explicações confirmadas/concluídas de outros
-    else {
-        $explicacoes = $query->where(function($q) use ($user) {
-            // Suas próprias explicações confirmadas/concluídas
-            $q->where(function($q2) use ($user) {
-                $q2->where('user_id', $user->id)
-                   ->where('aprovacao_admin', 'aprovada')
-                   ->whereIn('status', ['confirmada', 'concluida']);
-            })
-            // OU explicações confirmadas/concluídas de outros
-            ->orWhere(function($q2) use ($user) {
-                $q2->where('user_id', '!=', $user->id)
-                   ->where('aprovacao_admin', 'aprovada')
-                   ->whereIn('status', ['confirmada', 'concluida']);
-            });
-        })->get();
-    }
+    {
+        $user = auth()->user();
+        
+        // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar disponibilidade
+        $this->atualizarStatusAprovadas($user->id);
+        
+        // Obter a semana selecionada (padrão: segunda-feira da semana atual)
+        $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
+        
+        // Calcular início e fim da semana
+        $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
+        $fimSemana = date('Y-m-d', strtotime($inicioSemana . ' +6 days'));
+        
+        // Inicializar variável de modo de visualização
+        $modoVisualizacao = 'usuario';
+        
+        // NOVA LÓGICA: Buscar explicações baseado no tipo de usuário
+        $query = Explicacao::whereBetween('data_explicacao', [$inicioSemana, $fimSemana])
+            ->orderBy('data_explicacao')
+            ->orderBy('hora_inicio');
+        
+        // Se for admin, vê TODAS as explicações confirmadas e concluídas
+        if (isset($user->is_admin) && $user->is_admin) {
+            $explicacoes = $query->where('aprovacao_admin', 'aprovada')
+                ->whereIn('status', ['confirmada', 'concluida'])
+                ->get();
+            $modoVisualizacao = 'admin';
+        } 
+        // Se for usuário normal, vê:
+        // 1. TODAS as suas próprias explicações confirmadas/concluídas
+        // 2. Explicações confirmadas/concluídas de outros
+        else {
+            $explicacoes = $query->where(function($q) use ($user) {
+                // Suas próprias explicações confirmadas/concluídas
+                $q->where(function($q2) use ($user) {
+                    $q2->where('user_id', $user->id)
+                       ->where('aprovacao_admin', 'aprovada')
+                       ->whereIn('status', ['confirmada', 'concluida']);
+                })
+                // OU explicações confirmadas/concluídas de outros
+                ->orWhere(function($q2) use ($user) {
+                    $q2->where('user_id', '!=', $user->id)
+                       ->where('aprovacao_admin', 'aprovada')
+                       ->whereIn('status', ['confirmada', 'concluida']);
+                });
+            })->get();
+        }
 
-    return view('explicacoes.disponibilidade', compact('explicacoes', 'inicioSemana', 'fimSemana', 'modoVisualizacao'));
-}
+        $disciplinas = Disciplina::ativas()->get();
+        
+        return view('explicacoes.disponibilidade', compact('explicacoes', 'inicioSemana', 'fimSemana', 'modoVisualizacao', 'disciplinas'));
+    }
 }

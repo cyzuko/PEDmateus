@@ -45,6 +45,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/exportar-relatorio', [AdminController::class, 'exportarRelatorio'])->name('admin.exportar-relatorio');
     Route::get('/admin/historico-acoes', [AdminController::class, 'historicoAcoes'])->name('admin.historico-acoes');
     
+     // Gestão de Disciplinas (Admin)
+    Route::get('/disciplinas', [App\Http\Controllers\DisciplinaController::class, 'index'])->name('disciplinas.index');
+    Route::post('/disciplinas', [App\Http\Controllers\DisciplinaController::class, 'store'])->name('disciplinas.store');
+    Route::put('/disciplinas/{disciplina}', [App\Http\Controllers\DisciplinaController::class, 'update'])->name('disciplinas.update');
+    Route::patch('/disciplinas/{disciplina}/toggle', [App\Http\Controllers\DisciplinaController::class, 'toggleAtiva'])->name('disciplinas.toggle');
+    Route::delete('/disciplinas/{disciplina}', [App\Http\Controllers\DisciplinaController::class, 'destroy'])->name('disciplinas.destroy');
+    
     // APIs para funcionalidades em tempo real
     Route::get('/admin/api/explicacoes-pendentes', [AdminController::class, 'explicacoesPendentesCount'])->name('admin.api.explicacoes-pendentes');
     Route::get('/admin/api/estatisticas-ao-vivo', [AdminController::class, 'estatisticasAoVivo'])->name('admin.api.estatisticas-ao-vivo');

@@ -30,19 +30,24 @@
 
                 <div class="card-body">
                     <!-- Info sobre visualização -->
-                  @if(auth()->user()->role === 'admin')
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i> 
-                            <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações de todos os alunos.
-                        </div>
-                    @else
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i> 
-                            Visualização <strong>as suas explicações confirmadas</strong> + <strong>explicações confirmadas de outros alunos</strong>.
-                            <br>
-                            <i class="fas fa-check-circle text-success"></i> <strong>Horário disponível para novas explicações: 14:00 - 18:00</strong>
-                        </div>
-                    @endif
+                 {{-- Substituir a seção do alerta --}}
+@if(auth()->user()->role === 'admin')
+    <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle"></i> 
+        <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações de todos os alunos.
+        <br><br>
+        <a href="{{ route('disciplinas.index') }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-cog"></i> Gerir Disciplinas
+        </a>
+    </div>
+@else
+    <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle"></i> 
+        Visualização: <strong>as suas explicações confirmadas</strong> + <strong>explicações confirmadas de outros alunos</strong>.
+        <br>
+        <i class="fas fa-check-circle text-success"></i> <strong>Horário disponível para novas explicações: 14:00 - 18:00</strong>
+    </div>
+@endif
 
                     <!-- NOVO: Seletor de Disciplina -->
                     <div class="row mb-4">
@@ -54,10 +59,13 @@
                                             <label class="mb-0"><i class="fas fa-book"></i> <strong>Selecione a Disciplina:</strong></label>
                                         </div>
                                         <div class="col-md-6">
-                                            <select class="form-control form-control-lg" id="disciplinaSelecionada" onchange="filtrarPorDisciplina()">
-                                                <option value="Matemática" selected>📐 Matemática</option>
-                                                <option value="Física">🔬 Física</option>
-                                            </select>
+                                          <select class="form-control form-control-lg" id="disciplinaSelecionada" onchange="filtrarPorDisciplina()">
+    @foreach($disciplinas as $disciplina)
+        <option value="{{ $disciplina->nome }}" {{ $loop->first ? 'selected' : '' }}>
+            {{ $disciplina->emoji }} {{ $disciplina->nome }}
+        </option>
+    @endforeach
+</select>
                                         </div>
                                         <div class="col-md-3">
                                           
