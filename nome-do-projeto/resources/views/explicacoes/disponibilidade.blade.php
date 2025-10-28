@@ -489,7 +489,7 @@
 @section('scripts')
 <script>
 // Dados das disciplinas em JSON para JavaScript
-const disciplinasData = @json($disciplinas->keyBy('nome'));
+const disciplinasData = @json(collect($disciplinas)->keyBy('nome'));
 
 $(document).ready(function() {
     // Filtrar por disciplina ao carregar
