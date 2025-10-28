@@ -806,48 +806,48 @@ p {
     </div>
 </section>
 
-        <!-- Centro Photos Section -->
-        <section class="centro-photos-section py-5 mb-5">
-            <div class="container">
-                <div class="text-center mb-5">
-                    <h2 class="section-title">O nosso Centro</h2>
-                    <p class="section-subtitle">Conheça o espaço onde acontece a magia do aprendizado</p>
-                    <div class="section-divider"></div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-4 mb-4">
-                        <div class="card centro-photo-card border-0 shadow-sm h-100">
-                            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top" alt="Sala de Estudo">
-                            <div class="card-body">
-                                <h5 class="card-title">Sala de Estudo Principal</h5>
-                                <p class="card-text">Espaço amplo e iluminado, projetado para proporcionar o ambiente ideal para o aprendizado.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4 mb-4">
-                        <div class="card centro-photo-card border-0 shadow-sm h-100">
-                            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top" alt="Biblioteca">
-                            <div class="card-body">
-                                <h5 class="card-title">Biblioteca e Recursos</h5>
-                                <p class="card-text">Nossa biblioteca conta com uma vasta coleção de livros e materiais didáticos para todas as disciplinas.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4 mb-4">
-                        <div class="card centro-photo-card border-0 shadow-sm h-100">
-                            <img src="https://images.unsplash.com/photo-1581078426770-6d336e5de7bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top" alt="Sala de Informática">
-                            <div class="card-body">
-                                <h5 class="card-title">Sala Exemplo</h5>
-                                <p class="card-text">Equipada com computadores modernos e softwares educacionais para aulas de programação e pesquisa.</p>
-                            </div>
-                        </div>
+      <!-- Centro Photos Section -->
+<section class="centro-photos-section py-5 mb-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">O nosso Centro</h2>
+            <p class="section-subtitle">Conheça o espaço onde acontece a magia do aprendizado</p>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card centro-photo-card border-0 shadow-sm h-100">
+                    <img src="{{ asset('images/sala1.jpg') }}" class="card-img-top" alt="sala1">
+                    <div class="card-body">
+                        <h5 class="card-title">Sala 1</h5>
+                        <p class="card-text">Espaço amplo e iluminado, projetado para proporcionar o ambiente ideal para o aprendizado.</p>
                     </div>
                 </div>
             </div>
-        </section>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card centro-photo-card border-0 shadow-sm h-100">
+                    <img src="{{ asset('images/sala2.jpg') }}" class="card-img-top" alt="sala2">
+                    <div class="card-body">
+                        <h5 class="card-title">Sala 2</h5>
+                        <p class="card-text">Nossa biblioteca conta com uma vasta coleção de livros e materiais didáticos para todas as disciplinas.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card centro-photo-card border-0 shadow-sm h-100">
+                    <img src="{{ asset('images/sala3.jpg') }}" class="card-img-top" alt="entrada">
+                    <div class="card-body">
+                        <h5 class="card-title">Centro</h5>
+                        <p class="card-text">Equipada com computadores modernos e softwares educacionais para aulas de programação e pesquisa.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     </div>
 </div>
