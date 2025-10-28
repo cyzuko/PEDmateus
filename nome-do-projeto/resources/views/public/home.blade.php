@@ -19,7 +19,7 @@
     --success-color: #198754;
     --info-color: #0dcaf0;
     --dark-color: #212529;
-    --purple-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --purple-gradient: linear-gradient(135deg, #1e88e5 0%, #FFD700 100%);
 }
 
 html {
@@ -38,7 +38,7 @@ p {
 
 /* Hero Section - OVERRIDE AdminLTE */
 .hero-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #1e88e5 0%, #FFD700 100%) !important;
     color: white !important;
     padding: 120px 0 100px !important;
     position: relative !important;
@@ -71,7 +71,7 @@ p {
     font-weight: 800;
     margin-bottom: 1.5rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    background: linear-gradient(45deg, #ffffff, #e0e7ff);
+    background: linear-gradient(45deg, #ffffff, #FFF9E6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -133,7 +133,7 @@ p {
 
 .btn-hero-primary {
     background: #fff !important;
-    color: #4a6bff !important;
+    color: #1e88e5 !important;
 }
 
 .btn-hero-secondary {
@@ -188,8 +188,8 @@ p {
     height: 150px;
     top: 20%;
     left: 10%;
-    background: rgba(100, 200, 255, 0.6);
-    box-shadow: 0 0 60px rgba(100, 200, 255, 0.9);
+    background: rgba(30, 136, 229, 0.5);
+    box-shadow: 0 0 60px rgba(30, 136, 229, 0.8);
 }
 
 .floating-element:nth-child(2) {
@@ -197,8 +197,8 @@ p {
     height: 100px;
     top: 60%;
     left: 20%;
-    background: rgba(150, 100, 255, 0.6);
-    box-shadow: 0 0 60px rgba(150, 100, 255, 0.9);
+    background: rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 60px rgba(255, 215, 0, 0.9);
     animation: float 6s infinite ease-in-out;
 }
 
@@ -207,8 +207,8 @@ p {
     height: 200px;
     top: 30%;
     right: 15%;
-    background: rgba(100, 200, 255, 0.6);
-    box-shadow: 0 0 60px rgba(100, 200, 255, 0.9);
+    background: rgba(66, 165, 245, 0.5);
+    box-shadow: 0 0 60px rgba(66, 165, 245, 0.8);
     animation: float 10s infinite ease-in-out;
 }
 
@@ -217,8 +217,8 @@ p {
     height: 80px;
     bottom: 20%;
     right: 25%;
-    background: rgba(150, 100, 255, 0.6);
-    box-shadow: 0 0 60px rgba(150, 100, 255, 0.9);
+    background: rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 60px rgba(255, 215, 0, 0.9);
     animation: float 7s infinite ease-in-out;
 }
 
@@ -227,8 +227,8 @@ p {
     height: 120px;
     bottom: 40%;
     left: 40%;
-    background: rgba(200, 150, 255, 0.6);
-    box-shadow: 0 0 60px rgba(200, 150, 255, 0.9);
+    background: rgba(41, 182, 246, 0.5);
+    box-shadow: 0 0 60px rgba(41, 182, 246, 0.8);
     animation: float 9s infinite ease-in-out;
 }
 
@@ -239,47 +239,47 @@ p {
     font-weight: 800;
     color: rgba(255, 255, 255, 0.4);
     animation: float 8s infinite ease-in-out;
-    text-shadow: 0 0 30px rgba(100, 200, 255, 0.6);
+    text-shadow: 0 0 30px rgba(30, 136, 229, 0.6);
 }
 
 .floating-number:nth-child(6) {
     top: 15%;
     right: 8%;
     animation: float 7s infinite ease-in-out;
-    color: rgba(100, 200, 255, 0.5);
-    text-shadow: 0 0 30px rgba(100, 200, 255, 0.8);
+    color: rgba(30, 136, 229, 0.5);
+    text-shadow: 0 0 30px rgba(30, 136, 229, 0.8);
 }
 
 .floating-number:nth-child(7) {
     top: 50%;
     right: 5%;
     animation: float 9s infinite ease-in-out;
-    color: rgba(150, 100, 255, 0.5);
-    text-shadow: 0 0 30px rgba(150, 100, 255, 0.8);
+    color: rgba(255, 215, 0, 0.6);
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.9);
 }
 
 .floating-number:nth-child(8) {
     bottom: 15%;
     left: 8%;
     animation: float 6s infinite ease-in-out;
-    color: rgba(200, 150, 255, 0.5);
-    text-shadow: 0 0 30px rgba(200, 150, 255, 0.8);
+    color: rgba(66, 165, 245, 0.5);
+    text-shadow: 0 0 30px rgba(66, 165, 245, 0.8);
 }
 
 .floating-number:nth-child(9) {
     top: 35%;
     left: 5%;
     animation: float 11s infinite ease-in-out;
-    color: rgba(100, 200, 255, 0.5);
-    text-shadow: 0 0 30px rgba(100, 200, 255, 0.8);
+    color: rgba(30, 136, 229, 0.5);
+    text-shadow: 0 0 30px rgba(30, 136, 229, 0.8);
 }
 
 .floating-number:nth-child(10) {
     bottom: 30%;
     right: 10%;
     animation: float 8s infinite ease-in-out;
-    color: rgba(150, 100, 255, 0.5);
-    text-shadow: 0 0 30px rgba(150, 100, 255, 0.8);
+    color: rgba(255, 215, 0, 0.6);
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.9);
 }
 
 @keyframes float {
@@ -311,9 +311,9 @@ p {
     margin: 0 auto;
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
     border: 4px solid rgba(255, 255, 255, 0.4);
-    animation: rotateY360 4s linear infinite, pulse 3s ease-in-out infinite;
+    animation: pulse 3s ease-in-out infinite;
     position: relative;
-    transform-style: preserve-3d;
+    overflow: hidden;
 }
 
 .rotating-logo-large::before {
@@ -324,6 +324,18 @@ p {
     border-radius: 50%;
     border: 2px dashed rgba(255, 255, 255, 0.3);
     animation: rotate360 15s linear infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.rotating-logo-large img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
 }
 
 .rotating-logo-large i {
@@ -593,6 +605,11 @@ p {
         height: 140px;
     }
     
+    .rotating-logo-large img {
+        width: 100px;
+        height: 100px;
+    }
+    
     .rotating-logo-large i {
         font-size: 3.5rem;
     }
@@ -618,10 +635,10 @@ p {
     <div class="container hero-content">
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">
-                <!-- Logo Rotativo -->
+                <!-- Logo Rotativo com Imagem -->
                 <div class="logo-container mb-4 animate-fade-in-up">
                     <div class="rotating-logo-large">
-                        <i class="fas fa-graduation-cap"></i>
+                        <img src="{{ asset('images/fotop1.jpg') }}" alt="Logo Eureka">
                     </div>
                 </div>
                 
