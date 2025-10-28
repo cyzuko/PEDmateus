@@ -774,36 +774,68 @@ p {
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="section-title">As nossas Explicadoras</h2>
-            <p class="section-subtitle">Conheça as explicadoras Sofia e Joana, as profissionais que fazem a diferença</p>
+            <p class="section-subtitle">Conheça as profissionais que fazem a diferença no percurso académico dos nossos alunos</p>
             <div class="section-divider"></div>
         </div>
         
         <div class="row">
+            <!-- Joana -->
             <div class="col-md-6 mb-4"> 
                 <div class="card explicadora-card h-100 border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h3 class="explicadora-nome fw-bold">Explicadora Sofia</h3>
-                        <h6 class="explicadora-disciplina text-muted">Matemática </h6>
-                        <p class="explicadora-texto text-muted">
-                           Exemplo
+                        <h3 class="explicadora-nome fw-bold">📚 Explicadora Joana</h3>
+                        <h6 class="explicadora-disciplina text-muted">Apoio ao Estudo | Matemática e Ciências - Ensino Básico</h6>
+                        <p class="explicadora-texto text-muted mb-3">
+                            <strong>Apoio ao estudo até ao 8º ano:</strong><br>
+                            Especialista em acompanhamento escolar personalizado para alunos do 1º e 2º ciclo. 
+                            Ajuda os alunos a desenvolver métodos de estudo eficazes, a consolidar conhecimentos 
+                            e a ganhar autonomia na aprendizagem, com atenção especial à Matemática e Português.
                         </p>
+                        <p class="explicadora-texto text-muted">
+                            <strong>Explicações de Matemática e Ciências:</strong><br>
+                            Dedicada ao ensino da Matemática e Ciências Naturais para alunos do 2º e 3º ciclo 
+                            (5º ao 9º ano). Combina rigor científico com métodos pedagógicos dinâmicos, tornando 
+                            conceitos complexos mais acessíveis e interessantes.
+                        </p>
+                        <div class="mt-3">
+                            <span class="badge bg-primary me-2">1º-8º ano</span>
+                            <span class="badge bg-success me-2">Matemática</span>
+                            <span class="badge bg-success me-2">Ciências</span>
+                            <span class="badge bg-info">Apoio ao Estudo</span>
+                        </div>
                     </div>
                 </div>
             </div>
             
+            <!-- Sofia -->
             <div class="col-md-6 mb-4">
                 <div class="card explicadora-card h-100 border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h3 class="explicadora-nome fw-bold">Explicadora Joana </h3>
-                        <h6 class="explicadora-disciplina text-muted">Matemática</h6>
-                        <p class="explicadora-texto text-muted">
-                            Exemplo
+                        <h3 class="explicadora-nome fw-bold">🎓 Explicadora Sofia</h3>
+                        <h6 class="explicadora-disciplina text-muted">Matemática - Ensino Secundário | Preparação para Exames</h6>
+                        <p class="explicadora-texto text-muted mb-3">
+                            <strong>Explicações de Matemática - Ensino Secundário:</strong><br>
+                            Professora especializada em Matemática A e MACS para o Ensino Secundário (10º, 11º e 12º anos). 
+                            Com formação académica sólida, oferece explicações focadas na compreensão profunda dos 
+                            conteúdos programáticos e resolução de exercícios-tipo de exame.
                         </p>
+                        <p class="explicadora-texto text-muted">
+                            <strong>Preparação para Exames de Matemática:</strong><br>
+                            Especialista na preparação intensiva para exames nacionais de Matemática do 9º ano 
+                            (prova final) e 12º ano (exame nacional). Metodologia focada em treino intensivo, 
+                            identificação de dificuldades e estratégias de resolução eficazes.
+                        </p>
+                        <div class="mt-3">
+                            <span class="badge bg-warning text-dark me-2">Secundário</span>
+                            <span class="badge bg-danger me-2">Exame 9º ano</span>
+                            <span class="badge bg-danger me-2">Exame 12º ano</span>
+                            <span class="badge bg-success">Matemática A/MACS</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        
 </section>
 
       <!-- Centro Photos Section -->
@@ -831,7 +863,7 @@ p {
                     <img src="{{ asset('images/sala2.jpg') }}" class="card-img-top" alt="sala2">
                     <div class="card-body">
                         <h5 class="card-title">Sala 2</h5>
-                        <p class="card-text">Nossa biblioteca conta com uma vasta coleção de livros e materiais didáticos para todas as disciplinas.</p>
+                        <p class="card-text">Minimalista e simples mas aconchegadora e eficaz, ideal para um local de estudo.</p>
                     </div>
                 </div>
             </div>
@@ -841,7 +873,7 @@ p {
                     <img src="{{ asset('images/sala3.jpg') }}" class="card-img-top" alt="entrada">
                     <div class="card-body">
                         <h5 class="card-title">Centro</h5>
-                        <p class="card-text">Equipada com computadores modernos e softwares educacionais para aulas de programação e pesquisa.</p>
+                        <p class="card-text">Elaborado ao longo de diversos anos, imensos alunos passaram por cá.</p>
                     </div>
                 </div>
             </div>
