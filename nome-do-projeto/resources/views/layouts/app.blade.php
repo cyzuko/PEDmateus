@@ -221,13 +221,34 @@
                             <i class="fas fa-graduation-cap"></i> Explicações
                         </a>
                     </li>
-                    
+                    <li class="nav-item">
+    <a class="nav-link" href="{{ route('mensagens.index') }}">
+        <i class="fas fa-comments"></i> Mensagens
+        @php
+            $totalNaoLidas = auth()->user()->grupos()
+                ->where('ativo', true)
+                ->get()
+                ->sum(function($grupo) {
+                    return $grupo->mensagensNaoLidas(auth()->id());
+                });
+        @endphp
+        @if($totalNaoLidas > 0)
+            <span class="badge badge-danger">{{ $totalNaoLidas }}</span>
+        @endif
+    </a>
+</li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('estatisticas') }}">
                             <i class="fas fa-chart-bar"></i> Estatísticas
                         </a>
                     </li>
-                    
+                    @if(auth()->check() && auth()->user()->role === 'admin')
+    <li class="nav-item">
+        <a href="{{ url('/admin/grupos') }}" class="btn btn-info admin-btn">
+            <i class="fas fa-users"></i> Gerir Grupos
+        </a>
+    </li>
+@endif
                     
                    <li class="nav-item"></li>
                     <!-- Botão Admin - Desktop -->
