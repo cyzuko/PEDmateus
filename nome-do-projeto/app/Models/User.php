@@ -41,15 +41,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    /**
-     * Get the faturas for the user.
-     */
-    public function faturas()
-    {
-        return $this->hasMany(Fatura::class);
-    }
-
     /**
      * Get the explicacoes for the user.
      */
