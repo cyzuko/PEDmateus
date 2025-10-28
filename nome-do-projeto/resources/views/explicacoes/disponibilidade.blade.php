@@ -63,8 +63,7 @@
                                                             data-capacidade="{{ $disciplina->capacidade }}"
                                                             {{ $loop->first ? 'selected' : '' }}>
                                                         {{ $disciplina->emoji }} {{ $disciplina->nome }} 
-                                                        ({{ substr($disciplina->hora_inicio, 0, 5) }}-{{ substr($disciplina->hora_fim, 0, 5) }}, 
-                                                        {{ $disciplina->capacidade }} vagas)
+                                                        ({{ substr($disciplina->hora_inicio, 0, 5) }}-{{ substr($disciplina->hora_fim, 0, 5) }})
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -541,7 +540,7 @@ function atualizarInfoDisciplina() {
     if (disciplinasData[disciplinaSelecionada]) {
         var disc = disciplinasData[disciplinaSelecionada];
         var info = 'Horário: ' + disc.hora_inicio.substr(0,5) + ' - ' + disc.hora_fim.substr(0,5) + 
-                   ' | Capacidade: ' + disc.capacidade + ' vagas';
+                  
         $('#infoHorarioDisciplina').html(info);
     }
 }
