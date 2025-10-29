@@ -7,7 +7,7 @@
         <div class="col-md-3 d-none d-md-block bg-light" style="height: calc(100vh - 100px); overflow-y: auto;">
             <div class="p-3">
                 <h5 class="mb-3">
-                    <i class="fas fa-comments"></i> Meus Grupos
+                    <i class="fas fa-comments"></i> Grupo
                 </h5>
                 <a href="{{ route('mensagens.index') }}" class="btn btn-outline-primary btn-block mb-3">
                     <i class="fas fa-arrow-left"></i> Ver Todos os Grupos
