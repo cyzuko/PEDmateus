@@ -44,6 +44,7 @@ p {
     position: relative !important;
     overflow: hidden !important;
     margin: 0 !important;
+     margin-top: -40px !important;
     margin-left: -15px !important;
     margin-right: -15px !important;
     width: calc(100% + 30px) !important;
