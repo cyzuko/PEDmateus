@@ -82,7 +82,9 @@ class DisciplinaController extends Controller
             'outros_alunos' => $explicacoes->where('user_id', '!=', $user->id)->count(),
         ]);
         
-        'explicacoes.disponibilidade', compact('disciplinas', 'explicacoes', 'modoVisualizacao'));return view(
+      
+        return view('explicacoes.disponibilidade', compact('disciplinas', 'explicacoes', 'modoVisualizacao'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     public function store(Request $request)

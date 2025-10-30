@@ -94,30 +94,42 @@ class AdminController extends Controller
     /**
      * Aprovar explicação
      */
-    public function aprovarExplicacao(Request $request, $id)
-    {
-        $explicacao = Explicacao::findOrFail($id);
+   public function aprovarExplicacao(Request $request, $id)
+{
+    $explicacao = Explicacao::findOrFail($id);
 
-        if ($explicacao->aprovacao_admin !== 'pendente') {
-            return redirect()->back()->with('error', 'Esta explicação já foi processada.');
-        }
-
-        try {
-            DB::table('explicacoes')
-                ->where('id', $id)
-                ->update([
-                    'aprovacao_admin' => 'aprovada',
-                    'aprovada_por' => Auth::id(),
-                    'data_aprovacao' => now(),
-                    'motivo_rejeicao' => null,
-                    'updated_at' => now()
-                ]);
-
-            return redirect()->back()->with('success', 'Explicação aprovada com sucesso!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao aprovar explicação: ' . $e->getMessage());
-        }
+    if ($explicacao->aprovacao_admin !== 'pendente') {
+        return redirect()->back()->with('error', 'Esta explicação já foi processada.');
     }
+
+    try {
+        // ATUALIZAR AMBOS OS CAMPOS
+        DB::table('explicacoes')
+            ->where('id', $id)
+            ->update([
+                'aprovacao_admin' => 'aprovada',
+                'status' => 'confirmada',  // ← LINHA CRÍTICA ADICIONADA
+                'aprovada_por' => Auth::id(),
+                'data_aprovacao' => now(),
+                'motivo_rejeicao' => null,
+                'updated_at' => now()
+            ]);
+
+        // Log da aprovação
+        \Log::info("Explicação aprovada e confirmada automaticamente", [
+            'explicacao_id' => $id,
+            'aprovada_por' => Auth::user()->name,
+            'professor' => $explicacao->user->name ?? 'N/A',
+            'disciplina' => $explicacao->disciplina,
+            'data' => $explicacao->data_explicacao
+        ]);
+
+        return redirect()->back()->with('success', 'Explicação aprovada e confirmada! Já aparece na grade de horários.');
+    } catch (\Exception $e) {
+        \Log::error('Erro ao aprovar explicação: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Erro ao aprovar explicação: ' . $e->getMessage());
+    }
+}
 
     /**
      * Rejeitar explicação
@@ -186,6 +198,7 @@ class AdminController extends Controller
                         ->where('id', $explicacaoId)
                         ->update([
                             'aprovacao_admin' => 'aprovada',
+                             'status' => 'confirmada',
                             'aprovada_por' => Auth::id(),
                             'data_aprovacao' => now(),
                             'motivo_rejeicao' => null,

@@ -7,6 +7,7 @@ use App\Models\Disciplina;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 class ExplicacaoController extends Controller
 {
     /**
@@ -15,9 +16,6 @@ class ExplicacaoController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
-        // NOVA FUNCIONALIDADE: Atualizar automaticamente explicações aprovadas para "confirmada"
-        $this->atualizarStatusAprovadas($user->id);
         
         // Buscar explicações do utilizador logado com informações de aprovação
         $explicacoes = Explicacao::with(['aprovadoPor'])
@@ -40,20 +38,6 @@ class ExplicacaoController extends Controller
         ];
         
         return view('explicacoes.index', compact('explicacoes', 'stats'));
-    }
-
-    /**
-     * NOVO MÉTODO: Atualiza automaticamente o status das explicações aprovadas
-     */
-    private function atualizarStatusAprovadas($userId)
-    {
-        Explicacao::where('user_id', $userId)
-            ->where('aprovacao_admin', 'aprovada')
-            ->where('status', 'agendada')
-            ->update([
-                'status' => 'confirmada',
-                'updated_at' => now()
-            ]);
     }
 
     /**
@@ -120,8 +104,7 @@ class ExplicacaoController extends Controller
             // 2. Notificar administradores se opção selecionada
             if ($request->has('enviar_email_admin') && $request->enviar_email_admin) {
                 $emailsAdmin = [
-                    'mateus23viana@gmail.com', // Email do sistema
-                    // Adicione outros emails de admin aqui
+                    'mateus23viana@gmail.com',
                 ];
 
                 foreach ($emailsAdmin as $emailAdmin) {
@@ -148,7 +131,6 @@ class ExplicacaoController extends Controller
                 }
             }
 
-            // Mensagem de sucesso dinâmica baseada nas notificações enviadas
             $mensagem = 'Explicação criada com sucesso e enviada para aprovação!';
             if ($request->enviar_email_aluno || $request->enviar_email_admin) {
                 $mensagem .= ' Notificações foram enviadas.';
@@ -180,7 +162,6 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
-        // ATUALIZADO: Verificar se pode ser editada considerando o novo status "confirmada"
         if ($explicacao->status === 'concluida') {
             return redirect()->route('explicacoes.index')
                 ->with('error', 'Esta explicação não pode ser editada pois já foi concluída.');
@@ -196,7 +177,6 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
 
-        // ATUALIZADO: Verificar se pode ser editada considerando o novo status "confirmada"
         if ($explicacao->status === 'concluida') {
             return redirect()->route('explicacoes.index')
                 ->with('error', 'Esta explicação não pode ser editada pois já foi concluída.');
@@ -215,7 +195,7 @@ class ExplicacaoController extends Controller
         ]);
 
         try {
-            // NOVO: Se a explicação foi confirmada (aprovada), resetar para agendada para nova aprovação
+            // Se a explicação foi confirmada (aprovada), resetar para agendada para nova aprovação
             if ($explicacao->aprovacao_admin === 'aprovada' && $explicacao->status === 'confirmada') {
                 $validated['status'] = 'agendada';
                 $validated['aprovacao_admin'] = 'pendente';
@@ -235,7 +215,7 @@ class ExplicacaoController extends Controller
             $explicacao->update($validated);
 
             return redirect()->route('explicacoes.index')
-                            ->with('success', 'Explicação atualizada com sucesso e enviada para nova aprovação!');
+                ->with('success', 'Explicação atualizada com sucesso e enviada para nova aprovação!');
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erro ao atualizar: ' . $e->getMessage()])->withInput();
@@ -250,7 +230,6 @@ class ExplicacaoController extends Controller
         try {
             $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
             
-            // ATUALIZADO: Só permitir eliminar se não foi concluída
             if ($explicacao->status === 'concluida') {
                 return redirect()->route('explicacoes.index')
                     ->with('error', 'Não é possível eliminar uma explicação concluída.');
@@ -259,16 +238,12 @@ class ExplicacaoController extends Controller
             $explicacao->delete();
 
             return redirect()->route('explicacoes.index')
-                            ->with('success', 'Explicação eliminada com sucesso!');
+                ->with('success', 'Explicação eliminada com sucesso!');
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erro ao eliminar: ' . $e->getMessage()]);
         }
     }
-
-    /**
-     * REMOVIDO: Método confirmar() - agora é automático quando aprovado pelo admin
-     */
 
     /**
      * Cancelar explicação
@@ -277,7 +252,6 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
-        // ATUALIZADO: Incluir "confirmada" nos status que podem ser cancelados
         if (!in_array($explicacao->status, ['agendada', 'confirmada'])) {
             return redirect()->back()->with('error', 'Esta explicação não pode ser cancelada.');
         }
@@ -294,7 +268,6 @@ class ExplicacaoController extends Controller
     {
         $explicacao = Explicacao::where('user_id', Auth::id())->findOrFail($id);
         
-        // ATUALIZADO: Permitir conclusão apenas de explicações confirmadas
         if ($explicacao->status !== 'confirmada') {
             return redirect()->back()->with('error', 'Só é possível concluir explicações confirmadas (aprovadas pelo admin).');
         }
@@ -305,92 +278,131 @@ class ExplicacaoController extends Controller
     }
 
     /**
-     * Vista do calendário (VERSÃO CORRIGIDA - SUBSTITUIR A ANTERIOR)
-     *//**
- * Vista do calendário - VERSÃO PÚBLICA
- * Todos os usuários veem explicações confirmadas
- * Apenas o proprietário vê todas as suas explicações
- */
-public function calendario(Request $request)
-{
-    $user = auth()->user();
-    
-    // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar o calendário
-    $this->atualizarStatusAprovadas($user->id);
-    
-    // Obter mês e ano da URL ou usar valores padrão (mês/ano atual)
-    $mesAtual = (int) $request->get('mes', date('n'));
-    $anoAtual = (int) $request->get('ano', date('Y'));
-    
-    // Validar valores para evitar erros
-    if ($mesAtual < 1 || $mesAtual > 12) {
-        $mesAtual = date('n');
-    }
-    if ($anoAtual < 2020 || $anoAtual > 2030) {
-        $anoAtual = date('Y');
-    }
-    
-    // Calcular mês anterior e próximo para navegação
-    $mesAnterior = $mesAtual - 1;
-    $anoAnterior = $anoAtual;
-    if ($mesAnterior < 1) {
-        $mesAnterior = 12;
-        $anoAnterior = $anoAtual - 1;
-    }
-    
-    $mesProximo = $mesAtual + 1;
-    $anoProximo = $anoAtual;
-    if ($mesProximo > 12) {
-        $mesProximo = 1;
-        $anoProximo = $anoAtual + 1;
-    }
-    
-    // Calcular primeiro e último dia do mês
-    $primeiroDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual, 1, $anoAtual));
-    $ultimoDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual + 1, 0, $anoAtual));
-    
-    // NOVA LÓGICA: Buscar explicações baseado no tipo de usuário
-    $query = Explicacao::whereBetween('data_explicacao', [$primeiroDiaDoMes, $ultimoDiaDoMes])
-        ->orderBy('data_explicacao')
-        ->orderBy('hora_inicio');
-    
-    // Se for admin, vê TODAS as explicações
-    if ($user->is_admin) {
-        // Admin vê tudo, sem filtros
-        $explicacoes = $query->get();
-        $modoVisualizacao = 'admin';
-    } 
-    // Se for usuário normal, vê:
-    // 1. TODAS as suas próprias explicações (qualquer status)
-    // 2. Explicações de outros que estejam confirmadas (aprovadas + confirmada/concluída)
-    else {
-        $explicacoes = $query->where(function($q) use ($user) {
-            // Suas próprias explicações (todas)
-            $q->where('user_id', $user->id)
-              // OU explicações confirmadas de outros
-              ->orWhere(function($q2) use ($user) {
-                  $q2->where('user_id', '!=', $user->id)
-                     ->where('aprovacao_admin', 'aprovada')
-                     ->whereIn('status', ['confirmada', 'concluida']);
-              });
-        })->get();
-        $modoVisualizacao = 'usuario';
-    }
+     * Vista do calendário - VERSÃO SIMPLIFICADA
+     */
+    public function calendario(Request $request)
+    {
+        $user = auth()->user();
         
-    return view('explicacoes.calendario', compact(
-        'explicacoes', 
-        'mesAtual', 
-        'anoAtual',
-        'mesAnterior',
-        'anoAnterior', 
-        'mesProximo',
-        'anoProximo',
-        'modoVisualizacao'
-    ));
-}
+        // Obter mês e ano da URL ou usar valores padrão
+        $mesAtual = (int) $request->get('mes', date('n'));
+        $anoAtual = (int) $request->get('ano', date('Y'));
+        
+        // Validar valores
+        if ($mesAtual < 1 || $mesAtual > 12) {
+            $mesAtual = date('n');
+        }
+        if ($anoAtual < 2020 || $anoAtual > 2030) {
+            $anoAtual = date('Y');
+        }
+        
+        // Calcular navegação
+        $mesAnterior = $mesAtual - 1;
+        $anoAnterior = $anoAtual;
+        if ($mesAnterior < 1) {
+            $mesAnterior = 12;
+            $anoAnterior = $anoAtual - 1;
+        }
+        
+        $mesProximo = $mesAtual + 1;
+        $anoProximo = $anoAtual;
+        if ($mesProximo > 12) {
+            $mesProximo = 1;
+            $anoProximo = $anoAtual + 1;
+        }
+        
+        // Calcular primeiro e último dia do mês
+        $primeiroDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual, 1, $anoAtual));
+        $ultimoDiaDoMes = date('Y-m-d', mktime(0, 0, 0, $mesAtual + 1, 0, $anoAtual));
+        
+        // Buscar explicações baseado no tipo de usuário
+        $query = Explicacao::whereBetween('data_explicacao', [$primeiroDiaDoMes, $ultimoDiaDoMes])
+            ->orderBy('data_explicacao')
+            ->orderBy('hora_inicio');
+        
+        if ($user->is_admin) {
+            // Admin vê tudo
+            $explicacoes = $query->get();
+            $modoVisualizacao = 'admin';
+        } else {
+            // Usuário normal vê:
+            // 1. Todas as suas explicações (qualquer status)
+            // 2. Explicações confirmadas de outros
+            $explicacoes = $query->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere(function($q2) use ($user) {
+                      $q2->where('user_id', '!=', $user->id)
+                         ->where('aprovacao_admin', 'aprovada')
+                         ->whereIn('status', ['confirmada', 'concluida']);
+                  });
+            })->get();
+            $modoVisualizacao = 'usuario';
+        }
+            
+        return view('explicacoes.calendario', compact(
+            'explicacoes', 
+            'mesAtual', 
+            'anoAtual',
+            'mesAnterior',
+            'anoAnterior', 
+            'mesProximo',
+            'anoProximo',
+            'modoVisualizacao'
+        ));
+    }
 
     /**
-     * ATUALIZADO: Obter cor para o status (versão expandida)
+     * Mostrar página de disponibilidade - VERSÃO SIMPLIFICADA
+     */
+    public function disponibilidade(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Obter a semana selecionada
+        $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
+        
+        // Calcular início e fim da semana
+        $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
+        $fimSemana = date('Y-m-d', strtotime($inicioSemana . ' +6 days'));
+        
+        $modoVisualizacao = 'usuario';
+        
+        // Buscar explicações baseado no tipo de usuário
+        $query = Explicacao::whereBetween('data_explicacao', [$inicioSemana, $fimSemana])
+            ->orderBy('data_explicacao')
+            ->orderBy('hora_inicio');
+        
+        if (isset($user->is_admin) && $user->is_admin) {
+            // Admin vê todas confirmadas/concluídas
+            $explicacoes = $query->where('aprovacao_admin', 'aprovada')
+                ->whereIn('status', ['confirmada', 'concluida'])
+                ->get();
+            $modoVisualizacao = 'admin';
+        } else {
+            // Usuário normal vê:
+            // 1. Suas explicações confirmadas/concluídas
+            // 2. Explicações confirmadas/concluídas de outros
+            $explicacoes = $query->where(function($q) use ($user) {
+                $q->where(function($q2) use ($user) {
+                    $q2->where('user_id', $user->id)
+                       ->where('aprovacao_admin', 'aprovada')
+                       ->whereIn('status', ['confirmada', 'concluida']);
+                })
+                ->orWhere(function($q2) use ($user) {
+                    $q2->where('user_id', '!=', $user->id)
+                       ->where('aprovacao_admin', 'aprovada')
+                       ->whereIn('status', ['confirmada', 'concluida']);
+                });
+            })->get();
+        }
+
+        $disciplinas = Disciplina::ativas()->get();
+        
+        return view('explicacoes.disponibilidade', compact('explicacoes', 'inicioSemana', 'fimSemana', 'modoVisualizacao', 'disciplinas'));
+    }
+
+    /**
+     * Obter cor para o status
      */
     private function getStatusColor($status, $aprovacao = null)
     {
@@ -404,72 +416,11 @@ public function calendario(Request $request)
         // Cores para explicações aprovadas
         $colors = [
             'agendada' => '#ffc107',     // Amarelo
-            'confirmada' => '#28a745',   // Verde - NOVA COR para confirmadas
-            'concluida' => '#17a2b8',    // Azul para concluídas
-            'cancelada' => '#fd7e14'     // Laranja para canceladas
+            'confirmada' => '#28a745',   // Verde
+            'concluida' => '#17a2b8',    // Azul
+            'cancelada' => '#fd7e14'     // Laranja
         ];
         
         return $colors[$status] ?? '#6c757d';
-    }
-
-    /**
-     * Mostrar página de disponibilidade
-     */
-    /**
- * Mostrar página de disponibilidade - VERSÃO PÚBLICA
- * Todos os usuários veem explicações confirmadas
- */
-public function disponibilidade(Request $request)
-    {
-        $user = auth()->user();
-        
-        // NOVA FUNCIONALIDADE: Atualizar status antes de mostrar disponibilidade
-        $this->atualizarStatusAprovadas($user->id);
-        
-        // Obter a semana selecionada (padrão: segunda-feira da semana atual)
-        $semanaInicio = $request->get('semana', date('Y-m-d', strtotime('monday this week')));
-        
-        // Calcular início e fim da semana
-        $inicioSemana = date('Y-m-d', strtotime($semanaInicio));
-        $fimSemana = date('Y-m-d', strtotime($inicioSemana . ' +6 days'));
-        
-        // Inicializar variável de modo de visualização
-        $modoVisualizacao = 'usuario';
-        
-        // NOVA LÓGICA: Buscar explicações baseado no tipo de usuário
-        $query = Explicacao::whereBetween('data_explicacao', [$inicioSemana, $fimSemana])
-            ->orderBy('data_explicacao')
-            ->orderBy('hora_inicio');
-        
-        // Se for admin, vê TODAS as explicações confirmadas e concluídas
-        if (isset($user->is_admin) && $user->is_admin) {
-            $explicacoes = $query->where('aprovacao_admin', 'aprovada')
-                ->whereIn('status', ['confirmada', 'concluida'])
-                ->get();
-            $modoVisualizacao = 'admin';
-        } 
-        // Se for usuário normal, vê:
-        // 1. TODAS as suas próprias explicações confirmadas/concluídas
-        // 2. Explicações confirmadas/concluídas de outros
-        else {
-            $explicacoes = $query->where(function($q) use ($user) {
-                // Suas próprias explicações confirmadas/concluídas
-                $q->where(function($q2) use ($user) {
-                    $q2->where('user_id', $user->id)
-                       ->where('aprovacao_admin', 'aprovada')
-                       ->whereIn('status', ['confirmada', 'concluida']);
-                })
-                // OU explicações confirmadas/concluídas de outros
-                ->orWhere(function($q2) use ($user) {
-                    $q2->where('user_id', '!=', $user->id)
-                       ->where('aprovacao_admin', 'aprovada')
-                       ->whereIn('status', ['confirmada', 'concluida']);
-                });
-            })->get();
-        }
-
-        $disciplinas = Disciplina::ativas()->get();
-        
-        return view('explicacoes.disponibilidade', compact('explicacoes', 'inicioSemana', 'fimSemana', 'modoVisualizacao', 'disciplinas'));
     }
 }
