@@ -29,21 +29,20 @@
                 </div>
 
                 <div class="card-body">
-                    @if(auth()->user()->role === 'admin')
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i> 
-                            <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações de todos os alunos.
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle"></i> 
+                        @if(auth()->user()->role === 'admin')
+                            <strong>Modo Administrador:</strong> Você está a ver TODAS as explicações de todos os alunos (confirmadas, pendentes e concluídas).
                             <br><br>
                             <a href="{{ route('disciplinas.index') }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-cog"></i> Gerir Disciplinas
                             </a>
-                        </div>
-                    @else
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i> 
-                            Visualização: <strong>as suas explicações confirmadas</strong> + <strong>explicações confirmadas de outros alunos</strong>.
-                        </div>
-                    @endif
+                        @else
+                            Visualização: <strong>todas as suas explicações</strong> + <strong>explicações confirmadas e concluídas de outros alunos</strong>.
+                            <br>
+                            <small class="text-muted">Isto permite-lhe ver quando os horários estão ocupados por outros alunos.</small>
+                        @endif
+                    </div>
 
                     <!-- Seletor de Disciplina -->
                     <div class="row mb-4">
@@ -57,13 +56,16 @@
                                         <div class="col-md-6">
                                             <select class="form-control form-control-lg" id="disciplinaSelecionada" onchange="filtrarPorDisciplina()">
                                                 @foreach($disciplinas as $disciplina)
+                                                    @php
+                                                        $horarios = json_decode($disciplina->horarios_json ?? '{}', true);
+                                                        $diasDisponiveis = !empty($horarios) ? implode(', ', array_keys($horarios)) : 'Todos os dias';
+                                                    @endphp
                                                     <option value="{{ $disciplina->nome }}" 
-                                                            data-hora-inicio="{{ $disciplina->hora_inicio }}"
-                                                            data-hora-fim="{{ $disciplina->hora_fim }}"
+                                                            data-horarios='@json($horarios)'
                                                             data-capacidade="{{ $disciplina->capacidade }}"
                                                             {{ $loop->first ? 'selected' : '' }}>
                                                         {{ $disciplina->emoji }} {{ $disciplina->nome }} 
-                                                        ({{ substr($disciplina->hora_inicio, 0, 5) }}-{{ substr($disciplina->hora_fim, 0, 5) }})
+                                                        ({{ $diasDisponiveis }})
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -114,10 +116,21 @@
                                         $horaInicioGlobal = 24;
                                         $horaFimGlobal = 0;
                                         foreach($disciplinas as $disc) {
-                                            $hi = (int)substr($disc->hora_inicio, 0, 2);
-                                            $hf = (int)substr($disc->hora_fim, 0, 2);
-                                            if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
-                                            if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                            $horarios = json_decode($disc->horarios_json ?? '{}', true);
+                                            if (!empty($horarios)) {
+                                                foreach($horarios as $horario) {
+                                                    $hi = (int)substr($horario['inicio'], 0, 2);
+                                                    $hf = (int)substr($horario['fim'], 0, 2);
+                                                    if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
+                                                    if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                                }
+                                            } else {
+                                                // Fallback para hora_inicio e hora_fim
+                                                $hi = (int)substr($disc->hora_inicio, 0, 2);
+                                                $hf = (int)substr($disc->hora_fim, 0, 2);
+                                                if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
+                                                if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                            }
                                         }
                                     @endphp
                                     @for($i = 0; $i < 7; $i++)
@@ -150,6 +163,7 @@
                                                 $dataSlot = date('Y-m-d', strtotime($semanaInicio . " +{$dia} days"));
                                                 $horaSlot = sprintf('%02d:00', $hora);
                                                 $horaSlot30 = sprintf('%02d:30', $hora);
+                                                $diaSemana = $diasSemana[$dia];
                                                 
                                                 $isPassado = strtotime($dataSlot . ' ' . $horaSlot) < time();
                                                 $isHoje = $dataSlot == date('Y-m-d');
@@ -158,14 +172,28 @@
                                             <td class="horario-slot {{ $isPassado ? 'slot-passado' : '' }} {{ $isHoje ? 'slot-hoje' : '' }}" 
                                                 data-data="{{ $dataSlot }}" 
                                                 data-hora="{{ $horaSlot }}"
+                                                data-dia="{{ $diaSemana }}"
                                                 style="height: 60px; position: relative; cursor: pointer;">
                                                 
                                                 @foreach($disciplinas as $disciplina)
                                                     @php
-                                                        // Verificar se este slot está dentro do horário da disciplina
-                                                        $discHoraInicio = (int)substr($disciplina->hora_inicio, 0, 2);
-                                                        $discHoraFim = (int)substr($disciplina->hora_fim, 0, 2);
-                                                        $isHorarioDisponivel = ($hora >= $discHoraInicio && $hora <= $discHoraFim);
+                                                        // Verificar se este slot está dentro do horário da disciplina para este dia
+                                                        $horarios = json_decode($disciplina->horarios_json ?? '{}', true);
+                                                        $isHorarioDisponivel = false;
+                                                        
+                                                        if (!empty($horarios) && isset($horarios[$diaSemana])) {
+                                                            // Disciplina tem horário específico para este dia
+                                                            $horarioDia = $horarios[$diaSemana];
+                                                            $discHoraInicio = (int)substr($horarioDia['inicio'], 0, 2);
+                                                            $discHoraFim = (int)substr($horarioDia['fim'], 0, 2);
+                                                            $isHorarioDisponivel = ($hora >= $discHoraInicio && $hora <= $discHoraFim);
+                                                        } elseif (empty($horarios)) {
+                                                            // Fallback: usar hora_inicio e hora_fim (todos os dias)
+                                                            $discHoraInicio = (int)substr($disciplina->hora_inicio, 0, 2);
+                                                            $discHoraFim = (int)substr($disciplina->hora_fim, 0, 2);
+                                                            $isHorarioDisponivel = ($hora >= $discHoraInicio && $hora <= $discHoraFim);
+                                                        }
+                                                        // Se não há horário definido para este dia, não mostrar
                                                         
                                                         // Buscar explicações desta disciplina neste slot
                                                         $explicacoesSlot = $explicacoes->filter(function($exp) use ($dataSlot, $horaSlot, $horaSlot30, $disciplina) {
@@ -184,6 +212,7 @@
                                                     <div class="disciplina-container" 
                                                          data-disciplina="{{ $disciplina->nome }}"
                                                          data-vagas="{{ $vagas }}"
+                                                         data-disponivel="{{ $isHorarioDisponivel ? 'true' : 'false' }}"
                                                          style="display: none;">
                                                         
                                                         @if($isHorarioDisponivel)
@@ -251,11 +280,10 @@
                                                                 </div>
                                                             @endif
                                                         @else
-                                                            {{-- Horário indisponível para esta disciplina --}}
-                                                            <div class="slot-bloqueado">
-                                                                <span class="slot-bloqueado-texto">
-                                                                    <i class="fas fa-lock"></i>
-                                                                    <br><small>Indisponível</small>
+                                                            {{-- Horário não disponível para esta disciplina neste dia --}}
+                                                            <div class="slot-indisponivel-dia">
+                                                                <span class="slot-indisponivel-texto">
+                                                                    <small class="text-muted">-</small>
                                                                 </span>
                                                             </div>
                                                         @endif
@@ -279,7 +307,7 @@
                         <div class="col-md-4">
                             <h6>Disponibilidade:</h6>
                             <span class="badge badge-light mr-2"><i class="fas fa-plus"></i> Horário Livre</span>
-                            <span class="badge badge-warning mr-2"><i class="fas fa-lock"></i> Indisponível</span>
+                            <span class="badge badge-warning mr-2">Sem Horário</span>
                             <span class="badge badge-danger mr-2"><i class="fas fa-ban"></i> Lotado</span>
                             <span class="badge badge-secondary mr-2">Horário Passado</span>
                             <span class="badge badge-primary mr-2">Hoje</span>
@@ -349,9 +377,18 @@
                                         @php
                                             $totalSlots = 0;
                                             foreach($disciplinas as $d) {
-                                                $hi = (int)substr($d->hora_inicio, 0, 2);
-                                                $hf = (int)substr($d->hora_fim, 0, 2);
-                                                $totalSlots += 7 * ($hf - $hi + 1);
+                                                $horarios = json_decode($d->horarios_json ?? '{}', true);
+                                                if (!empty($horarios)) {
+                                                    foreach($horarios as $horario) {
+                                                        $hi = (int)substr($horario['inicio'], 0, 2);
+                                                        $hf = (int)substr($horario['fim'], 0, 2);
+                                                        $totalSlots += ($hf - $hi + 1);
+                                                    }
+                                                } else {
+                                                    $hi = (int)substr($d->hora_inicio, 0, 2);
+                                                    $hf = (int)substr($d->hora_fim, 0, 2);
+                                                    $totalSlots += 7 * ($hf - $hi + 1);
+                                                }
                                             }
                                             $slotsOcupados = $explicacoesSemana->count();
                                             $taxaOcupacao = $totalSlots > 0 ? ($slotsOcupados / $totalSlots) * 100 : 0;
@@ -489,7 +526,18 @@
 @section('scripts')
 <script>
 // Dados das disciplinas em JSON para JavaScript
-const disciplinasData = @json(collect($disciplinas)->keyBy('nome'));
+const disciplinasData = {!! json_encode(collect($disciplinas)->mapWithKeys(function($d) {
+    $horarios = json_decode($d->horarios_json ?? '{}', true);
+    return [$d->nome => [
+        'nome' => $d->nome,
+        'emoji' => $d->emoji,
+        'sala' => $d->sala,
+        'capacidade' => $d->capacidade,
+        'horarios' => $horarios ?? [],
+        'hora_inicio' => $d->hora_inicio,
+        'hora_fim' => $d->hora_fim
+    ]];
+})) !!};
 
 $(document).ready(function() {
     // Filtrar por disciplina ao carregar
@@ -507,6 +555,7 @@ $(document).ready(function() {
         var horaInicio = $('#modalHoraInicio').val();
         var horaFim = $('#modalHoraFim').val();
         var disciplina = $('#modalDisciplina').val();
+        var data = $('#modalData').val();
         
         if (horaInicio && horaFim && horaInicio >= horaFim) {
             e.preventDefault();
@@ -514,12 +563,37 @@ $(document).ready(function() {
             return false;
         }
         
-        // Validar horário da disciplina
+        // Validar horário da disciplina para o dia específico
         if (disciplinasData[disciplina]) {
             var disc = disciplinasData[disciplina];
-            if (horaInicio < disc.hora_inicio || horaFim > disc.hora_fim) {
+            var diaSemana = getDiaSemana(data);
+            var horarioValido = false;
+            var mensagemErro = '';
+            
+            if (disc.horarios && Object.keys(disc.horarios).length > 0) {
+                // Verificar se há horário definido para este dia
+                if (disc.horarios[diaSemana]) {
+                    var horarioDia = disc.horarios[diaSemana];
+                    if (horaInicio < horarioDia.inicio || horaFim > horarioDia.fim) {
+                        mensagemErro = 'Horário fora do período disponível para ' + disciplina + ' às ' + diaSemana + 's!\nHorário disponível: ' + horarioDia.inicio.substr(0,5) + ' - ' + horarioDia.fim.substr(0,5);
+                    } else {
+                        horarioValido = true;
+                    }
+                } else {
+                    mensagemErro = disciplina + ' não tem horário definido para ' + diaSemana + '!';
+                }
+            } else {
+                // Fallback: validar com hora_inicio e hora_fim
+                if (horaInicio < disc.hora_inicio || horaFim > disc.hora_fim) {
+                    mensagemErro = 'Horário fora do período disponível para ' + disciplina + '!\nHorário disponível: ' + disc.hora_inicio.substr(0,5) + ' - ' + disc.hora_fim.substr(0,5);
+                } else {
+                    horarioValido = true;
+                }
+            }
+            
+            if (!horarioValido && mensagemErro) {
                 e.preventDefault();
-                alert('Horário fora do período disponível para ' + disciplina + '!\nHorário disponível: ' + disc.hora_inicio.substr(0,5) + ' - ' + disc.hora_fim.substr(0,5));
+                alert(mensagemErro);
                 return false;
             }
         }
@@ -535,14 +609,32 @@ $(document).ready(function() {
     });
 });
 
+function getDiaSemana(data) {
+    var dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    var d = new Date(data + 'T00:00:00');
+    return dias[d.getDay()];
+}
+
 function atualizarInfoDisciplina() {
-    var disciplinaSelecionada = $('#disciplinaSelecionada').val();
-    if (disciplinasData[disciplinaSelecionada]) {
-        var disc = disciplinasData[disciplinaSelecionada];
-        var info = 'Horário: ' + disc.hora_inicio.substr(0,5) + ' - ' + disc.hora_fim.substr(0,5) + 
-                  
-        $('#infoHorarioDisciplina').html(info);
+    var select = document.getElementById('disciplinaSelecionada');
+    var option = select.options[select.selectedIndex];
+    var horarios = JSON.parse(option.getAttribute('data-horarios') || '{}');
+    
+    var info = '';
+    if (Object.keys(horarios).length > 0) {
+        info += '<strong>Horários:</strong><br>';
+        for (var dia in horarios) {
+            info += dia + ': ' + horarios[dia].inicio.substr(0,5) + '-' + horarios[dia].fim.substr(0,5) + '<br>';
+        }
+    } else {
+        var disciplinaSelecionada = select.value;
+        if (disciplinasData[disciplinaSelecionada]) {
+            var disc = disciplinasData[disciplinaSelecionada];
+            info = 'Todos os dias: ' + disc.hora_inicio.substr(0,5) + ' - ' + disc.hora_fim.substr(0,5);
+        }
     }
+    
+    document.getElementById('infoHorarioDisciplina').innerHTML = info;
 }
 
 function semanaAnterior() {
@@ -579,6 +671,18 @@ function criarExplicacao(data, hora, disciplina) {
         return;
     }
     
+    // Verificar se a disciplina tem horário para este dia
+    var diaSemana = getDiaSemana(data);
+    var horarioDisponivel = null;
+    
+    if (discInfo.horarios && Object.keys(discInfo.horarios).length > 0) {
+        if (!discInfo.horarios[diaSemana]) {
+            alert(disciplina + ' não tem horário definido para ' + diaSemana + '!');
+            return;
+        }
+        horarioDisponivel = discInfo.horarios[diaSemana];
+    }
+    
     // Preencher dados do modal
     document.getElementById('modalData').value = data;
     document.getElementById('modalHoraInicio').value = hora;
@@ -594,8 +698,15 @@ function criarExplicacao(data, hora, disciplina) {
     var horaFimSugerida = horaInicio.toTimeString().slice(0, 5);
     
     // Verificar se não excede o horário da disciplina
-    if (horaFimSugerida > discInfo.hora_fim) {
-        horaFimSugerida = discInfo.hora_fim.substr(0, 5);
+    var horaLimite;
+    if (horarioDisponivel) {
+        horaLimite = horarioDisponivel.fim;
+    } else {
+        horaLimite = discInfo.hora_fim;
+    }
+    
+    if (horaFimSugerida > horaLimite.substr(0, 5)) {
+        horaFimSugerida = horaLimite.substr(0, 5);
     }
     
     document.getElementById('modalHoraFim').value = horaFimSugerida;
@@ -723,22 +834,19 @@ $(document).ready(function() {
     text-align: center;
 }
 
-.slot-bloqueado {
+.slot-indisponivel-dia {
     height: 100%;
     min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #ffc107;
-    border-radius: 5px;
-    background-color: rgba(255, 193, 7, 0.1);
-    cursor: not-allowed;
-    color: #856404;
+    background-color: #f8f9fa;
+    opacity: 0.5;
 }
 
-.slot-bloqueado-texto {
+.slot-indisponivel-texto {
     text-align: center;
-    opacity: 0.7;
+    color: #dee2e6;
     font-size: 0.75em;
 }
 
@@ -759,10 +867,6 @@ $(document).ready(function() {
     text-align: center;
     opacity: 0.8;
     font-size: 0.75em;
-}
-
-.slot-indisponivel {
-    background-color: #fff9e6;
 }
 
 .slot-passado {
@@ -890,7 +994,7 @@ $(document).ready(function() {
     }
     
     .slot-livre,
-    .slot-bloqueado,
+    .slot-indisponivel-dia,
     .slot-cheio,
     .slot-passado-texto {
         min-height: 40px;

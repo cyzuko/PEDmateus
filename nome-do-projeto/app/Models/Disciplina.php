@@ -13,6 +13,7 @@ class Disciplina extends Model
         'capacidade',
         'hora_inicio',
         'hora_fim',
+        'horarios_json',  // <-- ADICIONAR ESTE CAMPO
         'cor_badge',
         'sala',
         'ativa',
@@ -22,7 +23,8 @@ class Disciplina extends Model
     protected $casts = [
         'ativa' => 'boolean',
         'capacidade' => 'integer',
-        'ordem' => 'integer'
+        'ordem' => 'integer',
+        'horarios_json' => 'array',  // <-- ADICIONAR ESTE CAST
     ];
 
     public function explicacoes()
@@ -44,5 +46,28 @@ class Disciplina extends Model
         $fim = strtotime($this->hora_fim);
         
         return $horaCheck >= $inicio && $horaCheck <= $fim;
+    }
+
+    // Helper para verificar se disciplina tem aula num dia específico
+    public function temAulaEm($diaSemana)
+    {
+        if (empty($this->horarios_json)) {
+            return true; // Se não tem horários específicos, assume que tem todos os dias
+        }
+        
+        return isset($this->horarios_json[$diaSemana]);
+    }
+    
+    // Helper para obter horário de um dia específico
+    public function horarioDoDia($diaSemana)
+    {
+        if (empty($this->horarios_json) || !isset($this->horarios_json[$diaSemana])) {
+            return [
+                'inicio' => $this->hora_inicio,
+                'fim' => $this->hora_fim
+            ];
+        }
+        
+        return $this->horarios_json[$diaSemana];
     }
 }
