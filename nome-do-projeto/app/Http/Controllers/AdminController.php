@@ -94,42 +94,61 @@ class AdminController extends Controller
     /**
      * Aprovar explicação
      */
-   public function aprovarExplicacao(Request $request, $id)
-{
-    $explicacao = Explicacao::findOrFail($id);
+    public function aprovarExplicacao(Request $request, $id)
+    {
+        $explicacao = Explicacao::with('user')->findOrFail($id);
 
-    if ($explicacao->aprovacao_admin !== 'pendente') {
-        return redirect()->back()->with('error', 'Esta explicação já foi processada.');
-    }
+        if ($explicacao->aprovacao_admin !== 'pendente') {
+            return redirect()->back()->with('error', 'Esta explicação já foi processada.');
+        }
 
-    try {
-        // ATUALIZAR AMBOS OS CAMPOS
-        DB::table('explicacoes')
-            ->where('id', $id)
-            ->update([
-                'aprovacao_admin' => 'aprovada',
-                'status' => 'confirmada',  // ← LINHA CRÍTICA ADICIONADA
-                'aprovada_por' => Auth::id(),
-                'data_aprovacao' => now(),
-                'motivo_rejeicao' => null,
-                'updated_at' => now()
+        try {
+            // ATUALIZAR AMBOS OS CAMPOS
+            DB::table('explicacoes')
+                ->where('id', $id)
+                ->update([
+                    'aprovacao_admin' => 'aprovada',
+                    'status' => 'confirmada',
+                    'aprovada_por' => Auth::id(),
+                    'data_aprovacao' => now(),
+                    'motivo_rejeicao' => null,
+                    'updated_at' => now()
+                ]);
+
+            // Recarregar a explicação com os dados atualizados
+            $explicacao->refresh();
+
+            // === ENVIAR NOTIFICAÇÃO APENAS PARA O ALUNO (CRIADOR DA EXPLICAÇÃO) ===
+            try {
+                if ($explicacao->user && $explicacao->user->email) {
+                    \Illuminate\Support\Facades\Notification::route('mail', $explicacao->user->email)
+                        ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $explicacao->user->email, 'aprovada'));
+                    
+                    \Log::info('Notificação de aprovação enviada para o aluno', [
+                        'aluno' => $explicacao->user->name,
+                        'email' => $explicacao->user->email,
+                        'explicacao_id' => $id
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar notificação de aprovação para o aluno: ' . $e->getMessage());
+            }
+
+            // Log da aprovação
+            \Log::info("Explicação aprovada e confirmada automaticamente", [
+                'explicacao_id' => $id,
+                'aprovada_por' => Auth::user()->name,
+                'aluno' => $explicacao->user->name ?? 'N/A',
+                'disciplina' => $explicacao->disciplina,
+                'data' => $explicacao->data_explicacao
             ]);
 
-        // Log da aprovação
-        \Log::info("Explicação aprovada e confirmada automaticamente", [
-            'explicacao_id' => $id,
-            'aprovada_por' => Auth::user()->name,
-            'professor' => $explicacao->user->name ?? 'N/A',
-            'disciplina' => $explicacao->disciplina,
-            'data' => $explicacao->data_explicacao
-        ]);
-
-        return redirect()->back()->with('success', 'Explicação aprovada e confirmada! Já aparece na grade de horários.');
-    } catch (\Exception $e) {
-        \Log::error('Erro ao aprovar explicação: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Erro ao aprovar explicação: ' . $e->getMessage());
+            return redirect()->back()->with('success', 'Explicação aprovada e confirmada! Notificação enviada para o aluno.');
+        } catch (\Exception $e) {
+            \Log::error('Erro ao aprovar explicação: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erro ao aprovar explicação: ' . $e->getMessage());
+        }
     }
-}
 
     /**
      * Rejeitar explicação
@@ -144,7 +163,7 @@ class AdminController extends Controller
             'motivo_rejeicao.max' => 'O motivo não pode ultrapassar 500 caracteres.'
         ]);
 
-        $explicacao = Explicacao::findOrFail($id);
+        $explicacao = Explicacao::with('user')->findOrFail($id);
 
         if ($explicacao->aprovacao_admin !== 'pendente') {
             return redirect()->back()->with('error', 'Esta explicação já foi processada.');
@@ -161,6 +180,25 @@ class AdminController extends Controller
                     'updated_at' => now()
                 ]);
 
+            // Recarregar a explicação
+            $explicacao->refresh();
+
+            // === ENVIAR NOTIFICAÇÃO DE REJEIÇÃO APENAS PARA O ALUNO ===
+            try {
+                if ($explicacao->user && $explicacao->user->email) {
+                    \Illuminate\Support\Facades\Notification::route('mail', $explicacao->user->email)
+                        ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $explicacao->user->email, 'rejeitada'));
+                    
+                    \Log::info('Notificação de rejeição enviada para o aluno', [
+                        'aluno' => $explicacao->user->name,
+                        'email' => $explicacao->user->email,
+                        'motivo' => $request->motivo_rejeicao
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar notificação de rejeição: ' . $e->getMessage());
+            }
+
             // Log da atividade
             \Log::info("Explicação rejeitada", [
                 'explicacao_id' => $id,
@@ -168,7 +206,7 @@ class AdminController extends Controller
                 'motivo' => $request->motivo_rejeicao
             ]);
 
-            return redirect()->back()->with('success', 'Explicação rejeitada com sucesso! O professor foi notificado.');
+            return redirect()->back()->with('success', 'Explicação rejeitada com sucesso! O aluno foi notificado por email.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao rejeitar explicação: ' . $e->getMessage());
         }
@@ -186,25 +224,40 @@ class AdminController extends Controller
 
         $aprovadas = 0;
         $errors = [];
+        $notificacoesEnviadas = 0;
 
         try {
             DB::beginTransaction();
 
             foreach ($request->explicacoes as $explicacaoId) {
-                $explicacao = Explicacao::find($explicacaoId);
+                $explicacao = Explicacao::with('user')->find($explicacaoId);
                 
                 if ($explicacao && $explicacao->aprovacao_admin === 'pendente') {
                     DB::table('explicacoes')
                         ->where('id', $explicacaoId)
                         ->update([
                             'aprovacao_admin' => 'aprovada',
-                             'status' => 'confirmada',
+                            'status' => 'confirmada',
                             'aprovada_por' => Auth::id(),
                             'data_aprovacao' => now(),
                             'motivo_rejeicao' => null,
                             'updated_at' => now()
                         ]);
+                    
                     $aprovadas++;
+
+                    // Recarregar e enviar notificação apenas para o aluno
+                    $explicacao->refresh();
+                    
+                    try {
+                        if ($explicacao->user && $explicacao->user->email) {
+                            \Illuminate\Support\Facades\Notification::route('mail', $explicacao->user->email)
+                                ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $explicacao->user->email, 'aprovada'));
+                            $notificacoesEnviadas++;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Erro ao enviar notificação para explicação {$explicacaoId}: " . $e->getMessage());
+                    }
                 } else {
                     $errors[] = "Explicação ID {$explicacaoId} já foi processada";
                 }
@@ -212,7 +265,7 @@ class AdminController extends Controller
 
             DB::commit();
 
-            $message = "$aprovadas explicações aprovadas com sucesso!";
+            $message = "$aprovadas explicações aprovadas com sucesso! $notificacoesEnviadas notificações enviadas aos alunos.";
             
             if (!empty($errors)) {
                 $message .= " Avisos: " . implode(', ', $errors);
@@ -288,7 +341,7 @@ class AdminController extends Controller
             ->orderBy('data', 'desc')
             ->get();
 
-        // Top professores com mais aprovações
+        // Top alunos com mais aprovações
         $topProfessores = User::select('users.*')
             ->selectRaw('COUNT(explicacoes.id) as total_aprovadas')
             ->join('explicacoes', 'users.id', '=', 'explicacoes.user_id')
@@ -441,12 +494,13 @@ class AdminController extends Controller
 
         $rejeitadas = 0;
         $errors = [];
+        $notificacoesEnviadas = 0;
 
         try {
             DB::beginTransaction();
 
             foreach ($request->explicacoes as $explicacaoId) {
-                $explicacao = Explicacao::find($explicacaoId);
+                $explicacao = Explicacao::with('user')->find($explicacaoId);
                 
                 if ($explicacao && $explicacao->aprovacao_admin === 'pendente') {
                     DB::table('explicacoes')
@@ -458,7 +512,21 @@ class AdminController extends Controller
                             'motivo_rejeicao' => $request->motivo_rejeicao,
                             'updated_at' => now()
                         ]);
+                    
                     $rejeitadas++;
+
+                    // Recarregar e enviar notificação apenas para o aluno
+                    $explicacao->refresh();
+                    
+                    try {
+                        if ($explicacao->user && $explicacao->user->email) {
+                            \Illuminate\Support\Facades\Notification::route('mail', $explicacao->user->email)
+                                ->notify(new \App\Notifications\NovaExplicacaoNotification($explicacao, $explicacao->user->email, 'rejeitada'));
+                            $notificacoesEnviadas++;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Erro ao enviar notificação de rejeição para explicação {$explicacaoId}: " . $e->getMessage());
+                    }
                 } else {
                     $errors[] = "Explicação ID {$explicacaoId} já foi processada";
                 }
@@ -466,7 +534,7 @@ class AdminController extends Controller
 
             DB::commit();
 
-            $message = "$rejeitadas explicações rejeitadas com sucesso!";
+            $message = "$rejeitadas explicações rejeitadas com sucesso! $notificacoesEnviadas notificações enviadas aos alunos.";
             
             if (!empty($errors)) {
                 $message .= " Avisos: " . implode(', ', $errors);
