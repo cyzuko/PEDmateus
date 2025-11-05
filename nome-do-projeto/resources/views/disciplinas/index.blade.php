@@ -27,6 +27,61 @@
                 </div>
             @endif
 
+            <!-- Filtros -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label><i class="fas fa-search"></i> Pesquisar:</label>
+                        <input type="text" id="filtroNome" class="form-control" placeholder="Nome da disciplina...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Ano:</label>
+                        <select id="filtroAno" class="form-control">
+                            <option value="">Todos os anos</option>
+                            <option value="1º">1º Ano</option>
+                            <option value="2º">2º Ano</option>
+                            <option value="3º">3º Ano</option>
+                            <option value="4º">4º Ano</option>
+                            <option value="5º">5º Ano</option>
+                            <option value="6º">6º Ano</option>
+                            <option value="7º">7º Ano</option>
+                            <option value="8º">8º Ano</option>
+                            <option value="9º">9º Ano</option>
+                            <option value="10º">10º Ano</option>
+                            <option value="11º">11º Ano</option>
+                            <option value="12º">12º Ano</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label><i class="fas fa-toggle-on"></i> Status:</label>
+                        <select id="filtroStatus" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="ativa">Ativas</option>
+                            <option value="inativa">Inativas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-secondary btn-block" onclick="limparFiltros()">
+                            <i class="fas fa-times"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contador de resultados -->
+            <div class="mb-2">
+                <small class="text-muted">
+                    Mostrando <strong id="contadorResultados">0</strong> disciplina(s)
+                </small>
+            </div>
+
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -40,9 +95,12 @@
                         <th width="200">Ações</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tabelaDisciplinas">
                     @forelse($disciplinas as $disc)
-                    <tr>
+                    <tr class="disciplina-row" 
+                        data-nome="{{ strtolower($disc->nome) }}" 
+                        data-ano="{{ $disc->emoji }}" 
+                        data-status="{{ $disc->ativa ? 'ativa' : 'inativa' }}">
                         <td><span class="badge badge-dark" style="font-size: 1.1em;">{{ $disc->emoji }}</span></td>
                         <td><strong>{{ $disc->nome }}</strong></td>
                         <td><span class="badge badge-secondary">{{ $disc->sala ?? 'N/A' }}</span></td>
@@ -90,7 +148,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
+                    <tr id="semResultados">
                         <td colspan="8" class="text-center text-muted">Nenhuma disciplina cadastrada</td>
                     </tr>
                     @endforelse
@@ -341,6 +399,77 @@
 
 @section('scripts')
 <script>
+// Função de filtro
+function aplicarFiltros() {
+    const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+    const filtroAno = document.getElementById('filtroAno').value;
+    const filtroStatus = document.getElementById('filtroStatus').value;
+    
+    const rows = document.querySelectorAll('.disciplina-row');
+    let contador = 0;
+    
+    rows.forEach(row => {
+        const nome = row.getAttribute('data-nome');
+        const ano = row.getAttribute('data-ano');
+        const status = row.getAttribute('data-status');
+        
+        let mostrar = true;
+        
+        // Filtro por nome
+        if (filtroNome && !nome.includes(filtroNome)) {
+            mostrar = false;
+        }
+        
+        // Filtro por ano
+        if (filtroAno && ano !== filtroAno) {
+            mostrar = false;
+        }
+        
+        // Filtro por status
+        if (filtroStatus && status !== filtroStatus) {
+            mostrar = false;
+        }
+        
+        if (mostrar) {
+            row.style.display = '';
+            contador++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Atualizar contador
+    document.getElementById('contadorResultados').textContent = contador;
+    
+    // Mostrar/ocultar mensagem de sem resultados
+    const semResultados = document.getElementById('semResultados');
+    if (semResultados) {
+        if (contador === 0 && rows.length > 0) {
+            semResultados.style.display = '';
+            semResultados.innerHTML = '<td colspan="8" class="text-center text-muted">Nenhuma disciplina encontrada com os filtros aplicados</td>';
+        } else {
+            semResultados.style.display = 'none';
+        }
+    }
+}
+
+function limparFiltros() {
+    document.getElementById('filtroNome').value = '';
+    document.getElementById('filtroAno').value = '';
+    document.getElementById('filtroStatus').value = '';
+    aplicarFiltros();
+}
+
+// Event listeners para filtros
+document.getElementById('filtroNome').addEventListener('input', aplicarFiltros);
+document.getElementById('filtroAno').addEventListener('change', aplicarFiltros);
+document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+
+// Aplicar filtros ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    aplicarFiltros();
+});
+
 // Modal de criação
 document.querySelectorAll('.dia-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
