@@ -319,16 +319,273 @@
             </section>
         </div>
 
-        <!-- Footer -->
-        <footer class="main-footer">
-            <div class="container-fluid">
-                <div class="float-right d-none d-sm-block">
-                    <b>Version</b> 3.2.0
-                </div>
-                <strong>&copy; {{ date('Y') }} <a href="#">Sistema de Explicações</a>.</strong> Todos os direitos reservados.
-            </div>
-        </footer>
+       <!-- Substitua o footer existente por este código -->
 
+<!-- Footer Moderno Compacto -->
+<footer class="modern-footer">
+    <div class="footer-content">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <!-- Brand -->
+                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                    <div class="footer-brand">
+                        <h4>
+                            <i class="fas fa-graduation-cap"></i>
+                            EUREKA
+                        </h4>
+                        <p>Centro de Explicações</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Links Rápidos -->
+                <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                    <h6 class="footer-title">Links Rápidos</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ route('home') }}"><i class="fas fa-angle-right"></i> Início</a></li>
+                        <li><a href="{{ route('explicacoes.index') }}"><i class="fas fa-angle-right"></i> Explicações</a></li>
+                        <li><a href="{{ route('estatisticas') }}"><i class="fas fa-angle-right"></i> Estatísticas</a></li>
+                        <li><a href="{{ route('mensagens.index') }}"><i class="fas fa-angle-right"></i> Mensagens</a></li>
+                    </ul>
+                </div>
+
+               
+
+                <!-- Contacto -->
+                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                    <h6 class="footer-title">Contacto</h6>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-map-marker-alt"></i> Largo das Neves, Vila de Punhe<br>4905-665 Viana do Castelo</li>
+                        <li><i class="fas fa-envelope"></i> contato@eureka.pt</li>
+                        <li><i class="fas fa-clock"></i> Seg-Sex: 9h-18h</li>
+                    </ul>
+                </div>
+
+                <!-- Copyright -->
+                <div class="col-12">
+                    <div class="footer-bottom">
+                        <span>&copy; {{ date('Y') }} <strong>Sistema EUREKA</strong>. Todos os direitos reservados.</span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Moderno Compacto */
+    .modern-footer {
+        background: linear-gradient(135deg, #2a8fe1 0%, #4da6ff 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin: 0;
+        padding: 2.5rem 0 1rem 0;
+    }
+
+    .modern-footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 50%, rgba(255,193,7,0.15) 0%, transparent 50%),
+                   radial-gradient(circle at 70% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        z-index: 1;
+    }
+
+    .footer-content {
+        position: relative;
+        z-index: 2;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .footer-brand h4 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .footer-brand p {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .footer-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        position: relative;
+        padding-bottom: 0.5rem;
+        color: #ffc107;
+    }
+
+    .footer-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 30px;
+        height: 2px;
+        background: #ffc107;
+        border-radius: 2px;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-links li {
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-links a {
+        color: rgba(255,255,255,0.85);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .footer-links a:hover {
+        color: #ffc107;
+        transform: translateX(3px);
+    }
+
+    .footer-links i {
+        font-size: 0.7rem;
+    }
+
+    .contact-info {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .contact-info li {
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: start;
+        gap: 0.6rem;
+        color: rgba(255,255,255,0.85);
+        font-size: 0.9rem;
+    }
+
+    .contact-info i {
+        font-size: 0.9rem;
+        margin-top: 0.1rem;
+        color: #ffc107;
+        min-width: 16px;
+    }
+
+    .social-links {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 1rem;
+    }
+
+    .social-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .social-link:hover {
+        background: #ffc107;
+        color: #2a8fe1;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255,193,7,0.4);
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255,255,255,0.2);
+        margin-top: 2rem;
+        padding-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .footer-bottom strong {
+        color: white;
+    }
+
+    .footer-bottom .fa-heart {
+        color: #ff6b6b;
+        animation: heartbeat 1.5s ease infinite;
+    }
+
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        25% { transform: scale(1.1); }
+        50% { transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .modern-footer {
+            padding: 2rem 0 1rem 0;
+        }
+
+        .footer-brand h4 {
+            font-size: 1.2rem;
+        }
+
+        .footer-title {
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .footer-bottom {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.3rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .social-links {
+            justify-content: flex-start;
+        }
+    }
+
+    /* Smooth transitions */
+    .footer-links a,
+    .social-link {
+        -webkit-tap-highlight-color: transparent;
+    }
+</style>
     </div>
 
     <!-- Scripts -->
