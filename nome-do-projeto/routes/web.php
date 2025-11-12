@@ -70,14 +70,15 @@ Route::middleware(['auth'])->group(function () {
     });
     
     // === ROTAS DE MENSAGENS (TODOS OS UTILIZADORES) ===
-    Route::prefix('mensagens')->group(function () {
-        Route::get('/', [App\Http\Controllers\MensagemController::class, 'index'])->name('mensagens.index');
-        Route::get('/{grupo}', [App\Http\Controllers\MensagemController::class, 'show'])->name('mensagens.show');
-        Route::post('/{grupo}', [App\Http\Controllers\MensagemController::class, 'store'])->name('mensagens.store');
-        Route::put('/{mensagem}', [App\Http\Controllers\MensagemController::class, 'update'])->name('mensagens.update');
-        Route::delete('/{mensagem}', [App\Http\Controllers\MensagemController::class, 'destroy'])->name('mensagens.destroy');
-        Route::get('/{grupo}/carregar-novas', [App\Http\Controllers\MensagemController::class, 'carregarNovas'])->name('mensagens.carregar-novas');
-    });
+  Route::prefix('mensagens')->group(function () {
+    Route::get('/', [App\Http\Controllers\MensagemController::class, 'index'])->name('mensagens.index');
+    // IMPORTANTE: carregar-novas ANTES de show
+    Route::get('/{grupo}/carregar-novas', [App\Http\Controllers\MensagemController::class, 'carregarNovas'])->name('mensagens.carregar-novas');
+    Route::get('/{grupo}', [App\Http\Controllers\MensagemController::class, 'show'])->name('mensagens.show');
+    Route::post('/{grupo}', [App\Http\Controllers\MensagemController::class, 'store'])->name('mensagens.store');
+    Route::put('/{mensagem}', [App\Http\Controllers\MensagemController::class, 'update'])->name('mensagens.update');
+    Route::delete('/{mensagem}', [App\Http\Controllers\MensagemController::class, 'destroy'])->name('mensagens.destroy');
+});
 });
 
 // === ROTAS AUTENTICADAS ===

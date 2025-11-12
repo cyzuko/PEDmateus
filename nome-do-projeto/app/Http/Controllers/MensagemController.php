@@ -8,12 +8,12 @@ use App\Models\MensagemLeitura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class MensagemController extends Controller
 {
     public function index()
     {
-        // OTIMIZADO: Eager loading e ordenação por última mensagem
         $userId = auth()->id();
         
         $grupos = auth()->user()->grupos()
@@ -28,10 +28,9 @@ class MensagemController extends Controller
                 return $grupo->ultimaMensagem ? $grupo->ultimaMensagem->created_at : $grupo->created_at;
             })
             ->map(function ($grupo) use ($userId) {
-                // Calcular mensagens não lidas de forma otimizada
                 $grupo->nao_lidas = Cache::remember(
                     "grupo_{$grupo->id}_nao_lidas_{$userId}",
-                    30, // 30 segundos de cache
+                    30,
                     function() use ($grupo, $userId) {
                         return $this->contarNaoLidasOtimizado($grupo->id, $userId);
                     }
@@ -44,12 +43,10 @@ class MensagemController extends Controller
 
     public function show(Grupo $grupo)
     {
-        // Verificar se o usuário é membro
         if (!$grupo->membros->contains(auth()->id())) {
             abort(403, 'Você não tem acesso a este grupo.');
         }
 
-        // OTIMIZADO: Carregar apenas as últimas 100 mensagens
         $mensagens = $grupo->mensagens()
             ->with('user:id,name')
             ->latest('id')
@@ -58,60 +55,159 @@ class MensagemController extends Controller
             ->reverse()
             ->values();
 
-        // Marcar mensagens como lidas em background
         $this->marcarComoLidasOtimizado($grupo->id, auth()->id());
-
-        // Limpar cache de mensagens não lidas
         Cache::forget("grupo_{$grupo->id}_nao_lidas_" . auth()->id());
 
         return view('mensagens.show', compact('grupo', 'mensagens'));
     }
-
-    public function store(Request $request, Grupo $grupo)
-    {
+public function store(Request $request, Grupo $grupo)
+{
+    \Log::info('=== INÍCIO DO STORE ===');
+    \Log::info('Grupo ID: ' . $grupo->id);
+    \Log::info('User ID: ' . auth()->id());
+    \Log::info('Tem imagem? ' . ($request->hasFile('imagem') ? 'SIM' : 'NÃO'));
+    \Log::info('Conteúdo: ' . $request->input('conteudo'));
+    
+    try {
         if (!$grupo->membros->contains(auth()->id())) {
+            \Log::error('Usuário não é membro do grupo');
             abort(403);
         }
+        \Log::info('Validação de membro: OK');
 
         $validated = $request->validate([
-            'conteudo' => 'required|string|max:5000',
+            'conteudo' => 'nullable|string|max:5000',
+            'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
+        \Log::info('Validação de campos: OK');
 
+        if (empty($validated['conteudo']) && !$request->hasFile('imagem')) {
+            \Log::error('Sem conteúdo e sem imagem');
+            return response()->json([
+                'success' => false,
+                'message' => 'Envie uma mensagem ou imagem.'
+            ], 422);
+        }
+        \Log::info('Validação de conteúdo: OK');
+
+        $tipo = 'texto';
+        $arquivoUrl = null;
+        $arquivoNome = null;
+
+        if ($request->hasFile('imagem')) {
+            \Log::info('Processando upload de imagem...');
+            
+            $imagem = $request->file('imagem');
+            \Log::info('Arquivo recebido: ' . $imagem->getClientOriginalName());
+            
+            // Verificar se a imagem é válida
+            if (!$imagem->isValid()) {
+                \Log::error('Imagem inválida');
+                throw new \Exception('Arquivo de imagem inválido');
+            }
+            \Log::info('Validação de imagem: OK');
+            
+            $nomeOriginal = $imagem->getClientOriginalName();
+            $nomeArquivo = time() . '_' . uniqid() . '.' . $imagem->getClientOriginalExtension();
+            \Log::info('Nome do arquivo: ' . $nomeArquivo);
+            
+            // Criar pasta se não existir
+            if (!Storage::disk('public')->exists('mensagens')) {
+                \Log::info('Criando pasta mensagens...');
+                Storage::disk('public')->makeDirectory('mensagens');
+            }
+            \Log::info('Pasta mensagens: OK');
+            
+            \Log::info('Salvando arquivo...');
+            $path = $imagem->storeAs('mensagens', $nomeArquivo, 'public');
+            \Log::info('Path salvo: ' . $path);
+            
+            if (!$path) {
+                \Log::error('Erro ao salvar arquivo - path vazio');
+                throw new \Exception('Erro ao salvar arquivo');
+            }
+            
+            $tipo = 'imagem';
+            $arquivoUrl = $path;
+            $arquivoNome = $nomeOriginal;
+            \Log::info('Upload concluído: ' . $path);
+        }
+
+        \Log::info('Criando mensagem no banco...');
         $mensagem = Mensagem::create([
             'grupo_id' => $grupo->id,
             'user_id' => auth()->id(),
-            'conteudo' => trim($validated['conteudo']),
-            'tipo' => 'texto',
+            'conteudo' => $validated['conteudo'] ? trim($validated['conteudo']) : null,
+            'tipo' => $tipo,
+            'arquivo_url' => $arquivoUrl,
+            'arquivo_nome' => $arquivoNome,
         ]);
+        \Log::info('Mensagem criada com ID: ' . $mensagem->id);
 
-        // Marcar como lida pelo autor imediatamente
+        \Log::info('Criando leitura...');
         MensagemLeitura::create([
             'mensagem_id' => $mensagem->id,
             'user_id' => auth()->id(),
             'lida_em' => now(),
         ]);
+        \Log::info('Leitura criada: OK');
 
-        // Limpar cache de todos os membros
+        \Log::info('Limpando cache...');
         foreach ($grupo->membros as $membro) {
             if ($membro->id != auth()->id()) {
                 Cache::forget("grupo_{$grupo->id}_nao_lidas_{$membro->id}");
             }
         }
+        \Log::info('Cache limpo: OK');
 
         if ($request->ajax()) {
+            \Log::info('Retornando JSON de sucesso');
             return response()->json([
                 'success' => true,
                 'mensagem' => $mensagem->load('user:id,name'),
             ]);
         }
 
+        \Log::info('Retornando back()');
         return back();
+        
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('Erro de validação: ' . json_encode($e->errors()));
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro de validação',
+                'errors' => $e->errors()
+            ], 422);
+        }
+        return back()->withErrors($e->errors());
+        
+    } catch (\Exception $e) {
+        \Log::error('ERRO GERAL: ' . $e->getMessage());
+        \Log::error('Linha: ' . $e->getLine());
+        \Log::error('Arquivo: ' . $e->getFile());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao enviar mensagem: ' . $e->getMessage()
+            ], 500);
+        }
+        return back()->withErrors(['mensagem' => 'Erro ao enviar mensagem: ' . $e->getMessage()]);
     }
+}
 
     public function update(Request $request, Mensagem $mensagem)
     {
         if ($mensagem->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        // Não permitir edição de mensagens com imagem
+        if ($mensagem->tipo === 'imagem') {
+            return back()->withErrors(['mensagem' => 'Mensagens com imagem não podem ser editadas.']);
         }
 
         $validated = $request->validate([
@@ -134,20 +230,21 @@ class MensagemController extends Controller
         }
 
         $grupoId = $mensagem->grupo_id;
+
+        // Deletar arquivo se existir
+        if ($mensagem->arquivo_url) {
+            Storage::disk('public')->delete($mensagem->arquivo_url);
+        }
+
         $mensagem->delete();
 
-        // Limpar cache
         Cache::forget("grupo_{$grupoId}_nao_lidas_" . auth()->id());
 
         return back()->with('success', 'Mensagem eliminada!');
     }
 
-    /**
-     * OTIMIZADO: Marcar como lidas usando query única
-     */
     private function marcarComoLidasOtimizado($grupoId, $userId)
     {
-        // Buscar IDs de mensagens não lidas
         $mensagensNaoLidas = DB::table('mensagens')
             ->where('grupo_id', $grupoId)
             ->where('user_id', '!=', $userId)
@@ -163,7 +260,6 @@ class MensagemController extends Controller
             return;
         }
 
-        // Preparar dados para inserção em batch
         $now = now();
         $dados = $mensagensNaoLidas->map(function($mensagemId) use ($userId, $now) {
             return [
@@ -175,15 +271,11 @@ class MensagemController extends Controller
             ];
         })->toArray();
 
-        // Inserir todas de uma vez
         if (!empty($dados)) {
             DB::table('mensagem_leituras')->insert($dados);
         }
     }
 
-    /**
-     * OTIMIZADO: Contar não lidas com query eficiente
-     */
     private function contarNaoLidasOtimizado($grupoId, $userId)
     {
         return DB::table('mensagens')
@@ -206,10 +298,9 @@ class MensagemController extends Controller
             ->where('id', '>', $ultimaMensagemId)
             ->with('user:id,name')
             ->orderBy('id', 'asc')
-            ->limit(50) // Limitar a 50 mensagens por request
+            ->limit(50)
             ->get();
 
-        // Marcar como lidas apenas as novas mensagens
         if ($novasMensagens->isNotEmpty()) {
             $mensagensIds = $novasMensagens
                 ->where('user_id', '!=', auth()->id())
@@ -228,14 +319,11 @@ class MensagemController extends Controller
                     ];
                 })->toArray();
 
-                // Usar insertIgnore para evitar duplicatas
                 foreach ($dados as $dado) {
-                    DB::table('mensagem_leituras')
-                        ->insertOrIgnore($dado);
+                    DB::table('mensagem_leituras')->insertOrIgnore($dado);
                 }
             }
 
-            // Limpar cache
             Cache::forget("grupo_{$grupo->id}_nao_lidas_" . auth()->id());
         }
 
