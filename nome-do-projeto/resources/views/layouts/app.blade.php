@@ -319,9 +319,6 @@
             </section>
         </div>
 
-       <!-- Substitua o footer existente por este código -->
-
-<!-- Footer Moderno Compacto -->
 <footer class="modern-footer">
     <div class="footer-content">
         <div class="container-fluid">

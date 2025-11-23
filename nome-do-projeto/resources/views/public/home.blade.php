@@ -839,7 +839,7 @@ p {
         
 </section>
 
-      <!-- Centro Photos Section -->
+  <!-- Centro Photos Section -->
 <section class="centro-photos-section py-5 mb-5">
     <div class="container">
         <div class="text-center mb-5">
@@ -882,8 +882,372 @@ p {
     </div>
 </section>
 
+<!-- Contact CTA Section -->
+<section class="contact-cta-section py-5 mb-5 position-relative overflow-hidden">
+    <div class="cta-background"></div>
+    <div class="cta-particles">
+        <div class="particle">π</div>
+        <div class="particle">∑</div>
+        <div class="particle">∫</div>
+        <div class="particle">√</div>
+        <div class="particle">∞</div>
+        <div class="particle">α</div>
+        <div class="particle">β</div>
+        <div class="particle">θ</div>
+        <div class="particle">Δ</div>
+        <div class="particle">±</div>
     </div>
-</div>
+    
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="text-center mb-5">
+            <div class="cta-icon-wrapper mx-auto mb-4">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h2 class="section-title text-white mb-3">Tem Dúvidas?</h2>
+            <p class="section-subtitle text-white opacity-90 mb-0">Entre em contacto connosco e esclarecemos tudo</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="cta-card">
+                    <div class="cta-card-glow"></div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 w-100">
+                            <div class="text-white d-flex align-items-center flex-grow-1">
+                                <div class="email-icon-wrapper me-5">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="text-start">
+                                    <div class="small opacity-75">Email para contacto</div>
+                                    <div class="fw-bold fs-5">geral@eureka.pt</div>
+                                </div>
+                            </div>
+                            <a href="mailto:geral@eureka.pt" class="btn btn-light btn-lg px-5 cta-button flex-shrink-0">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Mensagem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-white small opacity-75 mb-0">
+                <i class="fas fa-clock me-2"></i>
+                Respondemos normalmente em até 24 horas
+            </p>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Contact CTA Section - Full Width */
+.contact-cta-section {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+/* CTA Background Animation */
+.cta-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #1e88e5 0%, #FFD700 100%);
+    z-index: 0;
+}
+
+.cta-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(30, 136, 229, 0.2) 0%, transparent 50%);
+    animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Floating Math Symbols */
+.cta-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 2.5rem;
+    font-weight: 700;
+    animation: floatParticle 15s infinite ease-in-out;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.particle:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 12s;
+    font-size: 3rem;
+}
+
+.particle:nth-child(2) {
+    top: 60%;
+    left: 85%;
+    animation-delay: 2s;
+    animation-duration: 10s;
+    font-size: 2rem;
+}
+
+.particle:nth-child(3) {
+    top: 75%;
+    left: 15%;
+    animation-delay: 4s;
+    animation-duration: 14s;
+    font-size: 2.8rem;
+}
+
+.particle:nth-child(4) {
+    top: 25%;
+    left: 75%;
+    animation-delay: 1s;
+    animation-duration: 11s;
+    font-size: 2.3rem;
+}
+
+.particle:nth-child(5) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 3s;
+    animation-duration: 13s;
+    font-size: 2.6rem;
+}
+
+.particle:nth-child(6) {
+    top: 15%;
+    left: 45%;
+    animation-delay: 5s;
+    animation-duration: 9s;
+    font-size: 2.2rem;
+}
+
+.particle:nth-child(7) {
+    top: 80%;
+    left: 60%;
+    animation-delay: 1.5s;
+    animation-duration: 11.5s;
+    font-size: 2.4rem;
+}
+
+.particle:nth-child(8) {
+    top: 35%;
+    left: 20%;
+    animation-delay: 2.5s;
+    animation-duration: 10.5s;
+    font-size: 2.7rem;
+}
+
+.particle:nth-child(9) {
+    top: 65%;
+    left: 70%;
+    animation-delay: 4.5s;
+    animation-duration: 12.5s;
+    font-size: 2.1rem;
+}
+
+.particle:nth-child(10) {
+    top: 40%;
+    left: 90%;
+    animation-delay: 3.5s;
+    animation-duration: 13.5s;
+    font-size: 2.9rem;
+}
+
+@keyframes floatParticle {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translate(50px, -50px) rotate(90deg);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-30px, -80px) rotate(180deg);
+        opacity: 0.4;
+    }
+    75% {
+        transform: translate(70px, -30px) rotate(270deg);
+        opacity: 0.7;
+    }
+}
+
+/* Icon Wrapper */
+.cta-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    animation: iconPulse 3s ease-in-out infinite;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.cta-icon-wrapper i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* CTA Card */
+.cta-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: visible;
+    transition: all 0.4s ease;
+}
+
+.cta-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.cta-card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: rotateGlow 8s linear infinite;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Email Icon */
+.email-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 2rem;
+}
+
+.email-icon-wrapper i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+/* CTA Button */
+.cta-button {
+    background: white !important;
+    color: #1e88e5 !important;
+    border: none !important;
+    font-weight: 600 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(30, 136, 229, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.cta-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3) !important;
+    background: #f8f9fa !important;
+}
+
+.cta-button i {
+    transition: transform 0.3s ease;
+}
+
+.cta-button:hover i {
+    transform: translateX(5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cta-icon-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .cta-icon-wrapper i {
+        font-size: 2rem;
+    }
+    
+    .cta-button {
+        width: 100%;
+    }
+    
+    .particle {
+        font-size: 1.8rem;
+    }
+}
+</style>
 
 @endsection
 
