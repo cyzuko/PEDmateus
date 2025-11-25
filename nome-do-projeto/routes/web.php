@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExplicacaoController;
+use App\Http\Controllers\ContactController;
 
 // === ROTAS PÚBLICAS ===
 Route::get('/', [HomeController::class, 'publicHome'])->name('public.home');
@@ -14,6 +15,9 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+
+// Adicione esta linha junto com as outras rotas
+Route::post('/contact/send', [App\Http\Controllers\ContactController::class, 'send'])->name('contact.send');
 
 // === ROTAS DE ADMINISTRADOR ===
 Route::middleware(['auth'])->group(function () {

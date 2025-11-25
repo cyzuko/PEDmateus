@@ -9,6 +9,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+
+.alert-success,
+.alert-success-custom,
+#contactFormMessage.alert-success,
+#contactFormMessage.alert-success-custom {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
 /* Reset e Base */
 * {
     font-family: 'Inter', sans-serif;
@@ -908,25 +920,104 @@ p {
         </div>
         
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 <div class="cta-card">
                     <div class="cta-card-glow"></div>
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 w-100">
-                            <div class="text-white d-flex align-items-center flex-grow-1">
-                                <div class="email-icon-wrapper me-5">
-                                    <i class="fas fa-envelope"></i>
+                    <div class="card-body p-4 p-md-5">
+                        
+                        
+                        @if($errors->any())
+                        <div class="alert alert-danger-custom alert-dismissible fade show mb-4" role="alert">
+                            <div class="d-flex align-items-start">
+                                <div class="alert-icon me-3">
+                                    <i class="fas fa-exclamation-circle"></i>
                                 </div>
-                                <div class="text-start">
-                                    <div class="small opacity-75">Email para contacto</div>
-                                    <div class="fw-bold fs-5">geral@eureka.pt</div>
+                                <div class="flex-grow-1">
+                                    <strong class="d-block mb-2">Atenção!</strong>
+                                    <ul class="mb-0">
+                                        @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
+                                <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="alert" aria-label="Fechar"></button>
                             </div>
-                            <a href="mailto:geral@eureka.pt" class="btn btn-light btn-lg px-5 cta-button flex-shrink-0">
-                                <i class="fas fa-paper-plane me-2"></i>
-                                Enviar Mensagem
-                            </a>
                         </div>
+                        @endif
+                        
+                        <div id="contactFormMessage" class="alert d-none mb-4"></div>
+                        
+                        <form id="contactForm" action="{{ route('contact.send') }}" method="POST">
+                            @csrf
+                            
+                            <!-- Nome -->
+                            <div class="mb-4">
+                                <label for="contactNome" class="form-label text-white fw-semibold">
+                                    <i class="fas fa-user me-2"></i>Nome Completo
+                                </label>
+                                <input type="text" 
+                                       id="contactNome"
+                                       name="nome" 
+                                       class="form-control form-control-lg contact-input @error('nome') is-invalid @enderror" 
+                                       placeholder="Digite o seu nome"
+                                       value="{{ old('nome') }}"
+                                       required
+                                       autocomplete="name">
+                                @error('nome')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <label for="contactEmail" class="form-label text-white fw-semibold">
+                                    <i class="fas fa-envelope me-2"></i>Endereço de Email
+                                </label>
+                                <input type="email" 
+                                       id="contactEmail"
+                                       name="email" 
+                                       class="form-control form-control-lg contact-input @error('email') is-invalid @enderror" 
+                                       placeholder="seuemail@exemplo.com"
+                                       value="{{ old('email') }}"
+                                       required
+                                       autocomplete="email">
+                                @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <!-- Mensagem -->
+                            <div class="mb-4">
+                                <label for="contactMensagem" class="form-label text-white fw-semibold">
+                                    <i class="fas fa-comment-dots me-2"></i>A sua Mensagem
+                                </label>
+                                <textarea id="contactMensagem"
+                                          name="mensagem" 
+                                          rows="6" 
+                                          class="form-control form-control-lg contact-input @error('mensagem') is-invalid @enderror" 
+                                          placeholder="Escreva aqui a sua mensagem ou questão..."
+                                          required
+                                          maxlength="5000">{{ old('mensagem') }}</textarea>
+                                <small class="text-white-50 d-block mt-2">
+                                    <span id="charCount">0</span>/5000 caracteres
+                                </small>
+                                @error('mensagem')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <!-- Botão de Envio -->
+                            <button type="submit" class="btn btn-light btn-lg w-100 cta-button" id="submitBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Enviar Mensagem
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Enviando...
+                                </span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -940,8 +1031,114 @@ p {
         </div>
     </div>
 </section>
-
 <style>
+
+   /* Melhorias nos Inputs do Formulário */
+.contact-input {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    color: #212529 !important;
+    border-radius: 12px !important;
+    padding: 0.875rem 1.25rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    position: relative;
+    z-index: 100; /* Garante que inputs ficam acima de tudo */
+}
+
+.contact-input:focus {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #FFD700 !important;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3) !important;
+    outline: none !important;
+}
+
+.contact-input::placeholder {
+    color: #6c757d !important;
+    opacity: 0.7;
+}
+
+.contact-input:hover {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Textarea específico */
+textarea.contact-input {
+    resize: vertical;
+    min-height: 150px;
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+/* Labels melhorados */
+.form-label {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.3px;
+}
+
+/* Estados de Validação */
+.contact-input.is-invalid {
+    border-color: #dc3545 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.contact-input.is-invalid:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3) !important;
+}
+
+.invalid-feedback {
+    display: block;
+    color: #ffcccc !important;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Botão de Loading */
+.btn-loading {
+    display: inline-block;
+}
+
+/* Alertas */
+.alert {
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.95) !important;
+    color: white !important;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.95) !important;
+    color: white !important;
+}
+
+.alert ul {
+    margin-bottom: 0;
+    padding-left: 1.5rem;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* Contador de caracteres */
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
 /* Contact CTA Section - Full Width */
 .contact-cta-section {
     width: 100vw;
@@ -1003,103 +1200,22 @@ p {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
-.particle:nth-child(1) {
-    top: 10%;
-    left: 10%;
-    animation-delay: 0s;
-    animation-duration: 12s;
-    font-size: 3rem;
-}
-
-.particle:nth-child(2) {
-    top: 60%;
-    left: 85%;
-    animation-delay: 2s;
-    animation-duration: 10s;
-    font-size: 2rem;
-}
-
-.particle:nth-child(3) {
-    top: 75%;
-    left: 15%;
-    animation-delay: 4s;
-    animation-duration: 14s;
-    font-size: 2.8rem;
-}
-
-.particle:nth-child(4) {
-    top: 25%;
-    left: 75%;
-    animation-delay: 1s;
-    animation-duration: 11s;
-    font-size: 2.3rem;
-}
-
-.particle:nth-child(5) {
-    top: 50%;
-    left: 50%;
-    animation-delay: 3s;
-    animation-duration: 13s;
-    font-size: 2.6rem;
-}
-
-.particle:nth-child(6) {
-    top: 15%;
-    left: 45%;
-    animation-delay: 5s;
-    animation-duration: 9s;
-    font-size: 2.2rem;
-}
-
-.particle:nth-child(7) {
-    top: 80%;
-    left: 60%;
-    animation-delay: 1.5s;
-    animation-duration: 11.5s;
-    font-size: 2.4rem;
-}
-
-.particle:nth-child(8) {
-    top: 35%;
-    left: 20%;
-    animation-delay: 2.5s;
-    animation-duration: 10.5s;
-    font-size: 2.7rem;
-}
-
-.particle:nth-child(9) {
-    top: 65%;
-    left: 70%;
-    animation-delay: 4.5s;
-    animation-duration: 12.5s;
-    font-size: 2.1rem;
-}
-
-.particle:nth-child(10) {
-    top: 40%;
-    left: 90%;
-    animation-delay: 3.5s;
-    animation-duration: 13.5s;
-    font-size: 2.9rem;
-}
+.particle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; animation-duration: 12s; font-size: 3rem; }
+.particle:nth-child(2) { top: 60%; left: 85%; animation-delay: 2s; animation-duration: 10s; font-size: 2rem; }
+.particle:nth-child(3) { top: 75%; left: 15%; animation-delay: 4s; animation-duration: 14s; font-size: 2.8rem; }
+.particle:nth-child(4) { top: 25%; left: 75%; animation-delay: 1s; animation-duration: 11s; font-size: 2.3rem; }
+.particle:nth-child(5) { top: 50%; left: 50%; animation-delay: 3s; animation-duration: 13s; font-size: 2.6rem; }
+.particle:nth-child(6) { top: 15%; left: 45%; animation-delay: 5s; animation-duration: 9s; font-size: 2.2rem; }
+.particle:nth-child(7) { top: 80%; left: 60%; animation-delay: 1.5s; animation-duration: 11.5s; font-size: 2.4rem; }
+.particle:nth-child(8) { top: 35%; left: 20%; animation-delay: 2.5s; animation-duration: 10.5s; font-size: 2.7rem; }
+.particle:nth-child(9) { top: 65%; left: 70%; animation-delay: 4.5s; animation-duration: 12.5s; font-size: 2.1rem; }
+.particle:nth-child(10) { top: 40%; left: 90%; animation-delay: 3.5s; animation-duration: 13.5s; font-size: 2.9rem; }
 
 @keyframes floatParticle {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0.3;
-    }
-    25% {
-        transform: translate(50px, -50px) rotate(90deg);
-        opacity: 0.6;
-    }
-    50% {
-        transform: translate(-30px, -80px) rotate(180deg);
-        opacity: 0.4;
-    }
-    75% {
-        transform: translate(70px, -30px) rotate(270deg);
-        opacity: 0.7;
-    }
+    0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+    25% { transform: translate(50px, -50px) rotate(90deg); opacity: 0.6; }
+    50% { transform: translate(-30px, -80px) rotate(180deg); opacity: 0.4; }
+    75% { transform: translate(70px, -30px) rotate(270deg); opacity: 0.7; }
 }
 
 /* Icon Wrapper */
@@ -1123,14 +1239,8 @@ p {
 }
 
 @keyframes iconPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-    }
+    0%, 100% { transform: scale(1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
+    50% { transform: scale(1.05); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3); }
 }
 
 /* CTA Card */
@@ -1141,8 +1251,13 @@ p {
     border-radius: 20px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    overflow: visible;
+    overflow: hidden; /* MUDADO: de visible para hidden */
     transition: all 0.4s ease;
+}
+
+.cta-card .card-body {
+    position: relative;
+    z-index: 10; /* Garante que o formulário fica acima do glow */
 }
 
 .cta-card:hover {
@@ -1159,29 +1274,13 @@ p {
     height: 200%;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     animation: rotateGlow 8s linear infinite;
+    pointer-events: none; /* FIX: Permite cliques através do glow */
+    z-index: 0;
 }
 
 @keyframes rotateGlow {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
-}
-
-/* Email Icon */
-.email-icon-wrapper {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-right: 2rem;
-}
-
-.email-icon-wrapper i {
-    font-size: 1.5rem;
-    color: white;
 }
 
 /* CTA Button */
@@ -1194,6 +1293,9 @@ p {
     transition: all 0.3s ease !important;
     position: relative;
     overflow: hidden;
+    border-radius: 12px !important;
+    padding: 1rem 2rem !important;
+    font-size: 1.1rem !important;
 }
 
 .cta-button::before {
@@ -1210,14 +1312,23 @@ p {
 }
 
 .cta-button:hover::before {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
 }
 
 .cta-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3) !important;
     background: #f8f9fa !important;
+}
+
+.cta-button:active {
+    transform: translateY(-1px);
+}
+
+.cta-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .cta-button i {
@@ -1239,35 +1350,152 @@ p {
         font-size: 2rem;
     }
     
-    .cta-button {
-        width: 100%;
-    }
-    
     .particle {
         font-size: 1.8rem;
     }
+    
+    .contact-input {
+        font-size: 16px !important; /* Evita zoom no iOS */
+    }
+    
+    .cta-card {
+        margin: 0 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .section-subtitle {
+        font-size: 0.95rem;
+    }
 }
 </style>
-
 @endsection
 
 @push('scripts')
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageDiv = document.getElementById('contactFormMessage');
+    const mensagemTextarea = document.getElementById('contactMensagem');
+    const charCount = document.getElementById('charCount');
+    
+    // Contador de caracteres
+    if (mensagemTextarea && charCount) {
+        mensagemTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
         });
-    });
-
-    console.log('Homepage scripts carregados com sucesso');
+        
+        if (mensagemTextarea.value) {
+            charCount.textContent = mensagemTextarea.value.length;
+        }
+    }
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Desabilitar botão e mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').classList.add('d-none');
+            submitBtn.querySelector('.btn-loading').classList.remove('d-none');
+            
+            // Garantir que messageDiv está escondido
+            if (messageDiv) {
+                messageDiv.classList.add('d-none');
+                messageDiv.style.display = 'none';
+            }
+            
+            // Enviar formulário via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ SEM ALERTA - apenas limpa
+                    form.reset();
+                    if (charCount) charCount.textContent = '0';
+                    
+                    // CRÍTICO: Garantir que nada aparece
+                    if (messageDiv) {
+                        messageDiv.classList.add('d-none');
+                        messageDiv.innerHTML = '';
+                        messageDiv.style.display = 'none';
+                    }
+                } else {
+                    // Erro
+                    if (messageDiv) {
+                        messageDiv.className = 'alert alert-danger alert-dismissible fade show mb-4';
+                        let errorMessage = data.message || 'Erro ao enviar mensagem';
+                        if (data.errors) {
+                            errorMessage += '<ul class="mb-0 mt-2">';
+                            Object.values(data.errors).forEach(error => {
+                                errorMessage += `<li>${error}</li>`;
+                            });
+                            errorMessage += '</ul>';
+                        }
+                        messageDiv.innerHTML = `
+                            <div class="d-flex align-items-start">
+                                <div class="alert-icon me-3">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <strong class="d-block mb-2">Atenção!</strong>
+                                    ${errorMessage}
+                                </div>
+                                <button type="button" class="btn-close ms-3" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+                        messageDiv.classList.remove('d-none');
+                        messageDiv.style.display = 'block';
+                        messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                if (messageDiv) {
+                    messageDiv.className = 'alert alert-danger alert-dismissible fade show mb-4';
+                    messageDiv.innerHTML = `
+                        <div class="d-flex align-items-start">
+                            <div class="alert-icon me-3">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block mb-1">Erro!</strong>
+                                Erro ao enviar mensagem. Por favor, tente novamente.
+                            </div>
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    messageDiv.classList.remove('d-none');
+                    messageDiv.style.display = 'block';
+                    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            })
+            .finally(() => {
+                // Reabilitar botão
+                submitBtn.disabled = false;
+                submitBtn.querySelector('.btn-text').classList.remove('d-none');
+                submitBtn.querySelector('.btn-loading').classList.add('d-none');
+            });
+        });
+    }
 });
 </script>
 @endpush
