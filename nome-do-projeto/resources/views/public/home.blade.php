@@ -959,7 +959,7 @@ p {
                                        id="contactNome"
                                        name="nome" 
                                        class="form-control form-control-lg contact-input @error('nome') is-invalid @enderror" 
-                                       placeholder="Digite o seu nome"
+                                       placeholder="Escreva o seu nome"
                                        value="{{ old('nome') }}"
                                        required
                                        autocomplete="name">
