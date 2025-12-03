@@ -249,39 +249,41 @@
         </a>
     </li>
 @endif
-                    
-                   <li class="nav-item"></li>
-                    <!-- Botão Admin - Desktop -->
-                    @if(auth()->check() && auth()->user()->role === 'admin')
-                        <li class="nav-item d-none d-md-block">
-                            <a href="{{ url('/admin') }}" class="btn btn-primary admin-btn">
-                                <i class="fas fa-cog"></i> Dashboard Admin
-                            </a>
-                        </li>
-                    @endif
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-user"></i> {{ Auth::user()->name }}
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                            <!-- Botão Admin - Mobile (dentro do dropdown) -->
-                            @if(auth()->check() && auth()->user()->role === 'admin')
-                                <a class="dropdown-item d-md-none" href="{{ url('/admin') }}">
-                                    <i class="fas fa-cog"></i> Admin
-                                </a>
-                                <div class="dropdown-divider d-md-none"></div>
-                            @endif
-                            
-                            <a class="dropdown-item" href="{{ route('password.change') }}">
-                                <i class="fas fa-key"></i> Alterar Senha
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ route('logout') }}">
-                                <i class="fas fa-sign-out-alt"></i> Terminar Sessão
-                            </a>
-                        </div>
-                    </li>
+                    <li class="nav-item"></li>
+<!-- Botão Admin - Desktop -->
+@if(auth()->check() && auth()->user()->role === 'admin')
+    <li class="nav-item d-none d-md-block">
+        <a href="{{ url('/admin') }}" class="btn btn-primary admin-btn">
+            <i class="fas fa-cog"></i> Dashboard Admin
+        </a>
+    </li>
+@endif
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-user"></i> {{ Auth::user()->name }}
+    </a>
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+        <!-- Botão Admin - Mobile (dentro do dropdown) -->
+        @if(auth()->check() && auth()->user()->role === 'admin')
+            <a class="dropdown-item d-md-none" href="{{ url('/admin') }}">
+                <i class="fas fa-cog"></i> Dashboard Admin
+            </a>
+            <a class="dropdown-item" href="{{ route('admin.users.index') }}">
+                <i class="fas fa-users"></i> Gestão de Utilizadores
+            </a>
+            <div class="dropdown-divider"></div>
+        @endif
+        
+        <a class="dropdown-item" href="{{ route('password.change') }}">
+            <i class="fas fa-key"></i> Alterar Senha
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="{{ route('logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Terminar Sessão
+        </a>
+    </div>
+</li>
                 @endguest
             </ul>
         </div>
