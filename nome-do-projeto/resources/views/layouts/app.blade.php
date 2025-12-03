@@ -249,7 +249,7 @@
         </a>
     </li>
 @endif
-                    <li class="nav-item"></li>
+                  <li class="nav-item"></li>
 <!-- Botão Admin - Desktop -->
 @if(auth()->check() && auth()->user()->role === 'admin')
     <li class="nav-item d-none d-md-block">
