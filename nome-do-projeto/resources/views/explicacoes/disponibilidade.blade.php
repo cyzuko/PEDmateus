@@ -16,15 +16,7 @@
                         @endif
                     </h3>
                     <div class="btn-group">
-                        <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
-                            <i class="fas fa-plus"></i> Nova Explicação
-                        </a>
-                        <a href="{{ route('explicacoes.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-list"></i> Minhas Explicações
-                        </a>
-                        <a href="{{ route('explicacoes.calendario') }}" class="btn btn-info">
-                            <i class="fas fa-calendar"></i> Calendário
-                        </a>
+                       
                     </div>
                 </div>
 
@@ -40,7 +32,7 @@
                         @else
                             Visualização: <strong>todas as suas explicações</strong> + <strong>explicações confirmadas e concluídas de outros alunos</strong>.
                             <br>
-                            <small class="text-muted">Isto permite-lhe ver quando os horários estão ocupados por outros alunos.</small>
+                            
                         @endif
                     </div>
 
@@ -467,7 +459,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label><i class="fas fa-euro-sign"></i> Preço (€): <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" min="0" class="form-control" name="preco" placeholder="0.00" required>
+                                <input type="number" step="0.01" min="0" class="form-control" id="modalPreco" name="preco" placeholder="0.00" required readonly>
+                                <small class="text-muted">Preço fixo: €10/hora (calculado automaticamente)</small>
                             </div>
                         </div>
                     </div>
@@ -550,6 +543,11 @@ $(document).ready(function() {
         window.location.href = '{{ route("explicacoes.disponibilidade") }}?semana=' + semana;
     });
 
+    // Calcular preço automaticamente quando mudar hora início ou fim
+    $('#modalHoraInicio, #modalHoraFim').on('change', function() {
+        calcularPreco();
+    });
+
     // Validação do formulário
     $('#formCriarExplicacao').on('submit', function(e) {
         var horaInicio = $('#modalHoraInicio').val();
@@ -613,6 +611,31 @@ function getDiaSemana(data) {
     var dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     var d = new Date(data + 'T00:00:00');
     return dias[d.getDay()];
+}
+
+function calcularPreco() {
+    var horaInicio = $('#modalHoraInicio').val();
+    var horaFim = $('#modalHoraFim').val();
+    
+    if (horaInicio && horaFim && horaInicio < horaFim) {
+        // Converter horas para minutos
+        var [hInicio, mInicio] = horaInicio.split(':').map(Number);
+        var [hFim, mFim] = horaFim.split(':').map(Number);
+        
+        var minutosInicio = hInicio * 60 + mInicio;
+        var minutosFim = hFim * 60 + mFim;
+        
+        // Calcular duração em horas (com decimais)
+        var duracaoHoras = (minutosFim - minutosInicio) / 60;
+        
+        // Calcular preço: €10 por hora
+        var preco = duracaoHoras * 10;
+        
+        // Atualizar campo de preço
+        $('#modalPreco').val(preco.toFixed(2));
+    } else {
+        $('#modalPreco').val('0.00');
+    }
 }
 
 function atualizarInfoDisciplina() {
@@ -711,9 +734,11 @@ function criarExplicacao(data, hora, disciplina) {
     
     document.getElementById('modalHoraFim').value = horaFimSugerida;
     
+    // Calcular preço automaticamente
+    calcularPreco();
+    
     // Limpar outros campos
     document.querySelector('input[name="nome_aluno"]').value = '';
-    document.querySelector('input[name="preco"]').value = '';
     document.querySelector('input[name="contacto_aluno"]').value = '';
     document.querySelector('textarea[name="observacoes"]').value = '';
     

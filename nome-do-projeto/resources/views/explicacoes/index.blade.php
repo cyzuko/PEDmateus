@@ -13,15 +13,11 @@
                         Horários de Explicações
                     </h3>
                     <div>
-                        <a href="{{ route('explicacoes.create') }}" class="btn btn-sm btn-success mr-1">
-                            <i class="fas fa-plus"></i> Nova
-                        </a>
+                        
                         <a href="{{ route('explicacoes.calendario') }}" class="btn btn-sm btn-info mr-1">
                             <i class="fas fa-calendar"></i> Calendário
                         </a>
-                        <a href="{{ route('explicacoes.disponibilidade') }}" class="btn btn-sm btn-warning">
-                            <i class="fas fa-clock"></i> Disponibilidade
-                        </a>
+                       
                     </div>
                 </div>
 

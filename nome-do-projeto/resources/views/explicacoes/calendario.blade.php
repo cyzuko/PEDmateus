@@ -16,12 +16,7 @@
                         @endif
                     </h3>
                     <div class="btn-group">
-                        <a href="{{ route('explicacoes.create') }}" class="btn btn-success">
-                            <i class="fas fa-plus"></i> Nova Explicação
-                        </a>
-                        <a href="{{ route('explicacoes.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-list"></i> As Minhas Explicações
-                        </a>
+                       
                     </div>
                 </div>
 
