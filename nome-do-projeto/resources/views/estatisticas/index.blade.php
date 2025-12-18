@@ -16,7 +16,7 @@
 
 @section('content')
 
-    <!-- Cards de Resum -->
+    <!-- Cards de Resumo -->
     <div class="stats-summary">
         <div class="stats-card primary">
             <div class="stats-icon">
@@ -64,7 +64,7 @@
     <!-- Gráficos -->
     <div class="charts-section">
         <div class="section-header">
-            <h2><i class="fas fa-analytics"></i> Análises Gráficas</h2>
+            <h2><i class="fas fa-chart-pie"></i> Análises Gráficas</h2>
             <p>Visualização detalhada dos dados</p>
         </div>
 
@@ -125,8 +125,12 @@
 
     <style>
         /* Reset e base */
-        * {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         /* Garantir que o conteúdo não ultrapasse a largura */
@@ -138,7 +142,7 @@
         /* Mobile first - base styles */
         body {
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         /* Header moderno */
@@ -148,39 +152,56 @@
             padding: 2rem 1.5rem;
             margin: -1rem -1rem 2rem -1rem;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-header-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
         }
 
         .header-content {
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .page-title {
-            font-size: 2.5rem;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
             font-weight: 700;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .page-title i {
-            font-size: 2rem;
+            font-size: clamp(1.3rem, 4vw, 2rem);
         }
 
         .page-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            opacity: 0.95;
             margin: 0;
             font-weight: 300;
+            letter-spacing: 0.3px;
         }
 
         /* Cards de estatísticas */
         .stats-summary {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 3rem;
             max-width: 1400px;
             margin-left: auto;
@@ -191,41 +212,78 @@
             background: white;
             border-radius: 16px;
             padding: 2rem;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
             gap: 1.5rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            opacity: 0.05;
+            transition: all 0.4s ease;
         }
 
         .stats-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .stats-card:hover::before {
+            transform: scale(1.5);
+            opacity: 0.08;
         }
 
         .stats-card.primary {
             border-left-color: #3b82f6;
         }
 
+        .stats-card.primary::before {
+            background: #3b82f6;
+        }
+
         .stats-card.success {
             border-left-color: #10b981;
+        }
+
+        .stats-card.success::before {
+            background: #10b981;
         }
 
         .stats-card.info {
             border-left-color: #8b5cf6;
         }
 
+        .stats-card.info::before {
+            background: #8b5cf6;
+        }
+
         .stats-icon {
             width: 70px;
             height: 70px;
-            border-radius: 50%;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
             color: white;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover .stats-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .stats-card.primary .stats-icon {
@@ -240,27 +298,40 @@
             background: linear-gradient(135deg, #8b5cf6, #7c3aed);
         }
 
+        .stats-content {
+            flex: 1;
+            min-width: 0;
+        }
+
         .stats-content h3 {
-            font-size: 2.2rem;
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
             font-weight: 700;
             color: #1f2937;
             margin: 0 0 0.5rem 0;
+            line-height: 1;
         }
 
         .stats-content p {
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 2vw, 1rem);
             color: #6b7280;
             margin: 0 0 0.5rem 0;
             font-weight: 500;
         }
 
         .stats-trend {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             font-size: 0.85rem;
             color: #059669;
             font-weight: 500;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .stats-trend i {
+            font-size: 0.75rem;
         }
 
         /* Seção de gráficos */
@@ -277,25 +348,27 @@
         }
 
         .section-header h2 {
-            font-size: 2rem;
+            font-size: clamp(1.3rem, 4vw, 2rem);
             color: #1f2937;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.75rem;
+            font-weight: 700;
         }
 
         .section-header p {
             color: #6b7280;
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
             margin: 0;
+            font-weight: 400;
         }
 
         /* Layout em linhas para desktop */
         .charts-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
         }
@@ -304,9 +377,9 @@
             background: white;
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.04);
         }
 
         .chart-card.large {
@@ -314,8 +387,9 @@
         }
 
         .chart-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+            border-color: rgba(0,0,0,0.08);
         }
 
         .chart-header {
@@ -325,10 +399,12 @@
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid #f3f4f6;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .chart-header h3 {
-            font-size: 1.3rem;
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
             font-weight: 600;
             color: #1f2937;
             margin: 0;
@@ -339,19 +415,27 @@
 
         .chart-header i {
             color: #6b7280;
+            font-size: 1.1rem;
         }
 
         .chart-legend {
             display: flex;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
         .legend-item {
             font-size: 0.85rem;
-            padding: 0.3rem 0.8rem;
+            padding: 0.35rem 0.9rem;
             border-radius: 20px;
             font-weight: 500;
-            position: relative;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .legend-item.blue {
@@ -386,11 +470,6 @@
 
         /* Responsivo - Tablet */
         @media (max-width: 1200px) {
-            .stats-summary {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1.5rem;
-            }
-
             .charts-row {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
@@ -410,22 +489,17 @@
             .content-header-modern {
                 margin: -1rem -0.5rem 2rem -0.5rem;
                 padding: 1.5rem 1rem;
+                border-radius: 0 0 16px 16px;
             }
 
             .page-title {
-                font-size: 1.8rem;
                 flex-direction: column;
                 gap: 0.5rem;
                 text-align: center;
             }
 
-            .page-title i {
-                font-size: 1.5rem;
-            }
-
             .page-subtitle {
                 text-align: center;
-                font-size: 1rem;
             }
 
             .stats-summary {
@@ -440,13 +514,13 @@
                 gap: 1rem;
             }
 
-            .stats-content h3 {
-                font-size: 1.8rem;
-            }
-
             .charts-row {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
+            }
+
+            .chart-card {
+                padding: 1.5rem;
             }
 
             .chart-card.large {
@@ -459,22 +533,8 @@
                 gap: 1rem;
             }
 
-            .chart-header h3 {
-                font-size: 1.1rem;
-            }
-
             .chart-container {
                 height: 280px;
-            }
-
-            .section-header h2 {
-                font-size: 1.5rem;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .section-header p {
-                font-size: 1rem;
             }
         }
 
@@ -483,18 +543,7 @@
             .content-header-modern {
                 padding: 1rem 0.75rem;
                 margin: -1rem -0.25rem 1.5rem -0.25rem;
-            }
-
-            .page-title {
-                font-size: 1.5rem;
-            }
-
-            .page-title i {
-                font-size: 1.3rem;
-            }
-
-            .page-subtitle {
-                font-size: 0.9rem;
+                border-radius: 0 0 12px 12px;
             }
 
             .stats-card {
@@ -507,20 +556,8 @@
                 font-size: 1.5rem;
             }
 
-            .stats-content h3 {
-                font-size: 1.6rem;
-            }
-
-            .stats-content p {
-                font-size: 0.9rem;
-            }
-
             .chart-card {
                 padding: 1.25rem;
-            }
-
-            .chart-header h3 {
-                font-size: 1rem;
             }
 
             .chart-container {
@@ -529,15 +566,7 @@
 
             .legend-item {
                 font-size: 0.75rem;
-                padding: 0.25rem 0.6rem;
-            }
-
-            .section-header h2 {
-                font-size: 1.3rem;
-            }
-
-            .section-header p {
-                font-size: 0.9rem;
+                padding: 0.3rem 0.7rem;
             }
         }
 
@@ -553,33 +582,66 @@
             }
         }
 
-        .stats-card,
-        .chart-card {
-            animation: fadeInUp 0.6s ease-out;
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .stats-card:nth-child(2) {
+        .stats-card {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .stats-card:nth-child(1) {
             animation-delay: 0.1s;
         }
 
-        .stats-card:nth-child(3) {
+        .stats-card:nth-child(2) {
             animation-delay: 0.2s;
         }
 
-        .chart-card:nth-child(1) {
+        .stats-card:nth-child(3) {
             animation-delay: 0.3s;
         }
 
-        .chart-card:nth-child(2) {
+        .chart-card {
+            animation: slideInLeft 0.6s ease-out backwards;
+        }
+
+        .charts-row:nth-child(2) .chart-card:nth-child(1) {
             animation-delay: 0.4s;
         }
 
-        .charts-row:nth-child(3) .chart-card:nth-child(1) {
+        .charts-row:nth-child(2) .chart-card:nth-child(2) {
             animation-delay: 0.5s;
         }
 
-        .charts-row:nth-child(3) .chart-card:nth-child(2) {
+        .charts-row:nth-child(3) .chart-card:nth-child(1) {
             animation-delay: 0.6s;
+        }
+
+        .charts-row:nth-child(3) .chart-card:nth-child(2) {
+            animation-delay: 0.7s;
+        }
+
+        /* Scroll suave */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading skeleton opcional */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
         }
     </style>
 
@@ -589,17 +651,28 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Configurações globais do Chart.js
-    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif";
     Chart.defaults.color = '#6b7280';
+    Chart.defaults.plugins.tooltip.padding = 12;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    Chart.defaults.plugins.tooltip.caretSize = 6;
 
-    // Dados
+    // Dados do servidor
     const meses = @json($estatisticasMensais->pluck('mes'));
     const totalExplicacoesMes = @json($estatisticasMensais->pluck('total'));
     const valorTotalMes = @json($estatisticasMensais->pluck('total_valor'));
-
     const disciplinas = @json($estatisticasDisciplina->pluck('disciplina'));
     const totalExplicacoesDisciplina = @json($estatisticasDisciplina->pluck('total'));
     const valorTotalDisciplina = @json($estatisticasDisciplina->pluck('total_valor'));
+
+    // Configuração comum de animação
+    const animationConfig = {
+        duration: 2000,
+        easing: 'easeOutQuart',
+        onComplete: function() {
+            this.options.animation.duration = 750;
+        }
+    };
 
     // Gráfico barras - Total de Explicações Mensais
     new Chart(document.getElementById('graficoTotalExplicacoesMensal'), {
@@ -609,30 +682,49 @@
             datasets: [{
                 label: 'Total de Explicações',
                 data: totalExplicacoesMes,
-                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                backgroundColor: 'rgba(59, 130, 246, 0.85)',
                 borderColor: 'rgba(59, 130, 246, 1)',
                 borderWidth: 2,
-                borderRadius: 8,
+                borderRadius: 10,
                 borderSkipped: false,
-                hoverBackgroundColor: 'rgba(29, 78, 216, 0.9)',
-                hoverBorderColor: 'rgba(29, 78, 216, 1)'
+                hoverBackgroundColor: 'rgba(29, 78, 216, 0.95)',
+                hoverBorderColor: 'rgba(29, 78, 216, 1)',
+                hoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
             plugins: {
                 legend: { 
                     display: false 
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                     titleColor: 'white',
                     bodyColor: 'white',
-                    borderColor: 'rgba(59, 130, 246, 1)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: 'rgba(59, 130, 246, 0.5)',
                     borderWidth: 1,
-                    cornerRadius: 8,
-                    displayColors: false
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            return 'Explicações: ' + context.parsed.y;
+                        }
+                    }
                 }
             },
             scales: {
@@ -642,29 +734,37 @@
                         stepSize: 1,
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
-                        color: 'rgba(156, 163, 175, 0.2)'
+                        color: 'rgba(156, 163, 175, 0.15)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
                     }
                 },
                 x: {
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
+                        display: false
+                    },
+                    border: {
                         display: false
                     }
                 }
             },
-            animation: {
-                duration: 2000,
-                easing: 'easeOutQuart'
-            }
+            animation: animationConfig
         }
     });
 
@@ -678,36 +778,59 @@
                 data: valorTotalMes,
                 fill: true,
                 borderColor: 'rgba(239, 68, 68, 1)',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0.01)');
+                    return gradient;
+                },
                 tension: 0.4,
                 pointRadius: 6,
-                pointHoverRadius: 8,
+                pointHoverRadius: 9,
                 borderWidth: 3,
                 pointBackgroundColor: 'rgba(239, 68, 68, 1)',
                 pointBorderColor: 'white',
-                pointBorderWidth: 2,
+                pointBorderWidth: 3,
                 pointHoverBackgroundColor: 'rgba(220, 38, 38, 1)',
-                pointHoverBorderColor: 'white'
+                pointHoverBorderColor: 'white',
+                pointHoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
             plugins: {
                 legend: { 
                     display: false 
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                     titleColor: 'white',
                     bodyColor: 'white',
-                    borderColor: 'rgba(239, 68, 68, 1)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
                     borderWidth: 1,
-                    cornerRadius: 8,
                     displayColors: false,
                     callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
                         label: function(context) {
-                            return 'Valor: €' + context.parsed.y.toLocaleString('pt-PT', {minimumFractionDigits: 2});
+                            return 'Valor: €' + context.parsed.y.toLocaleString('pt-PT', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
                         }
                     }
                 }
@@ -718,32 +841,40 @@
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
+                            size: 12,
+                            weight: '500'
                         },
+                        padding: 8,
                         callback: function(value) {
                             return '€' + value.toLocaleString('pt-PT');
                         }
                     },
                     grid: {
-                        color: 'rgba(156, 163, 175, 0.2)'
+                        color: 'rgba(156, 163, 175, 0.15)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
                     }
                 },
                 x: {
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
+                        display: false
+                    },
+                    border: {
                         display: false
                     }
                 }
             },
-            animation: {
-                duration: 2000,
-                easing: 'easeOutQuart'
-            }
+            animation: animationConfig
         }
     });
 
@@ -755,31 +886,50 @@
             datasets: [{
                 label: 'Total de Explicações',
                 data: totalExplicacoesDisciplina,
-                backgroundColor: 'rgba(20, 184, 166, 0.8)',
+                backgroundColor: 'rgba(20, 184, 166, 0.85)',
                 borderColor: 'rgba(20, 184, 166, 1)',
                 borderWidth: 2,
-                borderRadius: 8,
+                borderRadius: 10,
                 borderSkipped: false,
-                hoverBackgroundColor: 'rgba(13, 148, 136, 0.9)',
-                hoverBorderColor: 'rgba(13, 148, 136, 1)'
+                hoverBackgroundColor: 'rgba(13, 148, 136, 0.95)',
+                hoverBorderColor: 'rgba(13, 148, 136, 1)',
+                hoverBorderWidth: 3
             }]
         },
         options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
             plugins: {
                 legend: { 
                     display: false 
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                     titleColor: 'white',
                     bodyColor: 'white',
-                    borderColor: 'rgba(20, 184, 166, 1)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: 'rgba(20, 184, 166, 0.5)',
                     borderWidth: 1,
-                    cornerRadius: 8,
-                    displayColors: false
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            return 'Explicações: ' + context.parsed.x;
+                        }
+                    }
                 }
             },
             scales: {
@@ -789,29 +939,37 @@
                         stepSize: 1,
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
-                        color: 'rgba(156, 163, 175, 0.2)'
+                        color: 'rgba(156, 163, 175, 0.15)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
                     }
                 },
                 y: {
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
+                        display: false
+                    },
+                    border: {
                         display: false
                     }
                 }
             },
-            animation: {
-                duration: 2000,
-                easing: 'easeOutQuart'
-            }
+            animation: animationConfig
         }
     });
 
@@ -825,36 +983,59 @@
                 data: valorTotalDisciplina,
                 fill: true,
                 borderColor: 'rgba(139, 92, 246, 1)',
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+                    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
+                    return gradient;
+                },
                 tension: 0.4,
                 pointRadius: 6,
-                pointHoverRadius: 8,
+                pointHoverRadius: 9,
                 borderWidth: 3,
                 pointBackgroundColor: 'rgba(139, 92, 246, 1)',
                 pointBorderColor: 'white',
-                pointBorderWidth: 2,
+                pointBorderWidth: 3,
                 pointHoverBackgroundColor: 'rgba(124, 58, 237, 1)',
-                pointHoverBorderColor: 'white'
+                pointHoverBorderColor: 'white',
+                pointHoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
             plugins: {
                 legend: { 
                     display: false 
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                     titleColor: 'white',
                     bodyColor: 'white',
-                    borderColor: 'rgba(139, 92, 246, 1)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: 'rgba(139, 92, 246, 0.5)',
                     borderWidth: 1,
-                    cornerRadius: 8,
                     displayColors: false,
                     callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
                         label: function(context) {
-                            return 'Valor: €' + context.parsed.y.toLocaleString('pt-PT', {minimumFractionDigits: 2});
+                            return 'Valor: €' + context.parsed.y.toLocaleString('pt-PT', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
                         }
                     }
                 }
@@ -865,32 +1046,40 @@
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
+                            size: 12,
+                            weight: '500'
                         },
+                        padding: 8,
                         callback: function(value) {
                             return '€' + value.toLocaleString('pt-PT');
                         }
                     },
                     grid: {
-                        color: 'rgba(156, 163, 175, 0.2)'
+                        color: 'rgba(156, 163, 175, 0.15)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
                     }
                 },
                 x: {
                     ticks: { 
                         color: '#9ca3af',
                         font: {
-                            size: 12
-                        }
+                            size: 12,
+                            weight: '500'
+                        },
+                        padding: 8
                     },
                     grid: {
+                        display: false
+                    },
+                    border: {
                         display: false
                     }
                 }
             },
-            animation: {
-                duration: 2000,
-                easing: 'easeOutQuart'
-            }
+            animation: animationConfig
         }
     });
 </script>
