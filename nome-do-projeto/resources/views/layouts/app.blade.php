@@ -716,6 +716,13 @@ body.sidebar-mini {
                             </li>
 
                             <li class="nav-item">
+                                <a href="{{ route('explicacoes.calendario') }}" class="nav-link {{ request()->routeIs('explicacoes.calendario') ? 'active' : '' }}" style="font-size: 0.92rem !important;">
+                                    <i class="fas fa-calendar-check" style="font-size: 1.05rem !important;"></i>
+                                    <p style="font-size: 0.92rem !important;">Calendário</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
                                 <a href="{{ route('mensagens.index') }}" class="nav-link {{ request()->routeIs('mensagens.*') ? 'active' : '' }}" style="font-size: 0.92rem !important;">
                                     <i class="fas fa-comments" style="font-size: 1.05rem !important;"></i>
                                     <p style="font-size: 0.92rem !important;">
