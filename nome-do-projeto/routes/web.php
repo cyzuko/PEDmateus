@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExplicacaoController;
+use App\Http\Controllers\EstatisticasController;
 use App\Http\Controllers\ContactController;
 
 // === ROTAS PÚBLICAS ===
@@ -121,6 +122,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/explicacoes/{id}/cancelar', [ExplicacaoController::class, 'cancelar'])->name('explicacoes.cancelar');
     Route::patch('/explicacoes/{id}/concluir', [ExplicacaoController::class, 'concluir'])->name('explicacoes.concluir');
     
-    // Estatísticas
-    Route::get('/estatisticas', [App\Http\Controllers\EstatisticasController::class, 'index'])->name('estatisticas');
+   // Estatísticas
+    Route::get('/estatisticas', [EstatisticasController::class, 'index'])->name('estatisticas');
+    Route::get('/estatisticas/pdf', [EstatisticasController::class, 'exportarPDF'])->name('estatisticas.pdf');
 });

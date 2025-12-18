@@ -13,11 +13,6 @@
                         Horários de Explicações
                     </h3>
                     <div>
-                        
-                        <a href="{{ route('explicacoes.calendario') }}" class="btn btn-sm btn-info mr-1">
-                            <i class="fas fa-calendar"></i> Calendário
-                        </a>
-                       
                     </div>
                 </div>
 
