@@ -50,6 +50,21 @@ p {
 
 /* Hero Section - OVERRIDE AdminLTE */
 .hero-section {
+    min-height: 90vh !important;
+    padding: 80px 20px 120px !important;
+    background: linear-gradient(135deg, #1e88e5 0%, #43a047 50%, #fdd835 100%) !important;
+}
+
+/* Com gradiente mais vibrante */
+.hero-section {
+    background: linear-gradient(135deg, 
+        #1565c0 0%, 
+        #1e88e5 20%, 
+        #43a047 50%, 
+        #66bb6a 70%, 
+        #fdd835 100%) !important;
+}
+.hero-section {
     background: linear-gradient(135deg, #1e88e5 0%, #FFD700 100%) !important;
     color: white !important;
     padding: 120px 0 100px !important;
@@ -426,8 +441,23 @@ p {
 }
 
 /* Location Section */
+
+.location-info {
+    margin-top: -120px!important;
+}
+
+/* Alternativa mais agressiva */
+.location-info {
+    margin-top: -120px !important;
+}
+
+/* Ou move cada card individualmente */
+.info-card {
+    margin-top: -20px !important;
+}
 .location-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    
 }
 
 .location-info .info-card {
@@ -1141,6 +1171,32 @@ textarea.contact-input {
 }
 
 /* Contact CTA Section - Full Width */
+/* Remove o espaço em branco entre a seção de contacto e o footer */
+.contact-cta-section {
+    margin-bottom: 0 !important;
+    padding-bottom: 60px !important;
+}
+
+/* Remove padding/margin do elemento seguinte */
+.contact-cta-section + * {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Se houver um footer, ajusta */
+footer {
+    margin-top: -10 !important;
+}
+
+/* Remove espaço do body/main */
+body, main {
+    margin-bottom: 0 !important;
+}
+
+/* Alternativa: reduz drasticamente qualquer espaço */
+.contact-cta-section {
+    margin-bottom: -35px !important;
+}
 .contact-cta-section {
     width: 100vw;
     position: relative;
