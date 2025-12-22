@@ -143,26 +143,62 @@
                                                 <strong class="text-success">€{{ number_format($explicacao->preco, 2) }}</strong>
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm">
+                                                <div class="d-flex gap-2 justify-content-center">
                                                     <a href="{{ route('admin.explicacoes.show', $explicacao->id) }}" 
-                                                       class="btn btn-outline-info btn-sm" title="Ver detalhes">
+                                                       class="btn btn-sm btn-outline-info rounded-pill shadow-sm" 
+                                                       title="Ver detalhes"
+                                                       style="min-width: 38px;">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <form method="POST" action="{{ route('admin.explicacoes.aprovar', $explicacao->id) }}" 
-                                                          style="display: inline;">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="btn btn-outline-success btn-sm" 
-                                                                title="Aprovar" onclick="return confirm('Aprovar esta explicação?')">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                    </form>
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                            title="Rejeitar" onclick="mostrarModalRejeicao({{ $explicacao->id }})">
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-success rounded-pill shadow-sm" 
+                                                            title="Aprovar" 
+                                                            style="min-width: 38px;"
+                                                            onclick="mostrarModalAprovacao({{ $explicacao->id }})">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger rounded-pill shadow-sm" 
+                                                            title="Rejeitar" 
+                                                            style="min-width: 38px;"
+                                                            onclick="mostrarModalRejeicao({{ $explicacao->id }})">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
                                             </td>
+
+                                            <style>
+                                            .btn.rounded-pill {
+                                                transition: all 0.2s ease;
+                                            }
+
+                                            .btn.rounded-pill:hover {
+                                                transform: translateY(-2px);
+                                                box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+                                            }
+
+                                            .btn-outline-info:hover {
+                                                background-color: #17a2b8;
+                                                border-color: #17a2b8;
+                                                color: white;
+                                            }
+
+                                            .btn-outline-success:hover {
+                                                background-color: #28a745;
+                                                border-color: #28a745;
+                                                color: white;
+                                            }
+
+                                            .btn-outline-danger:hover {
+                                                background-color: #dc3545;
+                                                border-color: #dc3545;
+                                                color: white;
+                                            }
+
+                                            .gap-2 {
+                                                gap: 0.5rem;
+                                            }
+                                            </style>    
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -242,6 +278,51 @@
                     @endif
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Aprovar Explicação -->
+<div class="modal fade" id="modalAprovacao" tabindex="-1" role="dialog" aria-labelledby="modalAprovacaoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalAprovacaoLabel">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Aprovar Explicação
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <form id="formAprovacao" method="POST" action="">
+                @csrf
+                @method('PATCH')
+                
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Confirmação:</strong> Tem certeza que deseja aprovar esta explicação?
+                    </div>
+                    
+                    <p class="mb-0">
+                        <i class="fas fa-check mr-2 text-success"></i>
+                        O aluno será notificado sobre a aprovação da explicação.
+                    </p>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="btnConfirmarAprovacao">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Confirmar Aprovação
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -346,10 +427,42 @@
 // Variáveis globais
 let selectedItems = [];
 
+// Função para mostrar modal de aprovação
+function mostrarModalAprovacao(explicacaoId) {
+    const modal = document.getElementById('modalAprovacao');
+    const form = document.getElementById('formAprovacao');
+    
+    if (!modal || !form) {
+        console.error('Modal ou form de aprovação não encontrado');
+        alert('Erro: Modal não encontrado');
+        return;
+    }
+    
+    // Atualizar a action do form
+    form.action = `/admin/explicacoes/${explicacaoId}/aprovar`;
+    
+    // Mostrar modal (compatível com Bootstrap 4 e 5)
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+        $('#modalAprovacao').modal('show');
+    } else if (typeof bootstrap !== 'undefined') {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    } else {
+        // Fallback manual
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        // Criar backdrop
+        const backdrop = document.createElement('div');
+        backdrop.classList.add('modal-backdrop', 'fade', 'show');
+        backdrop.id = 'modal-backdrop-aprovacao';
+        document.body.appendChild(backdrop);
+    }
+}
+
 // Funções globais - disponíveis imediatamente
 function mostrarModalRejeicao(explicacaoId) {
-    console.log('Abrindo modal de rejeição para explicação:', explicacaoId);
-    
     const modal = document.getElementById('modalRejeicao');
     const form = document.getElementById('formRejeicao');
     
@@ -389,14 +502,14 @@ function mostrarModalRejeicao(explicacaoId) {
     }
 }
 
-function fecharModal() {
-    const modal = document.getElementById('modalRejeicao');
+function fecharModal(modalId) {
+    const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
         modal.classList.remove('show');
         document.body.classList.remove('modal-open');
         
-        const backdrop = document.getElementById('modal-backdrop-manual');
+        const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) {
             backdrop.remove();
         }
@@ -495,22 +608,24 @@ function atualizarContadorPendentes() {
 
 // Quando o documento carregar
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM carregado - inicializando funcionalidades admin');
-    
-    // Event listeners para fechar modal
+    // Event listeners para fechar modais
     document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
-        btn.addEventListener('click', fecharModal);
-    });
-    
-    // Fechar modal ao clicar fora
-    const modal = document.getElementById('modalRejeicao');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                fecharModal();
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                fecharModal(modal.id);
             }
         });
-    }
+    });
+    
+    // Fechar modais ao clicar fora
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal(this.id);
+            }
+        });
+    });
     
     // Contador de caracteres
     const textarea = document.getElementById('motivo_rejeicao');
@@ -537,7 +652,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Validação do formulário
+    // Validação do formulário de aprovação
+    const formAprovacao = document.getElementById('formAprovacao');
+    if (formAprovacao) {
+        formAprovacao.addEventListener('submit', function(e) {
+            const btn = document.getElementById('btnConfirmarAprovacao');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A aprovar...';
+                btn.disabled = true;
+            }
+        });
+    }
+    
+    // Validação do formulário de rejeição
     const formRejeicao = document.getElementById('formRejeicao');
     if (formRejeicao) {
         formRejeicao.addEventListener('submit', function(e) {
@@ -547,11 +674,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 alert('Por favor, forneça um motivo detalhado para a rejeição (mínimo 10 caracteres).');
                 if (textarea) textarea.focus();
-                return false;
-            }
-            
-            if (!confirm('Tem certeza que deseja rejeitar esta explicação?')) {
-                e.preventDefault();
                 return false;
             }
             

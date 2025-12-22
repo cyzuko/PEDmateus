@@ -213,15 +213,11 @@
                     <div class="d-grid gap-2">
                         @if($explicacao->aprovacao_admin === 'pendente' || !$explicacao->aprovacao_admin)
                             <!-- Aprovar -->
-                            <form method="POST" action="{{ route('admin.explicacoes.aprovar', $explicacao->id) }}" 
-                                  onsubmit="return confirm('Tem certeza que deseja aprovar esta explicação?')" class="mb-2">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-success btn-lg w-100">
-                                    <i class="fas fa-check mr-2"></i>
-                                    Aprovar Explicação
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-success btn-lg w-100 mb-2" 
+                                    onclick="mostrarModalAprovacao()">
+                                <i class="fas fa-check mr-2"></i>
+                                Aprovar Explicação
+                            </button>
                             
                             <!-- Rejeitar -->
                             <button type="button" class="btn btn-danger btn-lg w-100" 
@@ -231,15 +227,11 @@
                             </button>
                         @else
                             <!-- Reverter -->
-                            <form method="POST" action="{{ route('admin.explicacoes.reverter', $explicacao->id) }}" 
-                                  onsubmit="return confirm('Tem certeza que deseja reverter esta decisão? A explicação voltará para pendente.')">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-warning btn-lg w-100">
-                                    <i class="fas fa-undo mr-2"></i>
-                                    Reverter Decisão
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-warning btn-lg w-100" 
+                                    onclick="mostrarModalReverter()">
+                                <i class="fas fa-undo mr-2"></i>
+                                Reverter Decisão
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -247,31 +239,39 @@
 
             <!-- Histórico/Timeline -->
             @if($explicacao->data_aprovacao)
-            <div class="card shadow mt-4">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">
-                        <i class="fas fa-history text-info mr-2"></i>
-                        Histórico
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <i class="fas fa-plus-circle text-primary"></i>
-                            <div class="timeline-content">
-                                <small class="text-muted">{{ $explicacao->created_at->format('d/m/Y H:i') }}</small>
+            <div class="mt-4 p-3" style="background: white; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);">
+                <h6 class="mb-3 pb-2" style="border-bottom: 1px solid #e9ecef;">
+                    <i class="fas fa-history text-info mr-2"></i>
+                    Histórico
+                </h6>
+                <div class="timeline-simple">
+                    <div class="timeline-simple-item mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="mr-3">
+                                <div style="width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <i class="fas fa-plus-circle text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block">{{ $explicacao->created_at->format('d/m/Y H:i') }}</small>
                                 <p class="mb-0">Explicação criada por {{ $explicacao->user->name }}</p>
                             </div>
                         </div>
-                        @if($explicacao->data_aprovacao)
-                        <div class="timeline-item">
-                            @if($explicacao->aprovacao_admin === 'aprovada')
-                                <i class="fas fa-check-circle text-success"></i>
-                            @else
-                                <i class="fas fa-times-circle text-danger"></i>
-                            @endif
-                            <div class="timeline-content">
-                                <small class="text-muted">{{ $explicacao->data_aprovacao->format('d/m/Y H:i') }}</small>
+                    </div>
+                    @if($explicacao->data_aprovacao)
+                    <div class="timeline-simple-item">
+                        <div class="d-flex align-items-start">
+                            <div class="mr-3">
+                                <div style="width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    @if($explicacao->aprovacao_admin === 'aprovada')
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block">{{ $explicacao->data_aprovacao->format('d/m/Y H:i') }}</small>
                                 <p class="mb-0">
                                     {{ $explicacao->aprovacao_admin === 'aprovada' ? 'Aprovada' : 'Rejeitada' }}
                                     @if($explicacao->aprovadoPor)
@@ -280,8 +280,8 @@
                                 </p>
                             </div>
                         </div>
-                        @endif
                     </div>
+                    @endif
                 </div>
             </div>
             @endif
@@ -289,7 +289,97 @@
     </div>
 </div>
 
-<!-- Modal para Rejeição -->
+<!-- Modal para Aprovar Explicação -->
+<div class="modal fade" id="modalAprovacao" tabindex="-1" role="dialog" aria-labelledby="modalAprovacaoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalAprovacaoLabel">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Aprovar Explicação
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <form id="formAprovacao" method="POST" action="{{ route('admin.explicacoes.aprovar', $explicacao->id) }}">
+                @csrf
+                @method('PATCH')
+                
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Confirmação:</strong> Tem certeza que deseja aprovar esta explicação?
+                    </div>
+                    
+                    <p class="mb-0">
+                        <i class="fas fa-check mr-2 text-success"></i>
+                        O aluno será notificado sobre a aprovação da explicação.
+                    </p>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="btnConfirmarAprovacao">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Confirmar Aprovação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Reverter Decisão -->
+<div class="modal fade" id="modalReverter" tabindex="-1" role="dialog" aria-labelledby="modalReverterLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="modalReverterLabel">
+                    <i class="fas fa-undo mr-2"></i>
+                    Reverter Decisão
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <form method="POST" action="{{ route('admin.explicacoes.reverter', $explicacao->id) }}" id="formReverter">
+                @csrf
+                @method('PATCH')
+                
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Atenção:</strong> Tem certeza que deseja reverter esta decisão?
+                    </div>
+                    
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle mr-2 text-info"></i>
+                        A explicação voltará para o estado <strong>pendente</strong> de aprovação.
+                    </p>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="btnConfirmarReverter">
+                        <i class="fas fa-undo mr-1"></i>
+                        Confirmar Reversão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Rejeitar Explicação -->
 <div class="modal fade" id="modalRejeicao" tabindex="-1" role="dialog" aria-labelledby="modalRejeicaoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -325,7 +415,7 @@
                                   placeholder="Descreva detalhadamente o motivo da rejeição para que se possa corrigir..."></textarea>
                         <small class="form-text text-muted">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Seja específico nos motivos para ajudar na correção dos os problemas identificados.
+                            Seja específico nos motivos para ajudar na correção dos problemas identificados.
                             <br>
                             <span id="contador-caracteres">0/500 caracteres</span>
                         </small>
@@ -381,18 +471,68 @@
 
 @endsection
 
-
 <!-- Script inline direto no HTML -->
 <script>
-// Função para mostrar modal de rejeição - GLOBAL
-function mostrarModalRejeicao() {
-    console.log('Tentando abrir modal de rejeição...');
+// Função para mostrar modal de aprovação
+function mostrarModalAprovacao() {
+    const modal = document.getElementById('modalAprovacao');
     
+    if (!modal) {
+        alert('Erro: Modal não encontrado');
+        return;
+    }
+    
+    // Mostrar modal
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+        $('#modalAprovacao').modal('show');
+    } else if (typeof bootstrap !== 'undefined') {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    } else {
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        const backdrop = document.createElement('div');
+        backdrop.classList.add('modal-backdrop', 'fade', 'show');
+        backdrop.id = 'modal-backdrop-aprovacao';
+        document.body.appendChild(backdrop);
+    }
+}
+
+// Função para mostrar modal de reversão
+function mostrarModalReverter() {
+    const modal = document.getElementById('modalReverter');
+    
+    if (!modal) {
+        alert('Erro: Modal não encontrado');
+        return;
+    }
+    
+    // Mostrar modal
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+        $('#modalReverter').modal('show');
+    } else if (typeof bootstrap !== 'undefined') {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    } else {
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        const backdrop = document.createElement('div');
+        backdrop.classList.add('modal-backdrop', 'fade', 'show');
+        backdrop.id = 'modal-backdrop-reverter';
+        document.body.appendChild(backdrop);
+    }
+}
+
+// Função para mostrar modal de rejeição
+function mostrarModalRejeicao() {
     const modal = document.getElementById('modalRejeicao');
     const textarea = document.getElementById('motivo_rejeicao');
     
     if (!modal) {
-        console.error('Modal não encontrado');
         alert('Erro: Modal não encontrado');
         return;
     }
@@ -403,37 +543,32 @@ function mostrarModalRejeicao() {
         updateCharacterCount();
     }
     
-    // Tentar com jQuery primeiro (Bootstrap 4)
+    // Mostrar modal
     if (typeof $ !== 'undefined' && $.fn.modal) {
         $('#modalRejeicao').modal('show');
-    }
-    // Se não tiver jQuery, tentar com Bootstrap 5
-    else if (typeof bootstrap !== 'undefined') {
+    } else if (typeof bootstrap !== 'undefined') {
         const bootstrapModal = new bootstrap.Modal(modal);
         bootstrapModal.show();
-    }
-    // Fallback manual
-    else {
+    } else {
         modal.style.display = 'block';
         modal.classList.add('show');
         document.body.classList.add('modal-open');
         
-        // Criar backdrop
         const backdrop = document.createElement('div');
         backdrop.classList.add('modal-backdrop', 'fade', 'show');
-        backdrop.id = 'modal-backdrop-manual';
+        backdrop.id = 'modal-backdrop-rejeicao';
         document.body.appendChild(backdrop);
     }
 }
 
-function fecharModal() {
-    const modal = document.getElementById('modalRejeicao');
+function fecharModal(modalId) {
+    const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
         modal.classList.remove('show');
         document.body.classList.remove('modal-open');
         
-        const backdrop = document.getElementById('modal-backdrop-manual');
+        const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) {
             backdrop.remove();
         }
@@ -462,22 +597,24 @@ function updateCharacterCount() {
 
 // Quando o documento carregar
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM carregado - inicializando funcionalidades admin show');
-    
-    // Event listeners para fechar modal
+    // Event listeners para fechar modais
     document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
-        btn.addEventListener('click', fecharModal);
-    });
-    
-    // Fechar modal ao clicar fora
-    const modal = document.getElementById('modalRejeicao');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                fecharModal();
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                fecharModal(modal.id);
             }
         });
-    }
+    });
+    
+    // Fechar modais ao clicar fora
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal(this.id);
+            }
+        });
+    });
     
     // Contador de caracteres
     const textarea = document.getElementById('motivo_rejeicao');
@@ -498,14 +635,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     textarea.value = motivo;
                 }
-                
                 textarea.focus();
                 updateCharacterCount();
             }
         });
     });
 
-    // Validação do formulário antes de enviar
+    // Validação do formulário de aprovação
+    const formAprovacao = document.getElementById('formAprovacao');
+    if (formAprovacao) {
+        formAprovacao.addEventListener('submit', function(e) {
+            const btn = document.getElementById('btnConfirmarAprovacao');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A aprovar...';
+                btn.disabled = true;
+            }
+        });
+    }
+    
+    // Validação do formulário de reversão
+    const formReverter = document.getElementById('formReverter');
+    if (formReverter) {
+        formReverter.addEventListener('submit', function(e) {
+            const btn = document.getElementById('btnConfirmarReverter');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A reverter...';
+                btn.disabled = true;
+            }
+        });
+    }
+
+    // Validação do formulário de rejeição
     const formRejeicao = document.getElementById('formRejeicao');
     if (formRejeicao) {
         formRejeicao.addEventListener('submit', function(e) {
@@ -515,11 +675,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 alert('Por favor, forneça um motivo detalhado para a rejeição (mínimo 10 caracteres).');
                 if (textarea) textarea.focus();
-                return false;
-            }
-            
-            if (!confirm('Tem certeza que deseja rejeitar esta explicação?')) {
-                e.preventDefault();
                 return false;
             }
             
@@ -552,44 +707,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('styles')
 <style>
+/* Remover borda do card do histórico */
+.historico-body {
+    border-left: none !important;
+    padding-left: 1.5rem !important;
+    overflow: hidden;
+    background: white !important;
+    position: relative;
+}
+
+.historico-body::before,
+.historico-body::after {
+    display: none !important;
+}
+
+.historico-body * {
+    border-left: none !important;
+}
+
+/* Timeline limpo sem linhas */
 .timeline {
     position: relative;
     padding: 0;
+    margin: 0;
+    list-style: none;
+    overflow: visible;
+    border: none !important;
+    background: white;
+}
+
+.timeline::before,
+.timeline::after {
+    content: none !important;
+    display: none !important;
 }
 
 .timeline-item {
     position: relative;
     margin-bottom: 1.5rem;
-    padding-left: 2rem;
+    padding-left: 3.5rem;
+    min-height: 2rem;
+    background: white;
 }
 
-.timeline-item i {
+.timeline-item::before,
+.timeline-item::after {
+    content: none !important;
+    display: none !important;
+    border: none !important;
+    background: none !important;
+}
+
+.timeline-icon {
     position: absolute;
     left: 0;
     top: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    line-height: 1.5rem;
-    text-align: center;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: white;
     border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 20;
 }
 
-.timeline-item:not(:last-child):before {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    top: 1.5rem;
-    width: 2px;
-    height: calc(100% + 0.5rem);
-    background: #e9ecef;
+.timeline-icon::before,
+.timeline-icon::after {
+    content: none !important;
+    display: none !important;
+}
+
+.timeline-icon i {
+    font-size: 1rem;
 }
 
 .timeline-content {
-    background: #f8f9fa;
-    padding: 0.75rem;
+    background: white;
+    padding: 0.75rem 1rem;
     border-radius: 0.375rem;
-    border-left: 3px solid #dee2e6;
+    position: relative;
+    z-index: 10;
+    margin-left: -50px;
+    padding-left: 50px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .card {
@@ -609,129 +811,14 @@ document.addEventListener('DOMContentLoaded', function() {
 .motivo-exemplo:hover {
     background-color: #e9ecef;
 }
-</style>
-@endpushmotivo_rejeicao');
-            
-            if (textarea) {
-                if (textarea.value.trim()) {
-                    textarea.value += '\n\n' + motivo;
-                } else {
-                    textarea.value = motivo;
-                }
-                
-                // Focar no textarea
-                textarea.focus();
-                updateCharacterCount();
-            }
-        });
-    });
 
-    // Validação do formulário antes de enviar
-    const formRejeicao = document.getElementById('formRejeicao');
-    if (formRejeicao) {
-        formRejeicao.addEventListener('submit', function(e) {
-            const textarea = document.getElementById('motivo_rejeicao');
-            
-            if (!textarea || textarea.value.trim().length < 10) {
-                e.preventDefault();
-                alert('Por favor, forneça um motivo detalhado para a rejeição (mínimo 10 caracteres).');
-                if (textarea) textarea.focus();
-                return false;
-            }
-            
-            // Confirmação final
-            if (!confirm('Tem certeza que deseja rejeitar esta explicação?')) {
-                e.preventDefault();
-                return false;
-            }
-            
-            // Mostrar loading no botão
-            const btn = document.getElementById('btnConfirmarRejeicao');
-            if (btn) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A rejeitar...';
-                btn.disabled = true;
-            }
-        });
-    }
-});
-
-// Mostrar mensagens de sucesso/erro
-@if(session('success'))
-    if (typeof toastr !== 'undefined') {
-        toastr.success('{{ session('success') }}');
-    } else {
-        alert('{{ session('success') }}');
-    }
-@endif
-
-@if(session('error'))
-    if (typeof toastr !== 'undefined') {
-        toastr.error('{{ session('error') }}');
-    } else {
-        alert('{{ session('error') }}');
-    }
-@endif
-</script>
-@endpush
-
-@push('styles')
-<style>
-.timeline {
-    position: relative;
-    padding: 0;
+/* Melhorias para os modais */
+.modal-header {
+    border-bottom: none;
 }
 
-.timeline-item {
-    position: relative;
-    margin-bottom: 1.5rem;
-    padding-left: 2rem;
-}
-
-.timeline-item i {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    line-height: 1.5rem;
-    text-align: center;
-    background: white;
-    border-radius: 50%;
-}
-
-.timeline-item:not(:last-child):before {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    top: 1.5rem;
-    width: 2px;
-    height: calc(100% + 0.5rem);
-    background: #e9ecef;
-}
-
-.timeline-content {
-    background: #f8f9fa;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    border-left: 3px solid #dee2e6;
-}
-
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.btn-lg {
-    font-weight: 600;
-}
-
-.alert {
-    border: none;
-    border-radius: 0.5rem;
-}
-
-.motivo-exemplo:hover {
-    background-color: #e9ecef;
+.modal-footer {
+    border-top: none;
 }
 </style>
 @endpush
