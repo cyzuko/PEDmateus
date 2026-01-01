@@ -412,6 +412,13 @@
             <form id="formCriarExplicacao" method="POST" action="{{ route('explicacoes.store') }}">
                 @csrf
                 <div class="modal-body">
+                    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong><i class="fas fa-exclamation-triangle"></i> ERRO!</strong><br>
+            {{ session('error') }}
+        </div>
+    @endif
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -783,6 +790,23 @@ $(document).on('mouseleave', '.slot-livre, .slot-vagas', function() {
 $(document).ready(function() {
     $('[title]').tooltip();
 });
+@if(session('error') && old('disciplina'))
+$(document).ready(function() {
+    // Preencher o modal com os dados antigos
+    $('#modalData').val('{{ old('data_explicacao') }}');
+    $('#modalHoraInicio').val('{{ old('hora_inicio') }}');
+    $('#modalHoraFim').val('{{ old('hora_fim') }}');
+    $('#modalDisciplina').val('{{ old('disciplina') }}');
+    $('#modalLocal').val('{{ old('local') }}');
+    $('#modalPreco').val('{{ old('preco') }}');
+    $('input[name="nome_aluno"]').val('{{ old('nome_aluno') }}');
+    $('input[name="contacto_aluno"]').val('{{ old('contacto_aluno') }}');
+    $('textarea[name="observacoes"]').val('{{ old('observacoes') }}');
+    
+    // Abrir o modal
+    $('#modalCriarExplicacao').modal('show');
+});
+@endif
 </script>
 
 <style>

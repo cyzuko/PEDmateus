@@ -11,6 +11,41 @@ use Illuminate\Support\Facades\DB;
 class ExplicacaoController extends Controller
 {
     /**
+     * Verificar se há conflito de horários
+     */
+    private function verificarConflitoHorario($data, $horaInicio, $horaFim, $userId, $explicacaoIdIgnorar = null)
+    {
+        $query = Explicacao::where('user_id', $userId)
+            ->where('data_explicacao', $data)
+            ->whereNotIn('status', ['cancelada']) // Ignorar canceladas
+            ->where(function($q) use ($horaInicio, $horaFim) {
+                // Verificar sobreposição de horários
+                $q->where(function($q1) use ($horaInicio, $horaFim) {
+                    // Nova explicação começa durante uma existente
+                    $q1->where('hora_inicio', '<=', $horaInicio)
+                       ->where('hora_fim', '>', $horaInicio);
+                })
+                ->orWhere(function($q2) use ($horaInicio, $horaFim) {
+                    // Nova explicação termina durante uma existente
+                    $q2->where('hora_inicio', '<', $horaFim)
+                       ->where('hora_fim', '>=', $horaFim);
+                })
+                ->orWhere(function($q3) use ($horaInicio, $horaFim) {
+                    // Nova explicação engloba uma existente
+                    $q3->where('hora_inicio', '>=', $horaInicio)
+                       ->where('hora_fim', '<=', $horaFim);
+                });
+            });
+        
+        // Se estiver editando, ignorar a própria explicação
+        if ($explicacaoIdIgnorar) {
+            $query->where('id', '!=', $explicacaoIdIgnorar);
+        }
+        
+        return $query->first();
+    }
+
+    /**
      * Mostrar lista de explicações
      */
     public function index()
@@ -67,6 +102,19 @@ class ExplicacaoController extends Controller
             'enviar_email_aluno' => 'nullable|boolean',
             'enviar_email_admin' => 'nullable|boolean',
         ]);
+
+        // ✅ VERIFICAR CONFLITO DE HORÁRIO
+        $conflito = $this->verificarConflitoHorario(
+            $validated['data_explicacao'],
+            $validated['hora_inicio'],
+            $validated['hora_fim'],
+            Auth::id()
+        );
+        
+        if ($conflito) {
+            session()->flash('error', "❌ ERRO: Não pode criar esta explicação! Já tem uma explicação de {$conflito->disciplina} marcada das {$conflito->hora_inicio} às {$conflito->hora_fim}.");
+            return back()->withInput();
+        }
 
         try {
             // Usar o modelo Eloquent em vez de query builder direto
@@ -193,6 +241,20 @@ class ExplicacaoController extends Controller
             'nome_aluno' => 'required|string|max:255',
             'contacto_aluno' => 'required|string|max:255',
         ]);
+
+        // ✅ VERIFICAR CONFLITO DE HORÁRIO (ignorando a própria explicação)
+        $conflito = $this->verificarConflitoHorario(
+            $validated['data_explicacao'],
+            $validated['hora_inicio'],
+            $validated['hora_fim'],
+            Auth::id(),
+            $explicacao->id // Ignorar a própria explicação
+        );
+        
+        if ($conflito) {
+            session()->flash('error', "❌ ERRO: Não pode alterar para este horário! Já tem uma explicação de {$conflito->disciplina} marcada das {$conflito->hora_inicio} às {$conflito->hora_fim}.");
+            return back()->withInput();
+        }
 
         try {
             // Se a explicação foi confirmada (aprovada), resetar para agendada para nova aprovação
