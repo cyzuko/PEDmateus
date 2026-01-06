@@ -110,11 +110,25 @@
                                         foreach($disciplinas as $disc) {
                                             $horarios = json_decode($disc->horarios_json ?? '{}', true);
                                             if (!empty($horarios)) {
-                                                foreach($horarios as $horario) {
-                                                    $hi = (int)substr($horario['inicio'], 0, 2);
-                                                    $hf = (int)substr($horario['fim'], 0, 2);
-                                                    if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
-                                                    if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                                foreach($horarios as $dia => $blocos) {
+                                                    // Suportar tanto formato antigo (objeto único) quanto novo (array de objetos)
+                                                    if (isset($blocos['inicio'])) {
+                                                        // Formato antigo: um único horário
+                                                        $hi = (int)substr($blocos['inicio'], 0, 2);
+                                                        $hf = (int)substr($blocos['fim'], 0, 2);
+                                                        if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
+                                                        if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                                    } elseif (is_array($blocos)) {
+                                                        // Formato novo: array de horários
+                                                        foreach($blocos as $bloco) {
+                                                            if (isset($bloco['inicio']) && isset($bloco['fim'])) {
+                                                                $hi = (int)substr($bloco['inicio'], 0, 2);
+                                                                $hf = (int)substr($bloco['fim'], 0, 2);
+                                                                if($hi < $horaInicioGlobal) $horaInicioGlobal = $hi;
+                                                                if($hf > $horaFimGlobal) $horaFimGlobal = $hf;
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             } else {
                                                 // Fallback para hora_inicio e hora_fim
@@ -176,9 +190,26 @@
                                                         if (!empty($horarios) && isset($horarios[$diaSemana])) {
                                                             // Disciplina tem horário específico para este dia
                                                             $horarioDia = $horarios[$diaSemana];
-                                                            $discHoraInicio = (int)substr($horarioDia['inicio'], 0, 2);
-                                                            $discHoraFim = (int)substr($horarioDia['fim'], 0, 2);
-                                                            $isHorarioDisponivel = ($hora >= $discHoraInicio && $hora <= $discHoraFim);
+                                                            
+                                                            // Verificar se é formato antigo (objeto único) ou novo (array)
+                                                            if (isset($horarioDia['inicio'])) {
+                                                                // Formato antigo: objeto único
+                                                                $discHoraInicio = (int)substr($horarioDia['inicio'], 0, 2);
+                                                                $discHoraFim = (int)substr($horarioDia['fim'], 0, 2);
+                                                                $isHorarioDisponivel = ($hora >= $discHoraInicio && $hora <= $discHoraFim);
+                                                            } elseif (is_array($horarioDia) && isset($horarioDia[0])) {
+                                                                // Formato novo: array de horários
+                                                                foreach ($horarioDia as $bloco) {
+                                                                    if (isset($bloco['inicio']) && isset($bloco['fim'])) {
+                                                                        $discHoraInicio = (int)substr($bloco['inicio'], 0, 2);
+                                                                        $discHoraFim = (int)substr($bloco['fim'], 0, 2);
+                                                                        if ($hora >= $discHoraInicio && $hora <= $discHoraFim) {
+                                                                            $isHorarioDisponivel = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         } elseif (empty($horarios)) {
                                                             // Fallback: usar hora_inicio e hora_fim (todos os dias)
                                                             $discHoraInicio = (int)substr($disciplina->hora_inicio, 0, 2);
@@ -371,10 +402,20 @@
                                             foreach($disciplinas as $d) {
                                                 $horarios = json_decode($d->horarios_json ?? '{}', true);
                                                 if (!empty($horarios)) {
-                                                    foreach($horarios as $horario) {
-                                                        $hi = (int)substr($horario['inicio'], 0, 2);
-                                                        $hf = (int)substr($horario['fim'], 0, 2);
-                                                        $totalSlots += ($hf - $hi + 1);
+                                                    foreach($horarios as $dia => $blocos) {
+                                                        if (isset($blocos['inicio'])) {
+                                                            $hi = (int)substr($blocos['inicio'], 0, 2);
+                                                            $hf = (int)substr($blocos['fim'], 0, 2);
+                                                            $totalSlots += ($hf - $hi + 1);
+                                                        } elseif (is_array($blocos)) {
+                                                            foreach($blocos as $bloco) {
+                                                                if (isset($bloco['inicio']) && isset($bloco['fim'])) {
+                                                                    $hi = (int)substr($bloco['inicio'], 0, 2);
+                                                                    $hf = (int)substr($bloco['fim'], 0, 2);
+                                                                    $totalSlots += ($hf - $hi + 1);
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 } else {
                                                     $hi = (int)substr($d->hora_inicio, 0, 2);
@@ -579,10 +620,30 @@ $(document).ready(function() {
                 // Verificar se há horário definido para este dia
                 if (disc.horarios[diaSemana]) {
                     var horarioDia = disc.horarios[diaSemana];
-                    if (horaInicio < horarioDia.inicio || horaFim > horarioDia.fim) {
-                        mensagemErro = 'Horário fora do período disponível para ' + disciplina + ' às ' + diaSemana + 's!\nHorário disponível: ' + horarioDia.inicio.substr(0,5) + ' - ' + horarioDia.fim.substr(0,5);
-                    } else {
-                        horarioValido = true;
+                    
+                    // Suportar formato antigo (objeto único) e novo (array)
+                    if (horarioDia.inicio) {
+                        // Formato antigo
+                        if (horaInicio < horarioDia.inicio || horaFim > horarioDia.fim) {
+                            mensagemErro = 'Horário fora do período disponível para ' + disciplina + ' às ' + diaSemana + 's!\nHorário disponível: ' + horarioDia.inicio.substr(0,5) + ' - ' + horarioDia.fim.substr(0,5);
+                        } else {
+                            horarioValido = true;
+                        }
+                    } else if (Array.isArray(horarioDia)) {
+                        // Formato novo: array de horários
+                        for (var i = 0; i < horarioDia.length; i++) {
+                            var bloco = horarioDia[i];
+                            if (horaInicio >= bloco.inicio && horaFim <= bloco.fim) {
+                                horarioValido = true;
+                                break;
+                            }
+                        }
+                        if (!horarioValido) {
+                            var horariosDisponiveis = horarioDia.map(function(b) {
+                                return b.inicio.substr(0,5) + '-' + b.fim.substr(0,5);
+                            }).join(', ');
+                            mensagemErro = 'Horário fora dos períodos disponíveis para ' + disciplina + ' às ' + diaSemana + 's!\nHorários disponíveis: ' + horariosDisponiveis;
+                        }
                     }
                 } else {
                     mensagemErro = disciplina + ' não tem horário definido para ' + diaSemana + '!';
@@ -654,7 +715,17 @@ function atualizarInfoDisciplina() {
     if (Object.keys(horarios).length > 0) {
         info += '<strong>Horários:</strong><br>';
         for (var dia in horarios) {
-            info += dia + ': ' + horarios[dia].inicio.substr(0,5) + '-' + horarios[dia].fim.substr(0,5) + '<br>';
+            var horarioDia = horarios[dia];
+            if (horarioDia.inicio) {
+                // Formato antigo
+                info += dia + ': ' + horarioDia.inicio.substr(0,5) + '-' + horarioDia.fim.substr(0,5) + '<br>';
+            } else if (Array.isArray(horarioDia)) {
+                // Formato novo: array
+                var horariosTexto = horarioDia.map(function(b) {
+                    return b.inicio.substr(0,5) + '-' + b.fim.substr(0,5);
+                }).join(', ');
+                info += dia + ': ' + horariosTexto + '<br>';
+            }
         }
     } else {
         var disciplinaSelecionada = select.value;
@@ -730,7 +801,14 @@ function criarExplicacao(data, hora, disciplina) {
     // Verificar se não excede o horário da disciplina
     var horaLimite;
     if (horarioDisponivel) {
-        horaLimite = horarioDisponivel.fim;
+        if (horarioDisponivel.fim) {
+            // Formato antigo
+            horaLimite = horarioDisponivel.fim;
+        } else if (Array.isArray(horarioDisponivel)) {
+            // Formato novo: pegar o último horário do dia
+            var ultimoBloco = horarioDisponivel[horarioDisponivel.length - 1];
+            horaLimite = ultimoBloco.fim;
+        }
     } else {
         horaLimite = discInfo.hora_fim;
     }

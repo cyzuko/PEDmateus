@@ -8,6 +8,7 @@ class Disciplina extends Model
 {
     protected $fillable = [
         'nome',
+        'ano_letivo',
         'disciplina',
         'emoji',
         'capacidade',

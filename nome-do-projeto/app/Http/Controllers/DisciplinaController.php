@@ -91,6 +91,7 @@ class DisciplinaController extends Controller
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255|unique:disciplinas,nome',
+            'ano_letivo' => 'required|string|max:20',
             'emoji' => 'required|string|max:10',
             'capacidade' => 'required|integer|min:1|max:20',
             'hora_inicio' => 'required|date_format:H:i',
@@ -100,6 +101,7 @@ class DisciplinaController extends Controller
             'horarios_json' => 'nullable|json',
         ], [
             'nome.unique' => 'Já existe uma disciplina com este nome.',
+            'ano_letivo.required' => 'O ano letivo é obrigatório.',
             'sala.required' => 'A sala é obrigatória.',
             'hora_fim.after' => 'A hora de fim deve ser posterior à hora de início.',
         ]);
@@ -126,6 +128,7 @@ class DisciplinaController extends Controller
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255|unique:disciplinas,nome,' . $disciplina->id,
+            'ano_letivo' => 'required|string|max:20',
             'emoji' => 'required|string|max:10',
             'capacidade' => 'required|integer|min:1|max:20',
             'hora_inicio' => 'required|date_format:H:i',
@@ -135,6 +138,7 @@ class DisciplinaController extends Controller
             'horarios_json' => 'nullable|json',
         ], [
             'nome.unique' => 'Já existe uma disciplina com este nome.',
+            'ano_letivo.required' => 'O ano letivo é obrigatório.',
             'sala.required' => 'A sala é obrigatória.',
             'hora_fim.after' => 'A hora de fim deve ser posterior à hora de início.',
         ]);
