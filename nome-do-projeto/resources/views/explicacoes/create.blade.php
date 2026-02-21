@@ -23,7 +23,7 @@
             <form method="POST" action="{{ route('explicacoes.store') }}">
                 @csrf
                 
-                <!-- Dados da Explicação -->
+                <!-- Dados da Explicação --->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-light border-0 py-3">
                         <h5 class="mb-0 fw-semibold">
